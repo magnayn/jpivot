@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE document [
+<!ENTITY nbsp "&#160;">
+]>
+
+<document
+  title="JPivot"
+  version="@VERSION@"
+>
+
+<section title="JPivot">
+
+  <page title="Home" id="index">
+
+    JPivot is a JSP custom tag library that renders an OLAP table and let users
+    perform typical OLAP navigations like slice and dice, drill down and roll up.
+    It uses <a href="http://mondrian.sourceforge.net">Mondrian</a> as its OLAP Server.
+    JPivot also supports <a href="http://www.xmla.org">XMLA</a> datasource access.
+
+    <h3>How to run?</h3>
+    Download the <tt>jpivot-[version].zip</tt> and extract the <tt>jpivot.war</tt> file.
+    Place the war file into tomcats webapp directory.
+    <p />
+    Make sure, Mondrian gets some memory for caching - this will improve speed
+    significantly. For example, set the environment variable
+    <code>
+      JAVA_OPTS=-Xms256m -Xmx512m
+    </code>
+    to have 256 megs for caching and 512 megs for temporary peaks.
+    <p />
+    Start Tomcat and point your browser to <a href="http://localhost:8080/jpivot">http://localhost:8080/jpivot</a>.
+    You'll need JDK 1.4 and Tomcat 4.1.30, JPivot does not work with earlier versions (sorry).
+    <p />
+    There are some simple examples that run without a database, but you probably want to
+    run the DB examples too.
+    Download the <a href="http://sourceforge.net/project/showfiles.php?group_id=35302&amp;package_id=55863">Mondrian Data</a>
+    and set up an ODBC datasource called <tt>MondrianFoodMart</tt> that uses MS Access
+    Database and points to <tt>MondrianFoodMart.mdb</tt> from the above download.
+    JPivot examples are configured to use this setup.
+
+    <h4>Using JDBC driver</h4>
+    JPivot reads the connection parameters from JSPs
+    containing the &lt;jp:mondrianQuery ...&gt; tag which contains the MDX query. This allows to
+    run queries against different databases. The example JSPs live in /WEB-INF/queries
+    and are configured for MS Access, the MySQL version is commented out. You will have
+    to change these to run other databases.
+
+    <h4>Using J2EE DataSource</h4>
+    You may use a predefined JDBC DataSource to run your MDX queries.
+    <pre>
+    &lt;jp:mondrianQuery
+       id="query01"
+       dataSource="jdbc/JPivotDS"
+       catalogUri="/WEB-INF/demo/FoodMart.xml"&gt;
+        MDX goes here
+    &lt;/jp:mondrianQuery&gt;
+    </pre>
+    Look at the tomcat documentation to see how to set up a datasource. Example follows:
+    <pre>
+    &lt;Context path="/jpivot" docBase="C:\dev\jpivot\build\web" debug="0"
+             reloadable="true" crossContext="true"&gt;
+      &lt;Resource auth="Container" name="jdbc/JPivotDS"
+          type="javax.sql.DataSource"/&gt;
+      &lt;ResourceParams name="jdbc/JPivotDS"&gt;
+        &lt;parameter&gt;
+          &lt;name&gt;factory&lt;/name&gt;
+          &lt;value&gt;org.apache.commons.dbcp.BasicDataSourceFactory&lt;/value&gt;
+        &lt;/parameter&gt;
+        &lt;parameter&gt;
+          &lt;name&gt;maxActive&lt;/name&gt;
+          &lt;value&gt;400&lt;/value&gt;
+        &lt;/parameter&gt;
+        &lt;parameter&gt;
+          &lt;name&gt;maxWait&lt;/name&gt;
+          &lt;value&gt;5000&lt;/value&gt;
+        &lt;/parameter&gt;
+        &lt;parameter&gt;
+          &lt;name&gt;maxIdle&lt;/name&gt;
+          &lt;value&gt;2&lt;/value&gt;
+        &lt;/parameter&gt;
+        &lt;parameter&gt;
+          &lt;name&gt;username&lt;/name&gt;
+          &lt;value&gt;tarzan&lt;/value&gt;
+        &lt;/parameter&gt;
+        &lt;parameter&gt;
+          &lt;name&gt;password&lt;/name&gt;
+          &lt;value&gt;jane&lt;/value&gt;
+        &lt;/parameter&gt;
+        &lt;parameter&gt;
+          &lt;name&gt;driverClassName&lt;/name&gt;
+          &lt;value&gt;com.mysql.jdbc.Driver&lt;/value&gt;
+        &lt;/parameter&gt;
+        &lt;parameter&gt;
+          &lt;name&gt;url&lt;/name&gt;
+          &lt;value&gt;jdbc:mysql://localhost:3306/foodmart?autoReconnect=true&lt;/value&gt;
+        &lt;/parameter&gt;
+      &lt;/ResourceParams&gt;
+    &lt;/Context&gt;
+    </pre>
+
+    In web.xml you have to reference the data source as follows:
+    <pre>
+    &lt;resource-ref&gt;
+      &lt;description&gt;DB Connection&lt;/description&gt;
+      &lt;res-ref-name&gt;jdbc/JPivotDS&lt;/res-ref-name&gt;
+      &lt;res-type&gt;javax.sql.DataSource&lt;/res-type&gt;
+      &lt;res-auth&gt;Container&lt;/res-auth&gt;
+    &lt;/resource-ref&gt;
+    </pre>
+
+    <h3>How to compile?</h3>
+    The distribution contains binary and source. The jpivot.war file contains in its /WEB-INF/lib
+    directory all *.jar files that are needed to build. The simplest way to set up a build environment
+    is to
+    <ol>
+      <li>extract the jpivot.war file to some temp directory by renaming it to jpivot.zip </li>
+      <li>from /WEB-INF/lib copy all *.jar files <em>except jpivot.jar</em> to the lib/ directory
+       of the jpivot distribution (which already contains mondrian-src.jar</li>
+    </ol>
+    Now you should be able to build JPivot using ant. You will have to
+    define the following ant properties in your build.properties (e.g. in your home directory):
+    <code><pre>
+    catalina.home=c:/java/jakarta-tomcat-4.1.30
+    mysql.home=c:/java/mysql-connector-java-3.0.8-stable
+    xalan.home=c:/java/xalan-j_2_6_0
+    </pre></code>
+    Then ant should work. For running the tests you will have to set up the
+    MondrianFoodMart database, either MS Access or MySQL (see build.xml).
+
+    <h3>How to use in another web application?</h3>
+    Unzip the war file. You will need the following files
+    <ul>
+      <li>/wcf/**</li>
+      <li>/jpivot/**</li>
+      <li>/WEB-INF/wcf/**</li>
+      <li>/WEB-INF/jpivot/**</li>
+      <li>/WEB-INF/lib/**</li>
+      <li>You will have to merge the entries from /WEB-INF/web.xml into your applications web.xml</li>
+    </ul>
+
+  </page>
+
+
+
+
+ <page title="Architecture Overview">
+
+JPivot is designed to work with several OLAP servers, especially XMLA and
+Mondrian. So JPivot does not use the Mondrian API directly. It defines its
+own OLAP model in terms of interfaces in the packages
+<a href="api/com/tonbeller/jpivot/olap/model/package-summary.html">olap.model</a>
+and
+<a href="api/com/tonbeller/jpivot/olap/navi/package-summary.html">olap.navi</a>.
+To make JPivot work with Mondrian
+these interfaces have to be implemented using Mondrian classes.
+
+   <p/>
+
+JPivot uses WCF (Web Component Framework) packages that support building UI components
+via XML and XSLT.
+
+</page>
+
+
+ <page title="Changelog" id="changelog">
+   <h2>New in version 1.3</h2>
+   <ul>
+     <li>native XMLA access, i.e. no Mondrian required</li>
+     <li>Mondrian: Error message on resultset overflow: when the resultset exceeds some limit defined
+         in mondrian.properties, an error message is displayed and the previous state is restored.
+         default is mondrian.result.limit=50000</li>
+     <li>Mondrian: new formatter attributes allows to format members and cells via java code</li>
+     <li>Mondrian: other improvements, removed CachePool (it did not do anything useful), made
+         SmartMemberReader the default (ignores largeDimensionThreasHold)</li>
+     <li>wcf improvements and new features, including sql tables</li>
+   </ul>
+
+   <h2>New in version 1.2.1</h2>
+   <h3>PDF Improvements</h3>
+   Bugfix &amp; more options from Print Property dialog are supported
+
+   <h3>Mondrian Improvements</h3>
+   NON EMPTY Crossjoin optimization included. Crossjoin of large sparsed
+   sets resulted in OutOfMemoryException before.
+
+
+   <h2>New in version 1.2.0</h2>
+    <h3>Excel and PDF Support</h3>
+        contributed Excel/PDF by Ati (uramisten) - thanks a lot.
+        Includes other fixes too, see
+        <a href="http://sourceforge.net/forum/message.php?msg_id=2590176">forum</a>.
+
+    <h3>OLAP Navigator</h3>
+        The navigator now groups large amounts of Members,
+        e.g. the custmer names in the foodmart example.
+    <h3>Integration with JavaServer Faces</h3>
+        WFC (and JPivot) interoperate with
+        <a href="http://java.sun.com/j2ee/javaserverfaces/overview.html">JavaServer Faces</a>.
+        See examples in WCF download for details.
+
+    <h3>EL Syntax changed</h3>
+        The Syntax of the WCF Expression Language (actually its based on
+        jakarta BeanUtils) has changed from <tt>${expr}</tt> to
+        <tt>#{expr}</tt> so it cooperates from the expression language
+        available in Tomcat 5 / JSP 2.0.
+        <p />
+        So with JSP 2.0 you should use <code>#{}</code> notation to define
+        expressions for WCF attributes and <code>${}</code> to define
+        JSP EL expressions.
+        <p />
+        JSP EL expressions can not be used with WCF tags currently, all
+        tag attributes have their <code>rtexprvalue</code> set to false.
+        There may be a twin library supporting JSP EL expressions in
+        the future (similar to the twin libraries in JSTL, e.g. core
+        and core_rt).
+
+    <h3>Static accessor for RequestContext</h3>
+      RequestContext has a static <tt>instance()</tt> method that returns
+          the current instance (using java.lang.ThreadLocal). This seems to
+          be safe since JSF uses this mechanism too
+
+    <h3>actionReference in XML form descriptions</h3>
+    Form handling has been simplified, see example. In the XML file
+          describing the HTML form, the &lt;button ...&gt; element
+          accepts an element named "actionReference". The value of this
+          attribute is interpreted as the name of a function, which
+          is called when the user presses the button. The signature of
+          the function is <tt>void foo(RequestContext context) throws Exception;</tt>
+
+    <h2>New in version 1.1.0</h2>
+
+    <h3>Mondrian improvements</h3>
+
+    Uses the up-to-date Mondrian version with many bugfixes and improvements:
+    <ul>
+      <li>uses less memory (only needs 1/5 of previous Mondrian versions)</li>
+      <li>Mondrian is 2 times upto 20 times faster depending on the query. Most speed
+          improvement when using <tt>aggregate</tt></li>
+      <li>new caching strategy - new cache keeps as much items as possible in memory</li>
+    </ul>
+    See installation notes about how to set the JVM parameters -Xms and -Xmx.
+
+    <h3>New navigation Code</h3>
+    The new navigation code fixes some bugs and shortcomings. Also it reduces
+    dependencies to mondrian. So with  the new navigation code it should be
+    easier to support other OLAP servers like XMLA and JOLAP.
+
+    <h3>Drill Thru</h3>
+    Individual Columns maybe selected in drill-thru table.
+
+    <h3>Bookmark Support</h3>
+    com.tonbeller.wcf.bookmark.BookmarkManger has static Methods to collect and
+    restore the state of all objects in the session. Support is provided for
+    the query with its navigations, the table settings and chart via its configuration
+    dialog. All properties from configuration dialogs may be stored in a bookmark
+    if the <tt>bookmark</tt> attribute of the &lt;wcf:form...&gt; tag is set
+    to true.
+
+    <h3>Parameter Support</h3>
+
+    MDX Parameter may be passed as HTTP Parameters. The new JPivot
+    tag <tt>clickable</tt> is nested inside the <tt>table</tt> tag
+    and specifies a dimension, level or single member that shall be clickable (i.e.
+    members are rendered with hyperlinks). The <tt>setParam</tt>
+    tag maybe used to extract the HTTP parameter, parse its
+    value and update a parameter of the MDX query. Finally
+    its possible to display the current parameter values
+    via JSTL tags. See jpivot taglib docs and example in test subdirectory
+    for details.
+
+    <h2>Version 1.0.2</h2>
+    <h3>Charting Support</h3>
+
+    Robin has integrated jfreechart into jpivot with
+    support for many different chart styles (bar chart, pie chart etc, 2D 3D).
+    There is also a dialog to configure the chart. See screenshots for an
+    example.
+
+    <h3>Drill Thru support</h3>
+    Does not seem to work with MS Access?
+
+   <h3>Member Properties</h3>
+
+   JPivot supports member properties now. There is a toolbar button that enables / disables
+   display of properties in the table. Also there are a few predefined properties that
+   are rendered in a special manner:
+   <table border="1">
+     <tr>
+       <th>Name</th>
+       <th>Value</th>
+       <th>Description</th>
+     </tr>
+     <tr>
+       <td>style</td>
+       <td>red|green|yellow</td>
+       <td>renders the Member in that color</td>
+     </tr>
+     <tr>
+       <td>link</td>
+       <td>an url</td>
+       <td>creates a hyperlink on the member</td>
+     </tr>
+     <tr>
+       <td>arrow</td>
+       <td>up|down|blank</td>
+       <td>paints an arrow image</td>
+     </tr>
+     <tr>
+       <td>image</td>
+       <td>an uri. If the uri starts with "/" the context name will be prepended</td>
+       <td>paints image</td>
+     </tr>
+   </table>
+
+   <h3>Tag Library Documentation</h3>
+   All WCF and jpivot tags have been documented (see table of contents on the left).
+
+ </page>
+
+ <page title="XML/A">
+    <h3>How to access XMLA data sources?</h3>
+    Use the <code>xmlaQuery</code> tag instead of <code>mondrianQuery</code>. You will have to
+    enter the XMLA URI and a catalog name.<br/>
+    <h4>Example</h4>
+    <pre>
+    &lt;jp:xmlaQuery
+       id="query01"
+       uri="http://MYSERVER/XML4A/msxisapi.dll"
+       catalog="Foodmart 2000"&gt;
+        select {[Measures].[Unit Sales]} on columns,
+        [Product].[All Products].children on rows
+        from Sales where ([Time].[1997])
+    &lt;/jp:xmlaQuery&gt;
+    </pre>
+ </page>
+
+  <page title="Screenshots">
+<h3>Axis in hierarchical mode</h3>
+<img src="images/jpivot-01.png"/>
+
+<h3>Axis showing the parents of the members</h3>
+<img src="images/jpivot-02.png"/>
+
+<h3>Axis in Level Mode</h3>
+This is useful, when the result ist sorted in <em>break hierarchy</em> mode.
+<p/>
+<img src="images/jpivot-03.png"/>
+
+
+<h3>Sort options</h3>
+<img src="images/jpivot-07.png"/>
+
+<h3>Map hierarchies to table axes</h3>
+<img src="images/jpivot-04.png"/>
+
+<h3>Select members from a hierarchy for an axis</h3>
+<img src="images/jpivot-05.png"/>
+
+<h3>Select members from a hierarchy for the slicer</h3>
+<img src="images/jpivot-06.png"/>
+
+<h3>Example with Member Properties</h3>
+<img src="images/jpivot-08.png"/>
+
+<h3>Example with Mondrian Foodmart Data</h3>
+<img src="images/jpivot-09.png"/>
+
+<h3>Example Chart with Mondrian Foodmart Data</h3>
+<img src="images/jpivot-10.png"/>
+
+<h3>Chart Configuration Dialog</h3>
+<img src="images/jpivot-12.png"/>
+
+<h3>MDX Edit Form</h3>
+<img src="images/jpivot-11.png"/>
+
+  </page>
+
+  <page title="Contribute" id="contribute">
+    There is a public CVS at sourceforge. Before you will get comitter access to the CVS I'd like to
+    review your first contributions to make sure everything fits together.
+    <p />
+    Try to avoid modifying existing sources. JPivot is in production use on several sites and the users
+    expect things to work the same way in the next release. If you add functionality, add it
+    on top, maybe put into a new package, make it optional (so the code compiles without the new package).
+    <p />
+    Do not introduce dependencies. There are plans to separate the model packages (Mondrian, XMLA)
+    from the GUI packages, for example.
+    <p />
+    Please follow these guidelines
+    <ul>
+      <li>For indentation use 2 blanks, no tabs. This makes the CVS diffs easier to read</li>
+    </ul>
+
+  </page>
+
+  <link href="downloads/" title="CVS Snapshot"/>
+  <link href="changelog.html" title="CVS Changelog"/>
+  <link href="junit/index.html" title="JUnit Tests"/>
+  <link href="api/index.html" title="Java Doc"/>
+  <link href="tags/jpivot-tags-en.html" title="JPivot Tags"/>
+  <link href="tags/wcf-tags-en.html" title="WCF Tags"/>
+  <link href="mondrian-schema/index.html" title="Mondrian Schema Plugin"/>
+
+  <link href="http://sourceforge.net/projects/jpivot" title="Project Page"/>
+</section>
+
+
+</document>

@@ -1,0 +1,45 @@
+<project name="mdxparse" default="final">
+
+  <property file="${user.home}/build.properties"/>
+  <property file="build.properties"/>
+
+    <description>
+        build the mdx parser
+    </description>
+ 
+ 	<target name="javacup" description="create the javacup parser " >
+		<java classname="java_cup.Main" fork="true" dir="${basedir}" >
+		<classpath>
+          <pathelement location="${repository.home}/javacup-0.10k/javacup.jar"/>
+		</classpath>
+  		<arg value="-parser"/> 
+  		<arg value="parser"/> 
+  		<!-- arg value="-dump_grammar"/--> 
+  		<arg value="-symbols"/> 
+  		<arg value="sym"/> 
+ 		<arg value="${basedir}/mdxparse.cup"/> 
+	 	</java>
+	 </target>
+ 
+ 	<target name="move_parser_files" depends="javacup"
+        description="move the javacup generated source files " >
+	    <move file="parser.java" todir="${basedir}"/>
+	    <move file="sym.java" todir="${basedir}"/>
+ 	</target>
+  
+  	<target name="jlex" depends="move_parser_files" description="create the lexer/scanner" >
+		<java classname="JLex.Main">
+			<classpath>
+              <pathelement location="${repository.home}/javacup-0.10k/javacup.jar"/>
+              <pathelement location="${repository.home}/jlex-1.2.6/jlex.jar"/>
+			</classpath>
+			<arg value="${basedir}/mdxparse.lex"/> 
+	 	</java>
+  	</target>
+
+	<target name="final" depends="jlex"
+        description="move the JLex generated source files " >
+    	<move file="${basedir}/mdxparse.lex.java" tofile="${basedir}/Yylex.java"/>
+  	</target>
+
+</project>

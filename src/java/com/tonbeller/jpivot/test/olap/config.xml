@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<model class="com.tonbeller.jpivot.test.olap.TestOlapModel">
+  <extension id="drillExpandMember" class="com.tonbeller.jpivot.test.olap.TestDrillExpandMember"/>
+  <extension id="drillExpandPosition" class="com.tonbeller.jpivot.test.olap.TestDrillExpandPosition"/>
+  <extension id="drillReplace" class="com.tonbeller.jpivot.test.olap.TestDrillReplace"/>
+  <extension id="swapAxes" class="com.tonbeller.jpivot.test.olap.TestSwapAxes"/>
+  <extension id="memberTree" class="com.tonbeller.jpivot.test.olap.TestMemberTree"/>
+  <extension id="sortRank" class="com.tonbeller.jpivot.test.olap.TestSortRank"/>
+  <extension id="resetQuery" class="com.tonbeller.jpivot.test.olap.TestResetQuery"/>
+  <extension id="nonEmpty" class="com.tonbeller.jpivot.test.olap.TestNonEmpty"/>
+  <extension id="mdxQuery" class="com.tonbeller.jpivot.test.olap.TestMdxQuery"/>
+  <extension id="changeSlicer" class="com.tonbeller.jpivot.test.olap.TestChangeSlicer"/>
+  <extension id="hierarchiesOnAxes" class="com.tonbeller.jpivot.test.olap.TestPlaceHierarchiesOnAxes"/>
+  <extension id="membersOnAxes" class="com.tonbeller.jpivot.test.olap.TestPlaceMembersOnAxes"/>
+  <extension id="memberProperties" class="com.tonbeller.jpivot.test.olap.TestMemberProperties"/>
+  <extension id="memberDeleter" class="com.tonbeller.jpivot.test.olap.TestMemberDeleter"/>
+  <extension id="expressionParser" class="com.tonbeller.jpivot.test.olap.TestExpressionParser"/>
+  <extension id="setParameter" class="com.tonbeller.jpivot.test.olap.TestSetParameter"/>
+  <extension id="sqlAccess" class="com.tonbeller.jpivot.test.olap.TestSqlAccess"/>
+  <extension id="cache1" class="com.tonbeller.jpivot.olap.model.CachingOlapModel"/>
+</model>

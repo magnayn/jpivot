@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE html [
+  <!ENTITY nbsp "&#160;">
+  <!ENTITY copy "&#169;">
+]>
+
+
+<!-- style stolen from maven -->
+
+<html xmlns:tl="http://www.tonbeller.com/jpivot/documentation/layout">
+  <head>
+    <title><tl:document-title/> - <tl:page-title/></title>
+    <style type="text/css">
+      @import url("./style/maven.css");
+    </style>
+    <link rel="stylesheet" type="text/css" href="./style/print.css" media="print" />
+    <meta name="author" value="Andreas Voss"/>
+  </head>
+
+  <body class="composite" marginwidth="0" marginheight="0">
+    <div id="banner">
+      <table border="0" cellspacing="0" cellpadding="8" width="100%">
+        <tr>
+          <td>
+            <strong><tl:document-title/></strong>
+          </td>
+          <td>
+            <div align="right">
+              <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=58645&amp;type=4" width="125" height="37" border="0" alt="SourceForge.net Logo"/></a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="breadcrumbs">
+      <table border="0" cellspacing="0" cellpadding="4" width="100%">
+        <tr>
+          <td>Version <tl:version/> (<tl:changed/>)</td>
+          <td>
+            <div align="right">
+                <a href="http://www.tonbeller.com">Tonbeller</a>
+              | <a href="http://sourceforge.net/projects/jpivot/">JPivot</a>
+              | <a href="http://sourceforge.net/projects/mondrian">Mondrian</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <table border="0" cellspacing="0" cellpadding="8" width="100%"  height="80%" id="main">
+      <tr valign="top">
+        <td id="leftcol" width="20%">
+          <div id="navcolumn">
+            <tl:menu/>
+          </div>
+        </td>
+        <td>
+          <h2><tl:page-title/></h2>
+          <tl:body/>
+        </td>
+      </tr>
+    </table>
+
+    <div id="footer">
+      <table border="0" cellspacing="0" cellpadding="4">
+        <tr>
+          <td>&copy; 2003, TONBELLER AG</td>
+        </tr>
+      </table>
+    </div>
+
+  </body>
+</html>

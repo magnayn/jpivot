@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=iso-8859-1"/>
+		<title>Mondrian Schema Eclipse Plugin</title>
+		<style type="text/css" media="screen"><!--
+body { font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular }
+--></style>
+	</head>
+
+	<body bgcolor="#ffffff">
+		<a href="http://sourceforge.net"><img  align="right" src="http://sourceforge.net/sflogo.php?group_id=58645&amp;type=4" width="125" height="37" border="0" alt="SourceForge.net Logo"/></a>
+		<h2>Mondrian Schema Eclipse Plugin</h2>
+		<p>This Eclipse Plug-in allows to edit Mondrian OLAP-Schema XML&nbsp;files.</p>
+		<h3>How to use</h3>
+		<p>Download and install <a href="http://www.eclipse.org">Eclipse</a> version 3.x (3.0RC1 is current) and the <a href="http://www.eclipse.org/emf">EMF&amp;SDO</a> version 2.x (required). Unzip the mondrian-schema.zip into the eclipse installation directory - this will install the plugin. Start up eclipse and in the menu click on Help -&gt; About Eclipse Plattform -&gt;&nbsp;Plug-in Details. Mondrian Schema Editor Plugin must appear in the list of installed plugins. </p>
+		<p>The plugin is registered with the &quot;.mondrian&quot;&nbsp;file extension, this means you will have to rename FoodMart.xml into FoodMart.mondrian so Eclipse can associate the file with the plugin.</p>
+		<p>The current Foodmart.xml example does not completely comply to the schema definition, unfortunately the editor plugin silently stops processing when it encounters an invalid element/attribute and does not issue an error message. To make FoodMart.xml editable you will have to change (aside from renaming it to FoodMart.mondrian) it with a text editor before:</p>
+		<ul>
+			<li>remove all<code> &lt;Param .../&gt;</code> elements</li>
+			<li>remove all <code>table</code> attributes from <code>&lt;Property .../&gt;</code> elements</li>
+		</ul>
+		<p>To use the editor create a new project of type &quot;Simple&quot;</p>
+		<p><img src="images/new-project.png" alt="" width="285" height="411" border="0"/></p>
+		<p>Choose a project directory that contains Foodmart.mondrian. In the Package Explorer select Foodmart.mondrian and open it (double click).</p>
+		<p><img src="images/pkg-explorer.png" alt="" width="203" height="137" border="0"/></p>
+		<p>Right click on the root node to open the Properties view (once, Eclipse will remember this):</p>
+		<p><img src="images/open-props.png" alt="" width="468" height="345" border="0"/></p>
+		<p>Now the Eclipse workbench should look similar to the following screenshot and you should be able to edit the Mondrian Schema.</p>
+		<p><img src="images/eclipse.png" alt="" width="699" height="652" border="0"/></p>
+	</body>
+
+</html>

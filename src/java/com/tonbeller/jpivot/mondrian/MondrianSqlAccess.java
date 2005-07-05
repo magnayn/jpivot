@@ -1,0 +1,76 @@
+/*
+ * ====================================================================
+ * This software is subject to the terms of the Common Public License
+ * Agreement, available at the following URL:
+ *   http://www.opensource.org/licenses/cpl.html .
+ * Copyright (C) 2003-2004 TONBELLER AG.
+ * All Rights Reserved.
+ * You must accept the terms of that agreement to use this software.
+ * ====================================================================
+ *
+ * 
+ */
+package com.tonbeller.jpivot.mondrian;
+
+import javax.sql.DataSource;
+
+import mondrian.rolap.RolapMember;
+
+import org.apache.log4j.Logger;
+
+import com.tonbeller.jpivot.core.ExtensionSupport;
+import com.tonbeller.jpivot.olap.model.Member;
+import com.tonbeller.jpivot.olap.navi.ExpressionParser;
+import com.tonbeller.jpivot.param.SqlAccess;
+import com.tonbeller.wcf.param.SessionParam;
+
+/**
+ * @author av
+ */
+public class MondrianSqlAccess extends ExtensionSupport implements SqlAccess {
+  private static Logger logger = Logger.getLogger(MondrianSqlAccess.class);
+  
+  public DataSource getDataSource() {
+    MondrianModel mm = (MondrianModel) getModel();
+    return mm.getSqlDataSource();
+  }
+
+  public SessionParam createParameter(Member member, String paramName) {
+    MondrianMember mm = (MondrianMember) member;
+    RolapMember rm = (RolapMember) mm.getMonMember();
+    // All or calculated?
+    if (rm.getSqlKey() == null)
+      return null;
+    SessionParam p = new SessionParam();
+    p.setSqlValue(rm.getSqlKey());
+    p.setDisplayName(member.getLevel().getLabel());
+    p.setDisplayValue(member.getLabel());
+
+    ExpressionParser parser = (ExpressionParser) getModel().getExtension(ExpressionParser.ID);
+    if (parser != null)
+      p.setMdxValue(parser.unparse(member));
+    p.setName(paramName);
+    return p;
+  }
+
+  public SessionParam createParameter(Member member, String paramName, String propertyName) {
+    MondrianMember mm = (MondrianMember) member;
+    RolapMember rm = (RolapMember) mm.getMonMember();
+    Object propertyValue = rm.getPropertyValue(propertyName);
+    if (propertyValue == null) {
+      logger.error("property value for property" + propertyName + " not found in " + member.getLabel());
+      return null;
+    }
+    SessionParam p = new SessionParam();
+    p.setSqlValue(propertyValue);
+    p.setDisplayName(member.getLevel().getLabel());
+    p.setDisplayValue(member.getLabel());
+
+    ExpressionParser parser = (ExpressionParser) getModel().getExtension(ExpressionParser.ID);
+    if (parser != null)
+      p.setMdxValue(parser.unparse(member));
+    p.setName(paramName);
+    return p;
+  }
+
+}

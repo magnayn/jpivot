@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+Copyright goes here
+-->
+</head>
+<body bgcolor="white">
+
+Defines a simple OLAP Result and Metadata.
+
+<h2>Overview</h2>
+
+The OlapModel provides access to the {@link com.tonbeller.jpivot.olap.model.Result}
+of a query. It does not specify the query itself (e.g. what data will be displayed).
+<p>
+
+The interfaces in this package define a minimal OLAP result. The
+definitions are independent of an implementation like
+<a href="http://mondrian.sourceforge.net">Mondrian</a> or
+JOLAP. It only defines what is necessary to display the result to the user.
+
+<h2>OLAP Result</h2>
+
+<img src="doc-files/result.gif">
+
+<p>
+
+To support "ragged hierarchies" or "parent-child hierarchies" no 
+assuptions are made regarding the number, ordering or hierarchy of Levels 
+instances.
+
+See 
+Microsofts definition of <a href="http://www.ddart.net/mssql/sql2000/html/olapdmad/agdimensions_5ab7.htm">Parent-Child Hierarchy</a>
+
+<h2>Expressions</h2>
+
+<img src="doc-files/expressions.gif">
+
+</body>
+</html>

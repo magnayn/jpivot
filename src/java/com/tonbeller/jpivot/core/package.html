@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+Copyright goes here
+-->
+</head>
+<body bgcolor="white">
+
+Defines core interfaces and classes.
+
+<h2>Overview</h2>
+A {@link Model} provides the minimum functionality that is
+required for the application to work. A {@link Extension}
+is an extension to a model that provides additional, optional
+functionality. A <code>Model</code> may be queried if it supports
+a specific <code>Extension</code>. This also supports to follow the
+<a href="http://www.brent.worden.org/tips/2001/interfaceSegregationPrinciple.html">Interface Segregation Principle</a>
+
+<p>
+
+In JPivot an OLAP result is a <code>Model</code> because its
+functionality is required to display a table or chart. Navigations
+are optional <code>Extension</code>s hat may be supported by some OLAP 
+server but not necessary by all of them.
+
+<h2>Class Diagram</h2>
+
+<img src="doc-files/class-diagram.gif">
+
+
+<h2>Support Classes</h2>
+
+{@link ModelFactory}, {@link ModelSupport} and {@link ExtensionSupport}
+are default implementations that may be used to derive from.
+
+</body>
+</html>

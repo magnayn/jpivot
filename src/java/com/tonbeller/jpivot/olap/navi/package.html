@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+Copyright goes here
+-->
+</head>
+<body bgcolor="white">
+
+Defines navigations (query transformations).
+
+
+<h2>Overview</h2>
+
+The navigations (transformations of the underlying query) are broken into
+several interfaces, approx. one per use case.
+Navigations are optional extensions of the core OlapModel.
+
+<p>
+
+<img src="doc-files/class-diagram.gif">
+
+
+<h2>Calculated Members</h2>
+
+Calculated Members are created from Templates.
+
+A template describes a predefined formula for calculated members. The formula
+may contain parameters that have to be replaced with
+concrete values when a CalcMember member is created from the template.
+<p>
+Example: a template defines the formula
+<code>100 * (A - B) / A</code> where <code>A</code>
+and <code>B</code> are parameters of type <code>Measure</code>. To create
+a concrete CalcMember the parameters of the template will be replaced by the
+values the user specified, for example
+<code>100 * ([Measures].[Revenue] - [Measures].[Cost]) / [Measures].[Revenue]</code>.
+
+<p>
+
+<img src="doc-files/calcmembers.gif">
+
+@see com.tonbeller.jpivot.olap.model.OlapModel
+@see com.tonbeller.jpivot.core.Model
+@see com.tonbeller.jpivot.core.Extension
+</body>
+</html>

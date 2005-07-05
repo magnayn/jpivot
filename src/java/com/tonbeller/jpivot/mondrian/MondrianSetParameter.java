@@ -1,0 +1,135 @@
+/*
+ * ====================================================================
+ * This software is subject to the terms of the Common Public License
+ * Agreement, available at the following URL:
+ *   http://www.opensource.org/licenses/cpl.html .
+ * Copyright (C) 2003-2004 TONBELLER AG.
+ * All Rights Reserved.
+ * You must accept the terms of that agreement to use this software.
+ * ====================================================================
+ *
+ * 
+ */
+package com.tonbeller.jpivot.mondrian;
+
+import java.util.Hashtable;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import mondrian.olap.Category;
+
+import com.tonbeller.jpivot.core.ExtensionSupport;
+import com.tonbeller.jpivot.olap.model.DoubleExpr;
+import com.tonbeller.jpivot.olap.model.Expression;
+import com.tonbeller.jpivot.olap.model.IntegerExpr;
+import com.tonbeller.jpivot.olap.model.StringExpr;
+import com.tonbeller.jpivot.olap.navi.SetParameter;
+
+/**
+ * set parameter to query
+ */
+public class MondrianSetParameter extends ExtensionSupport implements SetParameter {
+
+  static Logger logger = Logger.getLogger(MondrianSetParameter.class);
+
+  /**
+   */
+  public MondrianSetParameter() {
+    super.setId(SetParameter.ID);
+  }
+
+  /**
+   * set parameter value to mondrian query
+   * @see SetParameter#setParameter(String, Expression)
+   */
+  public void setParameter(String paramName, Expression expr) {
+    MondrianModel model = (MondrianModel) getModel();
+    mondrian.olap.Query monQuery = ((MondrianQueryAdapter)model.getQueryAdapter()).getMonQuery();
+    mondrian.olap.Parameter[] monParams = monQuery.getParameters();
+    for (int i = 0; i < monParams.length; i++) {
+      mondrian.olap.Parameter monParam = monParams[i];
+      int pType = monParam.getCategory();
+      String monParaName = monParam.getName();
+      if (paramName.equals(monParaName)) {
+
+        // found the parameter with the given name in the query
+        switch (pType) {
+
+          case Category.Numeric :
+            if (expr instanceof DoubleExpr) {
+              double d = ((DoubleExpr) expr).getValue();
+              monParam.setValue(new Double(d));
+            } else if (expr instanceof IntegerExpr) {
+              int ii = ((IntegerExpr) expr).getValue();
+              monParam.setValue(new Double(ii));
+            } else {
+              // wrong parameter type
+              String str = "wrong Numeric parameter type " + paramName + expr.getClass().toString();
+              logger.error(str);
+              throw new java.lang.IllegalArgumentException(str);
+            }
+            break;
+
+          case Category.String :
+            if (expr instanceof StringExpr) {
+              String s = ((StringExpr) expr).getValue();
+              monParam.setValue(s);
+            } else {
+              // wrong parameter type
+              String str = "wrong String parameter type " + paramName + expr.getClass().toString();
+              logger.error(str);
+              throw new java.lang.IllegalArgumentException(str);
+            }
+
+            break;
+
+          case Category.Member :
+            if (expr instanceof MondrianMember) {
+              MondrianMember m = (MondrianMember) expr;
+              monParam.setValue(m.getMonMember());
+            } else {
+              // wrong parameter type
+              String str = "wrong Member parameter type " + paramName + expr.getClass().toString();
+              logger.error(str);
+              throw new java.lang.IllegalArgumentException(str);
+            }
+            break;
+        }
+        model.fireModelChanged();
+        return;
+      }
+    }
+  }
+
+  /**
+   * @return Map containing parameter names (= keys) and strings to display value (= value)
+   * @see com.tonbeller.jpivot.olap.navi.SetParameter#getDisplayValues()
+   */
+  public Map getDisplayValues() {
+    Map map = new Hashtable();
+    MondrianModel model = (MondrianModel) getModel();
+    mondrian.olap.Query monQuery = ((MondrianQueryAdapter)model.getQueryAdapter()).getMonQuery();
+    mondrian.olap.Parameter[] monParams = monQuery.getParameters();
+    for (int i = 0; i < monParams.length; i++) {
+      mondrian.olap.Parameter monParam = monParams[i];
+      int pType = monParam.getCategory();
+      String monParaName = monParam.getName();
+      Object value = monParam.getValue();
+      switch (pType) {
+        case Category.Numeric :
+          map.put(monParaName, value.toString());
+          break;
+        case Category.String :
+          map.put(monParaName, value);
+          break;
+        case Category.Member :
+          map.put(monParaName, ((mondrian.olap.Member) value).getCaption());
+          break;
+      }
+    }
+
+    return map;
+  }
+
+} // MondrianSetParameter

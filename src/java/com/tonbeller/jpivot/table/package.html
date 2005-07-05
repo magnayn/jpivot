@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+Copyright goes here
+-->
+</head>
+<body bgcolor="white">
+
+Renders an OLAP Table.
+
+<h2>Table Component and Extensions</h2>
+
+<img src="doc-files/extensions.gif">
+<p>
+The TableComponent is extended thru TableComponentExtensions. The plain table component
+w/o extensions paints the table w/o any navigations. The extensions add UI elements like
+expand / collapse buttons and RequestListeners to respond on user actions.
+<p>
+An extension is initialized
+once when the compnent is created. During initialization it may register decorators with
+the renderer and/or RequestListeners with the table component. The extensions are listed
+in confix.xml
+
+<h2>Renderer</h2>
+
+The TableRenderer creates a DOM representation of the olap data. In the GOF builder pattern, it
+plays the role of the director. It delegates the construction of elements like cells, axes etc to
+PartBuilders. PartBuilder may be decorated (mostly by extensions).
+<p>
+<img src="doc-files/renderer.gif">
+
+
+
+<h2>Axes</h2>
+<img src="doc-files/axes.gif">
+
+
+
+<h2>Spans and Axes</h2>
+
+Axes are seen as a matrix of spans, the axes of this matrix are
+positions and hierarchies. For a row-axis, the positions are the rows, the hierarchies
+are the columns, for a column-axis its vice versa.
+
+<p>
+<img src="doc-files/spancalc.gif">
+
+
+<h2>How to add a CellBuilder extension</h2>
+
+Instead of deriving from CellBuilder you better create a {@link TableComponentExtension} by
+deriving from {@link TableComponentExtensionSupport}. In its initialize() method you
+add a decorator to the tables CellBuilder. The decorator will extend {@link CellBuilderDecorator}.
+Finally you register the extension in jpivot/table/config.xml
+<p>Example Extension:
+<pre>
+public class MyTableExtension extends TableComponentExtensionSupport {
+
+  public static final String ID = "myextension";
+
+  public String getId() {
+    return ID;
+  }
+
+  public void initialize(RequestContext context, TableComponent table) throws Exception {
+    super.initialize(context, table);
+    MyCellBuilderDecorator cbd = new MyCellBuilderDecorator(table.getCellBuilder());
+    table.setCellBuilder(cbd);
+  }
+  ...
+}
+</pre>
+The ID is used to access the extension from JSP pages via JSTL Expression Language.
+
+<p>Example of a CellBuilderDecorator:
+
+<pre>
+public class MyCellBuilderDecorator extends CellBuilderDecorator {
+
+  public MyCellBuilderDecorator(CellBuilder delegate) {
+    super(delegate);
+  }
+
+  public Element build(Cell cell, boolean even) {
+    Element el = super.build(cell, even);
+
+    // add your attributes or children here
+
+    return el;
+  }
+
+  public void startBuild(RequestContext context) {
+    super.startBuild(context);
+    // initialisation stuff goes here
+  }
+
+  public void stopBuild() {
+    // clean up stuff goes here
+    super.stopBuild();
+  }
+}
+</pre>
+
+<p>Example registering the extension with the table component in config.xml:
+
+<pre>
+&lt;table class="com.tonbeller.jpivot.table.TableComponent"&gt;
+  &lt;cellBuilder class="com.tonbeller.jpivot.table.CellBuilderImpl"/&gt;
+  ...
+  &lt;extension class="my.package.MyTableExtension"/&gt;
+&lt;/table&gt;
+</pre>
+
+
+</body>
+</html>
