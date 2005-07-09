@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--
+
+demo tasks for tags styles
+-->
+
+
+<project name="tags" default="tags2tld" basedir=".">
+
+  <target name="tags2tld" description="Create TLD">
+    <style basedir="${basedir}"
+           destdir="${basedir}"
+           style="${basedir}/tags2tld.xsl"
+           extension=".tld">
+             <include name="**/*-tags.xml" />
+    </style>
+  </target>
+
+  <target name="tags2html" description="Create documentation">
+    <style basedir="${basedir}"
+           destdir="${basedir}"
+           style="${basedir}/tags2html.xsl"
+           extension=".html">
+             <include name="**/*-tags.xml" />
+             <param name="lang" expression="de"/>
+    </style>
+  </target>
+
+</project>
+
+
