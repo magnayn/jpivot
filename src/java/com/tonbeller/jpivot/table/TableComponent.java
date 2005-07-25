@@ -235,9 +235,13 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
     }
     return document;
   }
+  
+  protected Result updateOlapModel() throws Exception {
+    return olapModel.getResult();
+  }
 
   private Element render2(RequestContext context) throws Exception {
-    this.result = olapModel.getResult();
+    this.result = updateOlapModel();
     this.cellIterator = result.getCells().iterator();
     this.dimCount = result.getAxes().length;
 
