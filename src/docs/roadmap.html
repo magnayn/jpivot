@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>JPivot Roadmap</title>
+<style type="text/css">
+body, table {
+  background-color : #ffffff;
+  color : Black;
+  font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+}
+h1,h2,h3,h4,th {
+  padding: 2pt;
+  background-color: #DEE3EF
+}
+.cost, .prio {
+  font-style: italic;
+}
+.menu {
+  text-align: right;
+}
+
+</style>
+</head>
+<body>
+
+<div class="menu">
+[ <a href="http://jpivot.sourceforge.net">jpivot home</a>
+| <a href="http://cvs.sourceforge.net/viewcvs.py/*checkout*/jpivot/jpivot/src/docs/roadmap.html">this document</a>
+| <a href="http://sourceforge.net/projects/jpivot">project page</a> ]
+</div>
+
+<h2>JPivot Roadmap</h2>
+
+This document shall help to coordinate the future development of JPivot. 
+It will list features and enhancements that would be desireable to 
+make JPivot more useful. These may include new functionality, integrating
+with other software, it may list bugs that have to be fixed, missing 
+documentation and everything else should be done in the JPivot project. 
+<p>
+For each task we should try to estimate the effort, prioritize it, and
+list developers who want to implement it.
+<p>
+Community feedback about this document is welcome, those with CVS access
+can modify it directly as it is viewed directly from the CVS repository.
+
+<!--  ******************************************************************* -->
+
+<h3>Split JPivot into <code>model</code> and <code>view</code> Projects</h3>
+
+<div class="cost">Effort: medium</div>
+<div class="prio">Priority: medium</div>
+<p>
+
+The navigation part of JPivot could be used in other OLAP frontends too, e.g.
+in a swing based (like <a href="http://sourceforge.net/projects/rubik/">Rubic</a>).
+There are two tasks
+<ul>
+  <li>Split the sourcecode and create the build.xml for both subprojects</li>
+  <li>Remove dependencies</li>
+</ul>
+There are known dependencies from the drill-through implementations to the wcf
+table model interface currently. Here the drill through model extension should
+define its own table model which will be implemented by the mondrian package
+and adapted to the wcf table model in the gui.
+
+<!--  ******************************************************************* -->
+
+<h3>JBoss Portal implementation of JPivot</h3>
+
+<div class="cost">Effort: medium</div>
+<div class="prio">Priority: medium</div>
+<p>
+Provide documentation (and possibly code) for how to run JPivot inside
+an JSR 168 compatible portal. 
+
+<!--  ******************************************************************* -->
+
+<h3>Enhanced drill-through reporting</h3>
+
+<div class="cost">Effort: high</div>
+<div class="prio">Priority: medium</div>
+<p>
+An enhanced drill-thru report which will do 
+multi-column sorting and grouping an makes a more focused report 
+by eliminating (hiding) redundant columns (ie all the row / 
+column hierarchies and filters for which all rows of the report will be 
+the same).
+<p>
+Care should be taken regarding to performance and memory usage. The current drill-through 
+implementation can handle thousands of rows with no problem (e.g. drill through
+in a top-level foodmart cell). Maybe make the new version optional.
+
+<!--  ******************************************************************* -->
+
+<h3>Enhanced Navigation</h3>
+
+<div class="cost">Effort: high</div>
+<div class="prio">Priority: medium</div>
+<p>
+Access to some navigation functions and addition of some new 
+functions (eg ?expand / collapse all members of a level?, 
+?simultaneous drill down on both row & column?, ..) 
+via ?mouse right-click? in dimension / member headers and cells. 
+
+<!--  ******************************************************************* -->
+
+<h3>Drag &amp; Drop</h3>
+
+<div class="cost">Effort: high</div>
+<div class="prio">Priority: medium</div>
+<p>
+Drag &amp; drop functionality in the pivot chart for adding / removing dimensions to rows / columns 
+
+<!--  ******************************************************************* -->
+ 
+<h3>User interface for Bookmarks</h3>
+
+<div class="cost">Effort: medium</div>
+<div class="prio">Priority: medium</div>
+<p>
+Some other bits, a bookmark interface, enhancements to bookmark functionality,? 
+
+<p>
+Where will the bookmarks be stored (Database, Filesystem)?
+
+<!--  ******************************************************************* -->
+
+<h3>Improved Documentation</h3>
+
+<div class="cost">Effort: medium</div>
+<div class="prio">Priority: medium</div>
+<p>
+Its too difficult for new users to get JPivot up with their own data.
+A step-by-step tutorial would be great.
+
+<!--  ******************************************************************* -->
+
+<h3>Port to BEA Weblogic and IBM Websphere</h3>
+
+<div class="cost">Effort: medium</div>
+<div class="prio">Priority: medium</div>
+<p>
+Its not known if JPivot runs on these popular webservers.
+
+<!--  ******************************************************************* -->
+
+<hr noshade="noshade">
+<div class="menu">
+<img src="http://sourceforge.net/sflogo.php?group_id=58645&amp;type=4" width="125" height="37" border="0" alt="SourceForge.net Logo"/>
+</div>
+
+</body>
+</html>
