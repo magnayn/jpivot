@@ -1,0 +1,8 @@
+<portlet-app>
+   <portlet>
+      <portlet-name>JPivotPortletDemo</portlet-name>
+      <config-name>StrutsPortlet</config-name>
+      <security></security>
+      
+   </portlet>
+</portlet-app>

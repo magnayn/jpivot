@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<portlet-app id="JPivot-Demo" version="1.0">
+   <portlet id="JPivotPortletDemo">
+      <portlet-name>JPivotPortletDemo</portlet-name>
+      <portlet-class>com.tonbeller.jpivot.jboss.portlet.JPivotPortlet</portlet-class>
+      <!--
+      <supported-locale>en</supported-locale>
+      <resource-bundle>Resource</resource-bundle>
+      -->
+      <supports>
+         <mime-type>*</mime-type>
+         <portlet-mode>VIEW</portlet-mode>
+      </supports>
+	  <init-param>
+	     <name>ServletContextProvider</name>
+	     <value>org.jboss.portal.bridge.JBossServletContextProvider</value>
+	  </init-param>
+      <portlet-info>
+         <title>JPivot portlet</title>
+      </portlet-info>
+   </portlet>
+</portlet-app>

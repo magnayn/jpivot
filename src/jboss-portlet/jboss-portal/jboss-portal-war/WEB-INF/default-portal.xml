@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<portal>
+   <portal-name>default</portal-name>
+   <properties>
+      <!-- Set the default window for request of the type /a/b/c -->
+      <property>
+         <name>org.jboss.portal.property.action</name>
+         <value>CMSPortletWindow</value>
+      </property>
+      <!-- Set the layout for the default portal -->
+      <!-- see also portal-layouts.xml -->
+ 	  <property>
+         <name>org.jboss.portal.property.layout</name>
+         <value>2ColumnLayout</value>
+      </property>
+      <!--         <value>nodesk</value>		-->
+      <!-- set the default render set name (used by the render tag in layouts) -->
+      <!-- see also portal-renderSet.xml -->
+      <property>
+         <name>org.jboss.portal.property.renderSet</name>
+		 <value>divRenderer</value>
+         <!-- <value>emptyRenderer</value>  -->
+      </property>
+      <!-- set the default strategy name (used by the strategy interceptor) -->
+      <!-- see also portal-strategies.xml -->
+      <property>
+         <name>org.jboss.portal.property.strategy</name>
+         <value>default</value>
+      </property>
+      
+   </properties>
+   <supported-modes>
+      <mode>view</mode>
+      <mode>edit</mode>
+      <mode>help</mode>
+   </supported-modes>
+   <supported-window-states>
+      <window-state>normal</window-state>
+      <window-state>minimized</window-state>
+      <window-state>maximized</window-state>
+   </supported-window-states>
+   <pages>
+      <default-page>default</default-page>
+      <page>
+         <page-name>default</page-name>
+         <window>
+            <window-name>CMSPortletWindow</window-name>
+            <instance-ref>portal.CMSPortlet.CMSPortletInstance</instance-ref>
+            <region>center</region>
+            <height>0</height>
+         </window>
+         <window>
+            <window-name>UserPortletWindow1</window-name>
+            <instance-ref>portal.UserPortlet.UserPortletInstance</instance-ref>
+            <region>left</region>
+            <height>0</height>
+         </window>
+         <window>
+            <window-name>CatalogPortletWindow1</window-name>
+            <instance-ref>portal.CatalogPortlet.CatalogPortletInstance</instance-ref>
+            <region>left</region>
+            <height>1</height>
+         </window>
+      </page>
+      <page>
+         <page-name>admin</page-name>
+         <window>
+            <window-name>AdminCMSPortletWindow</window-name>
+            <instance-ref>portal.AdminCMSPortlet.AdminCMSPortletInstance</instance-ref>
+            <region>center</region>
+            <height>2</height>
+         </window>
+         <window>
+            <window-name>UserPortletWindow2</window-name>
+            <instance-ref>portal.UserPortlet.UserPortletInstance</instance-ref>
+            <region>left</region>
+            <height>0</height>
+         </window>
+         <window>
+            <window-name>RolePortletWindow</window-name>
+            <instance-ref>portal.RolePortlet.RolePortletInstance</instance-ref>
+            <region>left</region>
+            <height>1</height>
+         </window>
+         <window>
+            <window-name>PermissionPortletWindow</window-name>
+            <instance-ref>portal.PermissionPortlet.PermissionPortletInstance</instance-ref>
+            <region>left</region>
+            <height>1</height>
+         </window>
+      </page>
+      <page>
+         <page-name>test</page-name>
+         <window>
+            <window-name>DefaultPortletWindow</window-name>
+            <instance-ref>portal.DefaultPortlet.DefaultPortletInstance</instance-ref>
+            <region>center</region>
+            <height>0</height>
+         </window>
+         <window>
+            <window-name>TestPortletWindow</window-name>
+            <instance-ref>portal.TestPortlet.TestPortletInstance</instance-ref>
+            <region>left</region>
+            <height>0</height>
+         </window>
+         <window>
+            <window-name>PreferencesPortletWindow</window-name>
+            <instance-ref>portal.PreferencesPortlet.PreferencesPortletInstance</instance-ref>
+            <region>left</region>
+            <height>1</height>
+         </window>
+         <window>
+            <window-name>ContentPortletWindow1</window-name>
+            <instance-ref>portal.ContentPortlet.ContentPortletInstance</instance-ref>
+            <region>left</region>
+            <height>2</height>
+         </window>
+      </page>
+   </pages>
+</portal>

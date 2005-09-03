@@ -1,0 +1,19 @@
+<pages>
+   <portal-name>default</portal-name>
+   <page>
+      <page-name>JPivotDemo</page-name>
+      <window>
+         <window-name>JPivotPortletDemoWindow</window-name>
+         <instance-ref>jpivotdemo.JPivotPortletDemo.JPivotPortletDemoInstance</instance-ref>
+         <default>true</default>
+         <region>center</region>
+         <height>0</height>
+      </window>
+      <window>
+         <window-name>JPivotCatalogPortletWindow</window-name>
+         <instance-ref>portal.CatalogPortlet.CatalogPortletInstance</instance-ref>
+         <region>left</region>
+         <height>1</height>
+      </window>
+   </page>
+</pages>

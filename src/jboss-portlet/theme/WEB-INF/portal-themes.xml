@@ -1,0 +1,11 @@
+<themes>
+    <theme>
+        <name>jpivotTheme</name>
+		<link rel="stylesheet" type="text/css" href="/mdxtable.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="/mdxnavi.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="/wcf/xform.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="/wcf/xtable.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="/wcf/xtree.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="/simple-sample.css" media="screen" />
+    </theme>
+</themes>

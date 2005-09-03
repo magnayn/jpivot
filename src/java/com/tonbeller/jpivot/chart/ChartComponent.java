@@ -106,6 +106,8 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 	*/
 	String CHART_SERVLET = "/DisplayChart";
 	final String CHART_SERVLET_KEY = "chartServlet";
+    boolean baseDisplayURLSet = false;
+
 	String filename = null;
 	// chart properties
 	final int DEFAULT_CHART_WIDTH = 500;
@@ -154,7 +156,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 	 * @param id the id of this component
 	 * @param ref a reference to an olap model
 	 */
-	public ChartComponent(String id, Component parent, String ref, RequestContext context) {
+	public ChartComponent(String id, Component parent, String ref, String baseDisplayURL, RequestContext context) {
 		super(id, parent);
 		this.ref = ref;
 
@@ -164,10 +166,15 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 		// extend the controller
 		getDispatcher().addRequestListener(null, null, dispatcher);
 		// optional servlet context parameter for chart servlet location
-		String chartServlet = context.getServletContext().getInitParameter(CHART_SERVLET_KEY);
-		if ( chartServlet != null ) {
-			this.CHART_SERVLET = chartServlet;
-		}
+        String chartServlet = baseDisplayURL;
+		if ( chartServlet == null ) {
+            chartServlet = context.getServletContext().getInitParameter(CHART_SERVLET_KEY);
+		} else {
+            baseDisplayURLSet = true;
+        }
+        if ( chartServlet != null ) {
+            this.CHART_SERVLET = chartServlet;
+        }
 	}
 
 	/**
@@ -584,9 +591,9 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 		document = parser.parse(stream);
 		Element root = document.getDocumentElement();
 		// create url for img tag
-		String graphURL = context.getRequest().getContextPath() +
-					CHART_SERVLET + "?filename=" + filename;
-		Element img = document.createElement("img");
+        String graphURL = getGraphURL(context);
+
+        Element img = document.createElement("img");
 		img.setAttribute("src", graphURL);
 		img.setAttribute("width", new Integer(chartWidth).toString());
 		img.setAttribute("height", new Integer(chartHeight).toString());
@@ -596,6 +603,17 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 
 		return document;
 	}
+
+    public String getGraphURL(RequestContext context) {
+        String graphURL = "";
+        if (baseDisplayURLSet) {
+            graphURL = CHART_SERVLET;
+        } else {
+            graphURL = context.getRequest().getContextPath() + CHART_SERVLET;
+        }
+        graphURL = graphURL + (graphURL.indexOf('?') >= 0 ? "&" : "?") + "filename=" + getFilename();
+        return graphURL;
+    }
 
 	/**
 	 * Writes an image map as a String

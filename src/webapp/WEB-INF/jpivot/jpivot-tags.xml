@@ -119,7 +119,7 @@
       eines table tags ist das clickable fuer alle queries vorhanden, innerhalb eines query-tags
       nur fuer die jeweilige query.
     </descr>
-    <attr rtexpr="false" required="false" name="urlPattern" type="String">
+    <attr rtexpr="true" required="false" name="urlPattern" type="String">
       <descr lang="en">
         DEPRECATED - do not use in conjunction with session parameters because the browser
         back button does not work as expected. Use <tt>page</tt> attribute instead.
@@ -509,6 +509,9 @@ where ([Time].[1997])
     &visible.attr;
     &role.attr;
     &query.attr;
+    <attr type="String" rtexpr="true" required="false" name="baseDisplayURL">
+      <descr lang="en">Base link to chart display servlet. Will be parameterized with '?filename=&lt;temp chart image file name&gt;'</descr>
+    </attr>
   </tag>
     <example><![CDATA[
 <jp:chart id="chart01" query="#{query01}" visible="false"/>

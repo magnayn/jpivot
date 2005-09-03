@@ -1,0 +1,77 @@
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee web-jsptaglibrary_2_0.xsd"
+  version="2.0">
+   <tlib-version>1.1</tlib-version>
+   <jsp-version>2.0</jsp-version>
+   <shortname>JBoss Portal tags</shortname>
+   <info>JBoss Portal tags</info>
+
+   <function>
+      <name>i18n</name>
+      <function-class>org.jboss.portal.core.servlet.jsp.taglib.PortalLib</function-class>
+      <function-signature>java.lang.String getMessage(java.lang.String)</function-signature>
+   </function>
+
+   <function>
+      <name>out</name>
+      <function-class>org.jboss.portal.core.servlet.jsp.taglib.PortalLib</function-class>
+      <function-signature>java.lang.String out(java.lang.String)</function-signature>
+   </function>
+
+   <function>
+      <name>i18nout</name>
+      <function-class>org.jboss.portal.core.servlet.jsp.taglib.PortalLib</function-class>
+      <function-signature>java.lang.String i18nOut(java.lang.String)</function-signature>
+   </function>
+
+   <tag>
+      <name>if</name>
+      <tagclass>org.jboss.portal.core.servlet.jsp.taglib.IfTag</tagclass>
+      <attribute>
+         <name>ctx</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+   
+   <tag>
+      <name>iterate</name>
+      <tagclass>org.jboss.portal.core.servlet.jsp.taglib.IterateTag</tagclass>
+      <attribute>
+         <name>ctx</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+
+   <tag>
+      <name>include</name>
+      <tagclass>org.jboss.portal.core.servlet.jsp.taglib.IncludeTag</tagclass>
+      <attribute>
+         <name>page</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+
+   <tag>
+      <name>error</name>
+      <tagclass>org.jboss.portal.core.servlet.jsp.taglib.ErrorTag</tagclass>
+      <attribute>
+         <name>key</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
+
+   <tag>
+      <name>errors</name>
+      <tagclass>org.jboss.portal.core.servlet.jsp.taglib.ErrorsTag</tagclass>
+   </tag>
+
+   <tag>
+      <name>success</name>
+      <tagclass>org.jboss.portal.core.servlet.jsp.taglib.SuccessTag</tagclass>
+   </tag>
+</taglib>

@@ -1,0 +1,126 @@
+body
+{
+	margin:0px;
+	background-color:#FFFFFF;
+	font-family: Verdana, Arial, Helvetica, Sans-Serif;
+	font-size: 10pt;
+}
+
+/*
+State and WindowMode icons below. This css assumes that all icons are 16x16 and in the following order:
+Normalicon - MinIcon - Maxicon
+So, if a window is minimized, you will see:
+Normalicon - (blank 16x16 space) - Maxicon
+*/
+span.alt {
+display: none;
+}    
+
+a.normalMode {    
+background-image: url(images/portlet_left_top/normal.gif); 
+display: block;
+overflow:hidden;
+width: 16px; /* width of actual icon */ 
+height: 0px;
+padding-top: 16px; /* height of the replacement icon */
+background-repeat: no-repeat; 
+margin-bottom: -16px;
+margin-top: 0px; 
+margin-left: 0px; /* width of the minimize image to this icon's left */
+margin-right: 0px;
+}
+
+a.minimizedMode {    
+background-image: url(images/portlet_left_top/minimize.gif); 
+display:block;
+overflow:hidden;
+width: 16px; /* width of actual icon */ 
+height: 0px; 
+padding-top: 16px; /* height of the replacement icon */
+background-repeat: no-repeat; 
+margin-bottom: 0px;
+margin-top: 0px; 
+margin-left: 16px; /* width of the normal image to this icon's left */
+margin-right: 32px;
+} 
+
+a.maximizedMode {    
+background-image: url(images/portlet_left_top/maximize.gif); 
+display: block;
+overflow:hidden;
+width: 16px; /* width of actual icon */ 
+height: 0px;
+padding-top: 16px; /* height of the replacement icon */
+background-repeat: no-repeat; 
+margin-bottom: 0px;
+margin-top: -16px; /* height of the replacement image */
+margin-left: 32px; /* width of the minimize image to this icon's left */
+margin-right: 16px;
+}
+
+/* fonts */
+.portlet-title:
+{
+	
+}
+
+/* links */
+a:link { color:#0033FF; text-decoration:none; }
+a:visited { color:#0033FF; text-decoration:none; }
+a:active { color:#0033FF; text-decoration:none; }
+a:hover { color:#0033FF; text-decoration:none; }
+
+/* divs */
+div.portlet-region
+{}
+div.portlet-window
+{
+	border: 1px dashed #BBBBBB;
+	margin-bottom: 20px;
+	background-color:#FFFFFF;
+	height:100%;
+}
+
+/* table, td, tr */
+table.portlet-titleBarContainer
+{
+	background-color: #3C78B5;
+	width: 100%;
+	font-weight:bold;
+	color:#FFFFFF;
+}
+table.headerTable
+{
+	background-color:#003366;
+	height: 80px;
+	width:100%;
+}
+table.footerTable
+{
+	background-color:#003366;
+	height: 40px;
+	width:100%;
+	color:#FFFFFF;
+}
+td
+{
+	font-size:12px;
+	vertical-align:top;
+	height:100%;
+}
+td.leftColumn
+{
+	background-color:#FFFFFF;
+}
+td.portlet-titleBarContentRight
+{
+	text-align:right;
+}
+td.portlet-section-alternate
+{
+	background-color:#E6E6E6;
+}
+td.portlet-section-body
+{
+	background-color:#F0F0F0;
+}

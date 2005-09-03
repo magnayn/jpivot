@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE web-app PUBLIC
+   "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+   "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+  <taglib>
+    <taglib-uri>http://www.tonbeller.com/wcf</taglib-uri>
+    <taglib-location>/WEB-INF/wcf/wcf-tags.tld</taglib-location>
+  </taglib>
+  <taglib>
+    <taglib-uri>http://www.tonbeller.com/jpivot</taglib-uri>
+    <taglib-location>/WEB-INF/jpivot/jpivot-tags.tld</taglib-location>
+  </taglib>
+
+</web-app>

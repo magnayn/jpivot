@@ -1,0 +1,53 @@
+td.xform-error, 
+span.xform-error,
+td.xform-label, 
+td.xform-number, 
+td.xform-input, 
+td.xform-both,
+td.xform-buttons,
+th.xform-title,
+th.xform-subtitle,
+td.xform-close-button {
+  background-color : #ffffff;
+  color : Black;
+  font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+  font-size: 0.8em;
+  text-align: left;
+  vertical-align: center;
+}
+
+td.xform-error, 
+span.xform-error {
+  font-weight: bold;
+  color : red;
+}
+
+td.xform-label, td.xform-number,td.xform-input, td.xform-both {
+  vertical-align: top;
+}
+
+td.xform-number {
+  text-align: right;
+}
+
+
+th.xform-title,
+td.xform-close-button {
+  background-color : #DEE3EF;
+  font-weight: bold;
+}
+
+th.xform-subtitle {
+  background-color : #EEF3FF;
+  font-weight: bold;
+}
+
+td.xform-close-button {
+  text-align: right;
+}
+
+textarea.xform-textarea, 
+span.xform-textarea {
+  font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+  font-size: 0.9em;
+}
