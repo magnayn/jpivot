@@ -455,8 +455,8 @@
         <include name="jpivot.war"/>
         <include name="docs/**"/>
       </zipfileset>
-      <zipfileset dir="${src.home}" defaultexcludes="false" prefix="jpivot-${jpivot.version}/src"/>
-      <zipfileset dir="${lib.home}" defaultexcludes="false" prefix="jpivot-${jpivot.version}/lib">
+      <zipfileset dir="${src.home}" defaultexcludes="true" prefix="jpivot-${jpivot.version}/src"/>
+      <zipfileset dir="${lib.home}" defaultexcludes="true" prefix="jpivot-${jpivot.version}/lib">
         <include name="*-src.jar"/>
       </zipfileset>
       <zipfileset dir="${basedir}" prefix="jpivot-${jpivot.version}">
@@ -518,14 +518,15 @@
         <include name="jpivot-portlet-${jpivot.version}-theme.war"/>
         <include name="docs/**"/>
       </zipfileset>
-        <zipfileset dir="${src.home}" defaultexcludes="false" prefix="jpivot-${jpivot.version}/src"/>
-        <zipfileset dir="${lib.home}" defaultexcludes="false" prefix="jpivot-${jpivot.version}/lib">
+        <zipfileset dir="${src.home}" defaultexcludes="true" prefix="jpivot-${jpivot.version}/src"/>
+        <zipfileset dir="${lib.home}" defaultexcludes="true" prefix="jpivot-${jpivot.version}/lib">
           <include name="*-src.jar"/>
         </zipfileset>
       <zipfileset dir="${basedir}" prefix="jpivot-portlet-${jpivot.version}">
         <include name="build.xml"/>
         <include name=".project"/>
         <include name=".classpath"/>
+        <include name="*.example"/>
       </zipfileset>
 	  <zipfileset dir="${src.home}/jboss-portlet" prefix="jpivot-portlet-${jpivot.version}">
 	    <include name="*.txt"/>
