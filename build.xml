@@ -4,7 +4,21 @@
 
 <!--
      ======================================================================
-     requires in $ANT_HOME/lib
+	 This script depends on a repository of jars and a checkout/build of WCF
+	 to run the build and tests.
+	 
+	 There is a separate module in JPivot CVS for WCF. It needs to be checked out
+	 and built via the "dist" target in order for this script to be successful.
+	 Set the "wcf.dist" property to the dist directory within the WCF structure.
+	 
+	 There is a separate module in JPivot CVS, jpivot_repository, that contains
+	 the right jars and structure. 
+
+	 There are a set of targets named portlet-* in this script to build and deploy
+	 the JBoss JPivot portlet. See src/jboss-portlet for more details.
+	 
+	 
+     For tests to run: requires in $ANT_HOME/lib
        junit.jar
        bcel-5.1 from jakarta.apache.org
        http://ant-contrib.sourceforge.net/
@@ -20,10 +34,15 @@
   <property name="src.home"             value="${basedir}/src"/>
   <property name="lib.home"             value="${basedir}/lib"/>
 
+  <property name="repository.home"      value="${basedir}/../jpivot_repository"/>
+
   <!-- override these in your build.properties -->
   <property name="catalina.home"        value="${repository.home}/jakarta-tomcat-4.1.31"/>
-  <property name="xalan.home"           value="${repository.home}/xalan-j_2_6_0"/>
+  <property name="xalan.home"           value="${repository.home}/xalan-j_2_7_0"/>
+
+  <!-- Use MySQL for testing with Mondrian
   <property name="mysql.home"           value="${repository.home}/mysql-connector-java-3.1.6"/>
+  -->
 
   <!-- the following are included in lib/ directory (no need to override) -->
   <property name="mondrian.version"     value="pilot"/>
@@ -38,7 +57,7 @@
   <property name="dbcp.home"            value="${repository.home}/commons-dbcp-1.2.1"/>
 
   <property name="regexp.home"          value="${repository.home}/jakarta-regexp-1.2"/>
-  <property name="junit.home"           value="${repository.home}/junit3.8.1"/>
+  <property name="junit.home"           value="${repository.home}/junit-3.8.1"/>
   <property name="log4j.home"           value="${repository.home}/jakarta-log4j-1.2.8"/>
   <property name="jfreechart.home"      value="${repository.home}/jfreechart-0.9.21"/>
   <property name="jsf.home"             value="${repository.home}/jsf-1_1"/>
@@ -50,6 +69,9 @@
   <property name="resgen.home"          value="${repository.home}/resgen/lib"/>
 
   <property name="wcf.dist"             value="${basedir}/../wcf/dist"/>
+
+  <property name="jboss.deploy"			value="${jboss.home}/server/default/deploy"/>
+  <property name="jboss-portal.deploy"	value="${jboss.deploy}/jboss-portal.sar"/>
 
 <!-- ==================== File and Directory Names ======================== -->
 
@@ -102,9 +124,29 @@
     <path refid="compile.classpath"/>
     <pathelement location="${build.home}/web/WEB-INF/classes"/>
     <pathelement location="${build.home}/junit/classes"/>
-    <!-- use mysql for testing -->
+    <!-- use mysql for testing
     <fileset dir="${mysql.home}">
       <include name="mysql*.jar"/>
+    </fileset>
+     -->
+  </path>
+
+  <!-- classpath for portal build -->
+  <path id="portlet.classpath">
+  	
+    <path refid="compile.classpath"/>
+  	
+    <pathelement location="${build.home}/web/WEB-INF/classes"/>
+  	
+    <fileset dir="${jboss-portal.deploy}/lib">
+      <include name="portal-common-lib.jar"/>
+      <include name="portal-core-lib.jar"/>
+      <include name="portlet-api-lib.jar"/>
+      <include name="portal-common-lib.jar"/>
+      <include name="portal-portlet-lib.jar"/>
+      <include name="portal-bridge-lib.jar"/>
+      <include name="portal-server-lib.jar"/>
+      <include name="portals-bridges-common-0.2.jar"/>
     </fileset>
   </path>
 
@@ -149,7 +191,7 @@
       </fileset>
 
       <fileset dir="${junit.home}">
-        <include name="junit.jar"/>
+        <include name="*.jar"/>
       </fileset>
 
       <fileset dir="${jfreechart.home}">
@@ -288,6 +330,35 @@
 
   </target>
 
+  <target name="portlet-prepare" description="Set up for JBoss portlet build">
+
+    <!-- Create build directories as needed -->
+    <mkdir dir="${build.home}/jboss-portlet/web/WEB-INF/classes"/>
+    <mkdir dir="${build.home}/jboss-portlet/web/WEB-INF/lib"/>
+
+    <!-- copy binaries  -->
+    <copy todir="${build.home}/jboss-portlet/web">
+      <fileset dir="${src.home}/webapp">
+        <exclude name="**/*.jsp"/>
+        <exclude name="WEB-INF/web.xml"/>
+        <exclude name="**/*.properties"/>
+      </fileset>
+    </copy>
+    
+
+    <!-- copy text files -->
+    <copy todir="${build.home}/jboss-portlet/web">
+      <fileset dir="${src.home}/jboss-portlet/webapp"/>
+      <fileset dir="${build.home}/web">
+        <include name="**/*.tld"/>
+	  </fileset>
+      <filterset>
+        <filter token="VERSION" value="${jpivot.version}"/>
+      </filterset>
+    </copy>
+
+  </target>
+
 <!-- ==================== All Target ====================================== -->
 
   <target name="all" depends="clean,compile"
@@ -328,11 +399,34 @@
     </copy>
   </target>
 
+  <target name="portlet-compile" depends="compile,portlet-prepare" description="Compile portlet Java sources">
+
+    <!-- Compile Java classes as necessary -->
+    <mkdir dir="${build.home}/jboss-portlet"/>
+    <mkdir dir="${build.home}/jboss-portlet/web/WEB-INF/lib"/>
+    <javac destdir="${build.home}/jboss-portlet/web/WEB-INF/classes"
+             debug="${compile.debug}"
+       deprecation="${compile.deprecation}"
+          optimize="${compile.optimize}">
+
+       <src path="${src.home}/jboss-portlet/java"/>
+       <classpath refid="portlet.classpath"/>
+    </javac>
+
+    <!-- Copy application resources -->
+    <copy  todir="${build.home}/jboss-portlet/web/WEB-INF/classes">
+      <fileset dir="${src.home}/jboss-portlet/java">
+        <exclude name="**/*.java"/>
+        <exclude name="**/package.html"/>
+        <exclude name="**/doc-files/**"/>
+      </fileset>
+    </copy>
+  </target>
 <!-- ==================== Archives Target ===================================== -->
 
   <target name="archives" description="create distribution">
     <!-- create jpivot.jar -->
-    <jar jarfile="${build.home}/web/WEB-INF/lib/jpivot.jar">
+    <jar jarfile="${build.home}/jpivot.jar">
       <fileset dir="${build.home}/web/WEB-INF/classes"/>
     </jar>
 
@@ -343,6 +437,17 @@
         <exclude name="**/WEB-INF/classes/**"/>
       </fileset>
     </jar>
+    <zip destfile="${build.home}/jpivot.war" update="true">
+      <zipfileset dir="${build.home}" prefix="WEB-INF/lib">
+        <include name="jpivot.jar"/>
+      </zipfileset>
+    </zip>
+
+  </target>
+
+<!-- ==================== Dist Target ===================================== -->
+
+  <target name="dist" depends="clean,compile,javadoc,projdocs,archives" description="Create binary distribution">
 
     <!-- Create distribution -->
     <zip destfile="${dist.home}/jpivot-${jpivot.version}.zip" update="false" duplicate="fail">
@@ -356,16 +461,82 @@
       </zipfileset>
       <zipfileset dir="${basedir}" prefix="jpivot-${jpivot.version}">
         <include name="build.xml"/>
+        <include name="*.example"/>
         <include name=".project"/>
         <include name=".classpath"/>
+        <include name="LICENSE.txt"/>
       </zipfileset>
     </zip>
 
   </target>
 
-<!-- ==================== Dist Target ===================================== -->
+<!-- ==================== Portlet Packaging and Deployment Targets ===================================== -->
 
-  <target name="dist" depends="clean,compile,tests,javadoc,projdocs,archives" description="Create binary distribution"/>
+  <target name="portlet-archive" description="create portlet distribution" depends="portlet-compile,archives">
+
+    <!-- Create application portlet WAR file -->
+    <jar jarfile="${build.home}/jpivot-portlet-${jpivot.version}.war">
+      <fileset dir="${build.home}/web">
+        <!-- <include name="**/WEB-INF/lib/**"/> -->
+        <exclude name="**/WEB-INF/classes/**"/>
+        <exclude name="**/WEB-INF/lib/log4j*.jar"/>
+      </fileset>
+      <fileset dir="${build.home}/jboss-portlet/web">
+      </fileset>
+    </jar>
+    <zip destfile="${build.home}/jpivot-portlet-${jpivot.version}.war" update="true">
+      <zipfileset dir="${build.home}" prefix="WEB-INF/lib">
+        <include name="jpivot.jar"/>
+      </zipfileset>
+    </zip>
+
+    <!-- Create JPivot portlet theme WAR file -->
+    <jar jarfile="${build.home}/jpivot-portlet-${jpivot.version}-theme.war">
+      <fileset dir="${src.home}/jboss-portlet/theme"/>
+    </jar>
+
+  </target>
+
+  <target name="portlet-deploy" description="Deploy the portlet" depends="portlet-archive">
+    <mkdir dir="${jboss.deploy}/jpivot-portlet-${jpivot.version}.war"/>
+
+    <copy  todir="${jboss.deploy}">
+      <fileset dir="${build.home}">
+        <include name="jpivot-portlet-theme.war"/>
+      </fileset>
+    </copy>
+	
+    <unzip src="${build.home}/jpivot-portlet-${jpivot.version}.war" dest="${jboss.deploy}/jpivot-portlet-${jpivot.version}.war"/>
+  </target>
+
+  <!-- ==================== Portlet Distribution packaging ========================= -->
+
+  <target name="portlet-dist" description="Package the portlet for distribution" depends="portlet-archive">
+    <zip destfile="${dist.home}/jpivot-portlet-${jpivot.version}.zip" update="false" duplicate="fail">
+      <zipfileset dir="${build.home}" prefix="jpivot-portlet-${jpivot.version}" >
+        <include name="jpivot-portlet-${jpivot.version}.war"/>
+        <include name="jpivot-portlet-${jpivot.version}-theme.war"/>
+        <include name="docs/**"/>
+      </zipfileset>
+        <zipfileset dir="${src.home}" defaultexcludes="false" prefix="jpivot-${jpivot.version}/src"/>
+        <zipfileset dir="${lib.home}" defaultexcludes="false" prefix="jpivot-${jpivot.version}/lib">
+          <include name="*-src.jar"/>
+        </zipfileset>
+      <zipfileset dir="${basedir}" prefix="jpivot-portlet-${jpivot.version}">
+        <include name="build.xml"/>
+        <include name=".project"/>
+        <include name=".classpath"/>
+      </zipfileset>
+	  <zipfileset dir="${src.home}/jboss-portlet" prefix="jpivot-portlet-${jpivot.version}">
+	    <include name="*.txt"/>
+	  </zipfileset>
+    </zip>
+  </target>
+
+  <!-- ==================== Portlet Demo packaging:TBD  ========================= -->
+
+  <target name="portlet-demo-dist" description="Package the portlet for the demonstration distribution" depends="portlet-archive">
+  </target>
 
 <!-- ==================== ProjDocs Target ================================== -->
 
@@ -390,7 +561,7 @@
       </fileset>
     </copy>
 
-    <java jar="${xalan.home}/bin/xalan.jar" fork="true">
+    <java jar="${xalan.home}/xalan.jar" fork="true">
       <jvmarg value="-Duser.language=en"/>
       <jvmarg value="-Duser.region=US"/>
       <arg value="-in"/>
