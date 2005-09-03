@@ -73,7 +73,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     for (int i = 0; i < k; i++) {
       mondrian.olap.Member monMember = monMembers[i];
       // do not add, if not visible
-      Object visible = monMember.getPropertyValue(mondrian.olap.Property.PROPERTY_VISIBLE);
+      Object visible = monMember.getPropertyValue("$visible");
       if (!Boolean.FALSE.equals(visible)) {
         aMem.add(model.addMember(monMembers[i]));
       }
@@ -90,7 +90,8 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
         // and is it visible?
         // if yes add it
         if (monMem.getHierarchy().equals(monHier)) {
-          Object visible = monMem.getPropertyValue(mondrian.olap.Property.PROPERTY_VISIBLE);
+            Object visible = monMem.getPropertyValue("$visible");
+          //Object visible = monMem.getPropertyValue(mondrian.olap.Property.PROPERTY_VISIBLE);
           if (Boolean.FALSE.equals(visible)) {
             continue;
           }
