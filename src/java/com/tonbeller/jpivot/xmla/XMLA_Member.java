@@ -24,6 +24,7 @@ import com.tonbeller.jpivot.olap.model.Dimension;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Level;
 import com.tonbeller.jpivot.olap.model.Member;
+import com.tonbeller.jpivot.olap.model.OlapDiscoverer;
 import com.tonbeller.jpivot.olap.model.OlapException;
 import com.tonbeller.jpivot.olap.model.Property;
 import com.tonbeller.jpivot.olap.model.Visitor;
@@ -96,15 +97,19 @@ public class XMLA_Member implements Member, MDXMember, Exp {
     this.level = lev;
     this.isCalculated = isCalculated;
 
+    logger.debug("<init>: uName - " + uName + ", level - " + lev + ", isCalculated - " + isCalculated);
+    
     model.addMember(this);
 
-    if (!model.isSAP() || isCalculated) {
+    if (model.isMicrosoft() || isCalculated) {
       parentUniqueName = StringUtil.parentFromUName(uName);
       if (parentUniqueName == null) {
         parent = null;
         parentOk = true;
+        logger.debug("parentUniqueName from uName: " + uName + " == null");
       } else {
         parent = (XMLA_Member) model.lookupMemberByUName(parentUniqueName);
+        logger.debug("lookupMemberByUName(" + parentUniqueName + "): " + parent);
         if (parent != null)
           parentOk = true;
       }
@@ -118,21 +123,24 @@ public class XMLA_Member implements Member, MDXMember, Exp {
       // get the dimension from the unique name
       String dimUname = StringUtil.dimFromUName(uniqueName);
       XMLA_Dimension dim = model.lookupDimByUName(dimUname);
+      logger.debug("looked up dimension name: " + uniqueName + " = " + dim);
       if (dim != null) {
         if (dim.isMeasure()) {
           // assign measures level
           Hierarchy[] hiers = dim.getHierarchies();
           Level[] levs = hiers[0].getLevels();
           level = (XMLA_Level) levs[0];
+          logger.debug("isMeasure: " + level);
         } else {
           // normal dimension
           // if it is NOT SAP (no parent supported) and
           //  if the unique name contains a parent - get the level from parent
           XMLA_Member pm = null;
-          if (!model.isSAP() && parentUniqueName != null) {
+          if (model.isMicrosoft() && parentUniqueName != null) {
             pm = (XMLA_Member) model.lookupMemberByUName(parentUniqueName);
             if (pm != null)
               level = ((XMLA_Level) pm.getLevel()).getChildLevel();
+            logger.debug("normal dimension: " + level);
           }
           if (level == null) {
             // don't know how to find level
@@ -140,11 +148,14 @@ public class XMLA_Member implements Member, MDXMember, Exp {
             Hierarchy hier = null;
             if (pm != null) {
               hier = pm.getHierarchy();
+              logger.debug("hierarchy from member: " + hier);
             } else {
               String hierUname = dim.getDefaultHier();
               hier = model.lookupHierByUName(hierUname);
+              logger.debug("hierarchy from DefaultHier: " + hier);
             }
             if (hier != null) {
+              logger.debug("trying default hierarchy: " + hier);
               // take the level with number 0
               Level[] levs = hier.getLevels();
               for (int i = 0; i < levs.length; i++) {
@@ -516,7 +527,7 @@ public class XMLA_Member implements Member, MDXMember, Exp {
         }
     */
 
-    if (!model.isSAP() || isCalculated) {
+    if (model.isMicrosoft() || isCalculated) {
       parentUniqueName = StringUtil.parentFromUName(uniqueName);
       if (parentUniqueName == null) {
         parent = null;
@@ -660,6 +671,14 @@ public class XMLA_Member implements Member, MDXMember, Exp {
    */
   public boolean isSAP() {
     return model.isSAP();
+  }
+
+  public boolean isMicrosoft() {
+    return model.isMicrosoft();
+  }
+
+  public boolean isMondrian() {
+    return model.isMondrian();
   }
 
   /**

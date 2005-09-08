@@ -14,6 +14,8 @@ package com.tonbeller.jpivot.xmla;
 
 import java.util.*;
 
+import org.apache.log4j.Logger;
+
 import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.OlapException;
 import com.tonbeller.jpivot.olap.model.QueryResultHandler;
@@ -28,6 +30,8 @@ import com.tonbeller.jpivot.xmla.XMLA_PropValAssign.ValAssign;
 public class XMLA_Result extends ResultBase implements QueryResultHandler {
  
   static final String XSI_URI = "http://www.w3.org/2001/XMLSchema-instance";
+
+  static Logger logger = Logger.getLogger(XMLA_Result.class);
 
   XMLA_Axis axis; // axis beeing currently processed
 
@@ -115,6 +119,7 @@ public class XMLA_Result extends ResultBase implements QueryResultHandler {
     int memberOrdinal) {
     XMLA_Member member = (XMLA_Member) ((XMLA_Model) model).lookupMemberByUName(uniqueName);
     XMLA_Level lev = ((XMLA_Model) model).lookupLevelByUName(levUName);
+    logger.debug("handleMember: uniqueName - " + uniqueName + ", level - " + levUName);
     if (member == null) {
       // not there yet, create +add it
       // the result does not contain all member properties, 
@@ -139,15 +144,16 @@ public class XMLA_Result extends ResultBase implements QueryResultHandler {
     if (!member.isCalculated()) {
       member.clearProps();
       Map props;
+      XMLA_Model xmod = (XMLA_Model) model;
       // HHTASK - performance better use map with *tag* as key 
-      if (((XMLA_Model) model).isSAP())
+      if (xmod.isSAP() || xmod.isMondrian())
         props = ((XMLA_Dimension) member.getDimension()).getProps();
       else
         props = ((XMLA_Level) member.getLevel()).getProps();
       Iterator itOtherProps = otherProps.keySet().iterator();
       while (itOtherProps.hasNext()) {
         String tag = (String) itOtherProps.next();
-        if (((XMLA_Model) model).isSAP()) {
+        if (xmod.isSAP() || xmod.isMondrian()) {
           if (!tag.startsWith("_"))
             continue; // SAP Property tags always(?) start with "_"
         }

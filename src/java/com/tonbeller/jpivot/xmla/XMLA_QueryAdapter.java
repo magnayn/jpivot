@@ -215,30 +215,33 @@ public class XMLA_QueryAdapter extends QueryAdapter implements QuaxChangeListene
     }
 
     long t1 = System.currentTimeMillis();
+    
     String mdx = parsedQuery.toMdx();
-    System.out.println(mdx);
+
+    if (logger.isDebugEnabled())
+      logger.debug(mdx);
+
     long t2 = System.currentTimeMillis();
     logger.info("monQuery.toString took " + (t2 - t1) + " millisec");
 
     ((XMLA_Model) model).setCurrentMdx(mdx);
-
-    if (logger.isDebugEnabled())
-      logger.debug(mdx);
 
   }
 
   protected void onExecuteDrill() {
     long t1 = System.currentTimeMillis();
+    
     // dsf call toDrillMdx
-    String mdx = parsedQuery.toDrillMdx(); 
-    System.out.println(mdx);
+    String mdx = parsedQuery.toDrillMdx();
+    
+    if (logger.isDebugEnabled())
+        logger.debug(mdx);
+    
     long t2 = System.currentTimeMillis();
     logger.info("monQuery.toString took " + (t2 - t1) + " millisec");
 
     ((XMLA_Model) model).setCurrentMdx(mdx);
 
-    if (logger.isDebugEnabled())
-      logger.debug(mdx);
   }
 
   
@@ -443,7 +446,7 @@ public class XMLA_QueryAdapter extends QueryAdapter implements QuaxChangeListene
     XMLA_Hierarchy hier = (XMLA_Hierarchy) level.getHierarchy();
     // for performance issues, it is better if we can decide whether a member
     //  is drillable *without* completing it first.
-    if (!xmod.isSAP() && hier.getStructure() == XMLA_Hierarchy.STRUCTURE_FULLYBALANCED
+    if (xmod.isMicrosoft() && hier.getStructure() == XMLA_Hierarchy.STRUCTURE_FULLYBALANCED
         && level.getChildLevel() != null) {
       // fully balanced,  drillable, if and only if member is on deepest level
       // does not work with SAP, Hierarchy.structure not supported

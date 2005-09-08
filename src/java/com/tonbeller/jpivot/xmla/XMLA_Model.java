@@ -209,7 +209,7 @@ public class XMLA_Model extends MdxOlapModel implements OlapModel, QueryAdapter.
     queryAdapter.onExecute();
 
     long lBefore = System.currentTimeMillis();
-    System.out.println(currentMdx);
+    logger.debug(currentMdx);
     XMLA_Result res = new XMLA_Result(this, soap, catalog, currentMdx);
     long lTime = System.currentTimeMillis() - lBefore;
     logger.debug("Time for executeQuery(ms)=" + lTime);
@@ -241,7 +241,7 @@ public class XMLA_Model extends MdxOlapModel implements OlapModel, QueryAdapter.
     queryAdapter.onExecuteDrill();
 
     long lBefore = System.currentTimeMillis();
-    System.out.println(currentMdx);
+    logger.debug(currentMdx);
     XMLA_Result res = new XMLA_Result(this, soap, catalog, currentMdx, true);
     long lTime = System.currentTimeMillis() - lBefore;
     logger.debug("Time for executeQuery(ms)=" + lTime);
@@ -802,7 +802,7 @@ public class XMLA_Model extends MdxOlapModel implements OlapModel, QueryAdapter.
         if (caption == null)
           caption = name;
         XMLA_Dimension dim = this.lookupDimByUName(dimUName);
-        if (this.isSAP()) {
+        if (this.isSAP() || this.isMondrian()) {
           // dimension contain the properties
           XMLA_MemberProp prop = new XMLA_MemberProp(name, caption, dim);
           dim.addProp(prop);
@@ -1447,6 +1447,14 @@ public class XMLA_Model extends MdxOlapModel implements OlapModel, QueryAdapter.
 
   public boolean isSAP() {
     return (soap.getProvider() == OlapDiscoverer.PROVIDER_SAP);
+  }
+
+  public boolean isMicrosoft() {
+    return (soap.getProvider() == OlapDiscoverer.PROVIDER_MICROSOFT);
+  }
+
+  public boolean isMondrian() {
+    return (soap.getProvider() == OlapDiscoverer.PROVIDER_MONDRIAN);
   }
 
   /**
