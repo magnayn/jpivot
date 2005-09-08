@@ -716,7 +716,7 @@ public class XMLA_QuaxUti implements QuaxUti {
     // check by unique name, if possible
     XMLA_Member pm = (XMLA_Member) pMember;
     XMLA_Member cm = (XMLA_Member) cMemObj;
-    if (!pm.isSAP()) {
+    if (pm.isMicrosoft()) {
       String pUName = cm.getParentUniqueName();
       return ((XMLA_Member) pMember).getUniqueName().equals(pUName);
     } else {

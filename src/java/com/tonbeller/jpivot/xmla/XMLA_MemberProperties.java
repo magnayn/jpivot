@@ -43,7 +43,9 @@ public class XMLA_MemberProperties extends ExtensionSupport implements MemberPro
     XMLA_Level xlev = (XMLA_Level) level;
     Map propMap;
     // for SAP the properties are stored with the dimension
-    if (((XMLA_Model) this.getModel()).isSAP()) {
+    XMLA_Model xmlaModel = (XMLA_Model) this.getModel();
+    
+    if (xmlaModel.isSAP() || xmlaModel.isMondrian()) {
       propMap = ((XMLA_Dimension) xlev.getHierarchy().getDimension()).getProps();
     } else {
       propMap = xlev.getProps();
@@ -58,8 +60,8 @@ public class XMLA_MemberProperties extends ExtensionSupport implements MemberPro
       String name = prop.getName();
 
       String caption = prop.getCaption();
-      XMLA_Model model = (XMLA_Model) this.getModel();
-      if (model.isSAP())
+      
+      if (xmlaModel.isSAP() || xmlaModel.isMondrian())
         props[i++] = new MemberPropertyMeta(caption + " / " + name, name, scope);
       else
         props[i++] = new MemberPropertyMeta(caption, name, scope);
