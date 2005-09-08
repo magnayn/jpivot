@@ -86,29 +86,10 @@ public class XMLA_SOAP implements OlapDiscoverer {
    * @param password  
    */
   public XMLA_SOAP(String uri, String user, String password) throws OlapException {
+    logger.debug("Constructor: straight DiscoverDS");
     init(uri, user, password);
 
-    Map resMap;
-    resMap = this.discoverDS();
-    // discoverDS did set the provider, if it was unknown
-    if (resMap.size() > 0) {
-      if (provider == OlapDiscoverer.PROVIDER_MICROSOFT) {
-        dataSource = (String) resMap.get("DataSourceInfo");
-      } else {
-        // supposed to be SAP
-        String dstr = (String) resMap.get("DataSourceDescription");
-        String pstr = (String) resMap.get("ProviderName");
-        if (dstr == null || pstr == null)
-          throw new OlapException("Unexpected result from Discover Datasource");
-        dataSource = "Provider=" + pstr + ";Data Source=" + dstr;
-        if (dataSource.toUpperCase().startsWith("PROVIDER=MS"))
-          provider = OlapDiscoverer.PROVIDER_MICROSOFT;
-        else
-          provider = OlapDiscoverer.PROVIDER_SAP;
-      }
-    } else {
-      throw new OlapException("No result from Discover Datasource");
-    }
+    setProviderAndDataSource(this.discoverDS());
   }
 
   /**
@@ -122,14 +103,12 @@ public class XMLA_SOAP implements OlapDiscoverer {
    */
   public XMLA_SOAP(String uri, String user, String password, String dataSource)
       throws OlapException {
+    logger.debug("Constructor: given dataSource= " + dataSource);
     init(uri, user, password);
 
     this.dataSource = dataSource;
-    if (dataSource.toUpperCase().startsWith("PROVIDER=SAP"))
-      provider = OlapDiscoverer.PROVIDER_SAP;
-    else
-      provider = OlapDiscoverer.PROVIDER_MICROSOFT;
-
+    provider = determineProvider(dataSource);
+    
   }
 
   /**
@@ -141,18 +120,11 @@ public class XMLA_SOAP implements OlapDiscoverer {
    * @param password  
    * @param provider
    */
-  public XMLA_SOAP(String uri, String user, String password, int provider) throws OlapException {
+  public XMLA_SOAP(String uri, String user, String password, int newProvider) throws OlapException {
+    logger.debug("Constructor: given provider= " + newProvider);
     init(uri, user, password);
-    Map dsMap = discoverDS();
-    if (dsMap.size() > 0) {
-      if (provider == PROVIDER_SAP) {
-        String dsinfo = (String) dsMap.get("DataSourceDescription");
-        String provName = (String) dsMap.get("ProviderName");
-        dataSource = "Provider=" + provName + ";Data Source=" + dsinfo;
-      } else {
-        dataSource = (String) dsMap.get("DataSourceInfo");
-      }
-    }
+    provider = newProvider;
+    setProviderAndDataSource(discoverDS());
   }
 
   /*
@@ -229,6 +201,7 @@ public class XMLA_SOAP implements OlapDiscoverer {
     };
 
     discover("DBSCHEMA_CATALOGS", url, rHash, pHash, rh);
+    logger.debug("DBSCHEMA_CATALOGS: found " + cats.size());
 
     return cats;
   }
@@ -269,6 +242,7 @@ public class XMLA_SOAP implements OlapDiscoverer {
     };
 
     discover("DISCOVER_PROPERTIES", url, rHash, pHash, rh);
+    logger.debug("DISCOVER_PROPERTIES: found " + props.size());
 
     return props;
   }
@@ -312,6 +286,7 @@ public class XMLA_SOAP implements OlapDiscoverer {
 
     };
     discover("MDSCHEMA_CUBES", url, rHash, pHash, rh);
+    logger.debug("MDSCHEMA_CUBES: found " + cubes.size());
     return cubes;
   }
 
@@ -362,6 +337,10 @@ public class XMLA_SOAP implements OlapDiscoverer {
     };
 
     discover("MDSCHEMA_DIMENSIONS", url, rHash, pHash, rh);
+    logger.debug("MDSCHEMA_DIMENSIONS: found " + dims.size());
+    if (dims.size() == 0) {
+        throw new OlapException("No metadata schema dimensions for catalog: " + cat + " and cube: " + cube);
+    }
     return dims;
   }
 
@@ -413,6 +392,10 @@ public class XMLA_SOAP implements OlapDiscoverer {
     };
 
     discover("MDSCHEMA_HIERARCHIES", url, rHash, pHash, rh);
+    logger.debug("MDSCHEMA_HIERARCHIES: found " + hiers.size());
+    if (hiers.size() == 0) {
+        throw new OlapException("No metadata schema hierarchies for catalog: " + cat + " and cube: " + cube);
+    }
     return hiers;
   }
 
@@ -470,6 +453,10 @@ public class XMLA_SOAP implements OlapDiscoverer {
     };
 
     discover("MDSCHEMA_LEVELS", url, rHash, pHash, rh);
+    logger.debug("MDSCHEMA_LEVELS: found " + levels.size());
+    if (levels.size() == 0) {
+        throw new OlapException("No metadata schema levels for catalog: " + cat + " and cube: " + cube);
+    }
     return levels;
   }
 
@@ -529,6 +516,10 @@ public class XMLA_SOAP implements OlapDiscoverer {
     };
 
     discover("MDSCHEMA_MEMBERS", url, rHash, pHash, rh);
+    logger.debug("MDSCHEMA_MEMBERS: found " + mems.size());
+    if (mems.size() == 0) {
+        throw new OlapException("No metadata schema members for catalog: " + cat + " and cube: " + cube);
+    }
 
     return mems;
   }
@@ -597,6 +588,11 @@ public class XMLA_SOAP implements OlapDiscoverer {
     };
 
     discover("MDSCHEMA_MEMBERS", url, rHash, pHash, rh);
+    logger.debug("MDSCHEMA_MEMBERS Tree: found " + mems.size());
+    if (mems.size() == 0) {
+        throw new OlapException("No metadata schema members tree for catalog: " + cat + " and cube: " + cube +
+                ", member unique name: " + member + ", tree operation: " + String.valueOf(treeop));
+    }
     return mems;
   }
 
@@ -639,6 +635,7 @@ public class XMLA_SOAP implements OlapDiscoverer {
     };
 
     discover("DISCOVER_DATASOURCES", url, rHash, pHash, rh);
+    logger.debug("DISCOVER_DATASOURCES: found " + resultMap.size());
     return resultMap;
 
   }
@@ -702,6 +699,7 @@ public class XMLA_SOAP implements OlapDiscoverer {
     };
 
     discover("MDSCHEMA_PROPERTIES", url, rHash, pHash, rh);
+    logger.debug("MDSCHEMA_PROPERTIES: found " + props.size());
 
     return props;
   }
@@ -992,6 +990,8 @@ public class XMLA_SOAP implements OlapDiscoverer {
             value = new Long(eValue.getValue());
           } else if ("xsd:double".equals(type)) {
             value = new Double(eValue.getValue());
+          } else if("xsd:decimal".equals(type)) {
+              value=new Double(eValue.getValue());
           } else {
             value = eValue.getValue();
           }
@@ -1159,12 +1159,187 @@ public class XMLA_SOAP implements OlapDiscoverer {
   
   
   /**
-   * @return provider (Microsoft/SAP)
+   * @return provider (Microsoft/SAP/Mondrian)
    */
   public int getProvider() {
     return provider;
   }
+  
+  /**
+   * Get provider id from String
+   * 
+   * @param dataSourceString
+   * @return provider id from OlapDiscoverer
+   * @throws OlapException 
+   */
+  private int determineProvider(String dataSourceString) throws OlapException {
+    logger.debug("determineProvider from dataSourceString: " + dataSourceString);
+    if (dataSourceString == null) {
+      throw new OlapException("No data source given for determining XML/A OLAP provider");
+    }
 
+    String upperDSString = dataSourceString.toUpperCase();
+    if (!upperDSString.startsWith("PROVIDER=")) {
+        throw new OlapException("Malformed data source given for determining XML/A provider");
+    }
+    
+    if (upperDSString.startsWith("PROVIDER=SAP")) {
+      logger.debug("Provider is SAP");
+      return OlapDiscoverer.PROVIDER_SAP;
+    } else if (upperDSString.startsWith("PROVIDER=MONDRIAN")) {
+      logger.debug("Provider is Mondrian");
+      return OlapDiscoverer.PROVIDER_MONDRIAN;
+    } else if (upperDSString.startsWith("PROVIDER=MS")) {
+      logger.debug("Provider is Microsoft");
+      return OlapDiscoverer.PROVIDER_MICROSOFT;
+    } else {
+      logger.error("Error determining provider from: " + dataSourceString);
+      throw new OlapException("Unexpected data source determining XML/A provider");
+    }
+
+  }
+
+  /** Set provider and dataSource from result of discoverDS
+   * 
+   * @param resMap
+   * @throws OlapException
+   */
+  private void setProviderAndDataSource(Map resMap) throws OlapException {
+    if (resMap == null || resMap.size() == 0) {
+      logger.error("No resource map from Discover Datasource");
+      throw new OlapException("No resource map from Discover Datasource");
+    }
+    
+    String pstr = (String) resMap.get("ProviderName");
+      
+    //if (provider == 0) {
+      //logger.debug("Provider was 0");
+      // Check other providers
+      if (pstr == null)
+        throw new OlapException("No ProviderName from Discover Datasource");
+      
+      provider = determineProvider("Provider=" + pstr);
+    //}
+
+    logger.debug("Provider ID: " + provider);
+
+    if (provider == OlapDiscoverer.PROVIDER_SAP) {
+        String dstr = (String) resMap.get("DataSourceDescription");
+        if (dstr == null) {
+          throw new OlapException("No DataSourceDescription from Discover Datasource");
+        }
+        dataSource = "Provider=" + pstr + ";Data Source=" + dstr;
+    } else {
+        dataSource = (String) resMap.get("DataSourceInfo");
+        if (dataSource == null) {
+          throw new OlapException("No DataSourceInfo from Discover Datasource");
+        }
+    }
+    logger.debug("Discover Datasource set: " + dataSource);
+
+  }
+  
+  /**
+   * Find the Provider type in the DiscoverResponse
+   * 
+   * @param n
+   * @return
+   * @throws OlapException 
+ * @throws SOAPException 
+   */
+  private int getProviderFromDiscoverResponse(SOAPEnvelope envelope, SOAPElement e) throws OlapException, SOAPException {
+      Name name = ((SOAPElement) e).getElementName();
+      if (!name.getLocalName().equals("DiscoverResponse")) {
+          throw new OlapException("Not a DiscoverResponse element. Was: " + name.getLocalName());
+      }
+      
+      // Look for return/root/row/ProviderName
+      
+      SOAPElement walker = getDiscoverReturn(envelope, e);
+      
+      if (walker == null) {
+          throw new OlapException("Discover result has no DiscoverResponse/return element");
+      }
+      
+      walker = getDiscoverRoot(envelope, walker);
+      
+      if (walker == null) {
+          throw new OlapException("Discover result has no DiscoverResponse/return/root element");
+      }
+      
+      walker = getDiscoverRow(envelope, walker);
+      
+      if (walker == null) {
+          throw new OlapException("Discover result has no DiscoverResponse/return/root/row element");
+      }
+
+/*      Name nProviderName = envelope.createName("ProviderName", "", ROWS_URI);
+      SOAPElement eProviderName = selectSingleNode(e, nProviderName);
+      
+      if (eProviderName == null) {
+          throw new OlapException("Discover result has no DiscoverResponse/return/root/row/ProviderName element");
+      }
+      value = eProviderName.getValue();
+*/      
+      String value = null;
+      Iterator it = walker.getChildElements();
+      while (it.hasNext()) {
+        Object o = it.next();
+        if (!(o instanceof SOAPElement))
+          continue; //bypass text nodes
+        SOAPElement e2 = (SOAPElement) o;
+        String nameString = e2.getElementName().getLocalName();
+        if (nameString.equals("ProviderName")) {
+            value = e2.getValue();
+            logger.debug("Found ProviderName with value: " + value);
+            break;
+        }
+      }
+      
+      if (value == null || value.trim().length() == 0) {
+          throw new OlapException("Discover result has empty DiscoverResponse/return/root/row/ProviderName element");
+      }
+
+      return determineProvider("Provider=" + value);
+  }
+  
+  private SOAPElement getDiscoverReturn(SOAPEnvelope envelope, SOAPElement e) throws OlapException, SOAPException {
+
+      Name nReturn;
+      if (provider == PROVIDER_MICROSOFT) {
+        nReturn = envelope.createName("return", "m", XMLA_URI); // Microsoft
+      } else {
+        nReturn = envelope.createName("return", "", XMLA_URI); // SAP or Mondrian
+      }
+      SOAPElement eReturn = selectSingleNode(e, nReturn);
+      if (eReturn == null) {
+        // old Microsoft XMLA SDK 1.0 does not have "m" prefix - try
+        nReturn = envelope.createName("return", "", ""); // old Microsoft
+        eReturn = selectSingleNode(e, nReturn);
+        if (eReturn == null)
+          throw new OlapException("Discover result has no return element"); 
+      }
+      return eReturn;
+  }
+  
+  private SOAPElement getDiscoverRoot(SOAPEnvelope envelope, SOAPElement e) throws OlapException, SOAPException {
+
+      Name nRoot = envelope.createName("root", "", ROWS_URI);
+      SOAPElement eRoot = selectSingleNode(e, nRoot);
+      if (eRoot == null) { throw new OlapException("Discover result has no root element"); }
+      return eRoot;
+
+  }
+  
+  private SOAPElement getDiscoverRow(SOAPEnvelope envelope, SOAPElement e) throws OlapException, SOAPException {
+
+      Name nRow = envelope.createName("row", "", ROWS_URI);
+      SOAPElement eRow = selectSingleNode(e, nRow);
+      if (eRow == null) { throw new OlapException("Discover result has no row element"); }
+      return eRow;
+
+  }
+  
   /**
    * discover
    * @param request
@@ -1297,7 +1472,7 @@ public class XMLA_SOAP implements OlapDiscoverer {
     Name childName;
     SOAPElement eResponse = null;
     if (provider == 0) {
-      // unknown provider - regognize by prefix of DiscoverResponse
+      // unknown provider - recognize by prefix of DiscoverResponse
       Iterator itBody = body.getChildElements();
       while (itBody.hasNext()) {
         Node n = (Node) itBody.next();
@@ -1306,53 +1481,42 @@ public class XMLA_SOAP implements OlapDiscoverer {
         Name name = ((SOAPElement) n).getElementName();
         if (name.getLocalName().equals("DiscoverResponse")) {
           eResponse = (SOAPElement) n;
-          if ("m".equals(name.getPrefix()))
+          provider = getProviderFromDiscoverResponse(envelope, eResponse);
+/*          if ("m".equals(name.getPrefix()))
             provider = PROVIDER_MICROSOFT;
           // Microsoft has prefix "m"
           else
             provider = PROVIDER_SAP; // SAP has no prefix
-          break;
+*/          break;
         }
       }
-      if (eResponse == null) { throw new OlapException(
-          "Discover result has no DiscoverResponse element"); }
+      if (eResponse == null) {
+          throw new OlapException("Discover result has no DiscoverResponse element");
+      }
 
     } else {
-      // known provider (Micorosoft or SAP supported)
-      if (provider == PROVIDER_SAP) {
-        // SAP
-        childName = envelope.createName("DiscoverResponse", "", XMLA_URI);
-      } else if (provider == PROVIDER_MICROSOFT) {
+      if (provider == PROVIDER_MICROSOFT) {
         // Microsoft
         childName = envelope.createName("DiscoverResponse", "m", XMLA_URI);
+      } else if (provider == PROVIDER_SAP || provider == PROVIDER_MONDRIAN) {
+          // SAP or Mondrian
+          childName = envelope.createName("DiscoverResponse", "", XMLA_URI);
       } else {
-        throw new IllegalArgumentException("no a valid provider specification");
+          throw new IllegalArgumentException("no a valid provider specification");
       }
       eResponse = selectSingleNode(body, childName);
-      if (eResponse == null) { throw new OlapException(
-          "Discover result has no DiscoverResponse element"); }
+      if (eResponse == null) {
+          throw new OlapException("Discover result has no DiscoverResponse element");
+      }
     }
 
-    Name nReturn;
-    if (provider == PROVIDER_SAP) {
-      nReturn = envelope.createName("return", "", XMLA_URI); // SAP
-    } else {
-      // nReturn = envelope.createName("return", "", ""); // old Microsoft
-      nReturn = envelope.createName("return", "m", XMLA_URI); // Microsoft
-    }
-    SOAPElement eReturn = selectSingleNode(eResponse, nReturn);
-    if (eReturn == null) {
-      // old Microsoft XMLA SDK 1.0 does not have "m" prefix - try
-      nReturn = envelope.createName("return", "", ""); // old Microsoft
-      eReturn = selectSingleNode(eResponse, nReturn);
-      if (eReturn == null)
-        throw new OlapException("Discover result has no return element"); 
-    }
+    SOAPElement eReturn = getDiscoverReturn(envelope, eResponse);
+    if (eReturn == null)
+      throw new OlapException("Discover result has no return element"); 
 
-    //setNameSpace("", XMLA_SOAP.ROWS_URI);
-    Name nRoot = envelope.createName("root", "", ROWS_URI);
-    SOAPElement eRoot = selectSingleNode(eReturn, nRoot);
-    if (eRoot == null) { throw new OlapException("Discover result has no root element"); }
+    SOAPElement eRoot = getDiscoverRoot(envelope, eReturn);
+    if (eRoot == null)
+      throw new OlapException("Discover result has no root element");
     return eRoot;
   }
 
