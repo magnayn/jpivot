@@ -12,21 +12,34 @@
 </head>
 <body>
 <p>
-<h2>JPivot Demo</h2>
+<h2>JPivot Demonstration</h2>
 <c:if test="${query01 != null}">
   <jp:destroyQuery id="query01"/>
 </c:if>
 
+<h3>Using the Mondrian OLAP engine</h3>
+
 <ul>
-  <li><a href="testpage.jsp?query=testquery">Testpage using testdata</a></li>
-  <li><a href="testpage.jsp?query=mondrian">Testpage using mondrian</a></li>
-  <li><a href="testpage.jsp?query=fourhier">Mondrian fourhier test</a></li>
-  <li><a href="test/param1.jsp?query=testquery">Parameters with builtin Testdata</a></li>
-  <li><a href="test/param3.jsp?query=mondrian">Parameters with Mondrian</a></li>
+  <li><a href="testpage.jsp?query=mondrian">Slice and Dice with two hierarchies</a></li>
+  <li><a href="testpage.jsp?query=fourhier">...and with four hierachies</a></li>
+  <li><a href="test/param3.jsp?query=mondrian">Dynamic parameters with Mondrian</a></li>
   <li><a href="testpage.jsp?query=arrows">Arrows in Cells</a></li>
   <li><a href="testpage.jsp?query=colors">Colors in Cells</a></li>
+  <li><a href="testpage.jsp?query=testquery">Test data</a></li>
+  <li><a href="test/param1.jsp?query=testquery">Dynamic parameters with test data</a></li>
 </ul>
-<p>
+<p/>
+
+<h3>Using XML/A</h3>
+<p/>
+XML/A is a Web services protocol and standard that allows JPivot to connect to Microsoft 
+Analysis Services and Mondrian on other machines. This example connects to Mondrian via
+XML/A where you are running JPivot.
+<p/>
+<ul>
+  <li><a href="testpage.jsp?query=mondrianXMLA">Slice and Dice with two hierarchies</a></li>
+</ul>
+<p/>
 
 
 </body>
