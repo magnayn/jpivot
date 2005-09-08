@@ -73,6 +73,16 @@
     <description>Default configuration created for servlet.</description>
     <servlet-class>com.tonbeller.jpivot.print.PrintServlet</servlet-class>
   </servlet>
+
+  <servlet>
+    <servlet-name>MondrianXmlaServlet</servlet-name>
+    <servlet-class>mondrian.xmla.XmlaServlet</servlet-class>
+	<init-param>
+	  <param-name>DataSourcesConfig</param-name>
+	  <param-value>datasources.xml</param-value>
+	</init-param>
+  </servlet>
+
   <servlet-mapping>
     <servlet-name>DisplayChart</servlet-name>
     <url-pattern>/DisplayChart</url-pattern>
@@ -84,6 +94,11 @@
   <servlet-mapping>
     <servlet-name>GetChart</servlet-name>
     <url-pattern>/GetChart</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>MondrianXmlaServlet</servlet-name>
+    <url-pattern>/xmla</url-pattern>
   </servlet-mapping>
 
   <session-config>
@@ -109,12 +124,13 @@
     <taglib-location>/WEB-INF/jpivot/jpivot-tags.tld</taglib-location>
   </taglib>
 
-  <!-- access to Foodmart Database via DataSource -->
+  <!-- access to Foodmart Database via DataSource
   <resource-ref>
     <description>DB Connection</description>
     <res-ref-name>jdbc/MondrianFoodmart</res-ref-name>
     <res-type>javax.sql.DataSource</res-type>
     <res-auth>Container</res-auth>
   </resource-ref>
+   -->
 
 </web-app>
