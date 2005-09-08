@@ -23,6 +23,7 @@ public interface OlapDiscoverer {
 
   public static final int PROVIDER_MICROSOFT = 1;
   public static final int PROVIDER_SAP = 2;
+  public static final int PROVIDER_MONDRIAN = 3;
 
   /**
    * retrieve catalogs in data source
