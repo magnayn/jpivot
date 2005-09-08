@@ -176,7 +176,11 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
             this.CHART_SERVLET = chartServlet;
         }
 	}
-
+    
+    public ChartComponent(String id, Component parent, String ref, RequestContext context) {
+        this(id, parent, ref, null, context);
+    }
+    
 	/**
 	 * called once by the creating tag
 	 */
