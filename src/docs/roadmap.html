@@ -33,11 +33,11 @@ h1,h2,h3,h4,th {
 
 <h2>JPivot Roadmap</h2>
 
-This document shall help to coordinate the future development of JPivot. 
-It will list features and enhancements that would be desireable to 
+This document shall help to coordinate the future development of JPivot.
+It will list features and enhancements that would be desireable to
 make JPivot more useful. These may include new functionality, integrating
-with other software, it may list bugs that have to be fixed, missing 
-documentation and everything else should be done in the JPivot project. 
+with other software, it may list bugs that have to be fixed, missing
+documentation and everything else should be done in the JPivot project.
 <p>
 For each task we should try to estimate the effort, prioritize it, and
 list developers who want to implement it.
@@ -73,7 +73,7 @@ and adapted to the wcf table model in the gui.
 <div class="prio">Priority: medium</div>
 <p>
 Provide documentation (and possibly code) for how to run JPivot inside
-an JSR 168 compatible portal. 
+an JSR 168 compatible portal.
 
 <!--  ******************************************************************* -->
 
@@ -82,13 +82,13 @@ an JSR 168 compatible portal.
 <div class="cost">Effort: high</div>
 <div class="prio">Priority: medium</div>
 <p>
-An enhanced drill-thru report which will do 
-multi-column sorting and grouping an makes a more focused report 
-by eliminating (hiding) redundant columns (ie all the row / 
-column hierarchies and filters for which all rows of the report will be 
+An enhanced drill-thru report which will do
+multi-column sorting and grouping an makes a more focused report
+by eliminating (hiding) redundant columns (ie all the row /
+column hierarchies and filters for which all rows of the report will be
 the same).
 <p>
-Care should be taken regarding to performance and memory usage. The current drill-through 
+Care should be taken regarding to performance and memory usage. The current drill-through
 implementation can handle thousands of rows with no problem (e.g. drill through
 in a top-level foodmart cell). Maybe make the new version optional.
 
@@ -99,10 +99,10 @@ in a top-level foodmart cell). Maybe make the new version optional.
 <div class="cost">Effort: high</div>
 <div class="prio">Priority: medium</div>
 <p>
-Access to some navigation functions and addition of some new 
-functions (eg ?expand / collapse all members of a level?, 
-?simultaneous drill down on both row & column?, ..) 
-via ?mouse right-click? in dimension / member headers and cells. 
+Access to some navigation functions and addition of some new
+functions (eg ?expand / collapse all members of a level?,
+?simultaneous drill down on both row & column?, ..)
+via ?mouse right-click? in dimension / member headers and cells.
 
 <!--  ******************************************************************* -->
 
@@ -111,16 +111,16 @@ via ?mouse right-click? in dimension / member headers and cells.
 <div class="cost">Effort: high</div>
 <div class="prio">Priority: medium</div>
 <p>
-Drag &amp; drop functionality in the pivot chart for adding / removing dimensions to rows / columns 
+Drag &amp; drop functionality in the pivot chart for adding / removing dimensions to rows / columns
 
 <!--  ******************************************************************* -->
- 
+
 <h3>User interface for Bookmarks</h3>
 
 <div class="cost">Effort: medium</div>
 <div class="prio">Priority: medium</div>
 <p>
-Some other bits, a bookmark interface, enhancements to bookmark functionality,? 
+Some other bits, a bookmark interface, enhancements to bookmark functionality,?
 
 <p>
 Where will the bookmarks be stored (Database, Filesystem)?
@@ -143,6 +143,62 @@ A step-by-step tutorial would be great.
 <div class="prio">Priority: medium</div>
 <p>
 Its not known if JPivot runs on these popular webservers.
+
+<!--  ******************************************************************* -->
+
+<h3>Other Suggestions</h3>
+
+
+<ul>
+  <li>Improve standalone build, separate from Tonbeller-specific constructs, make sure all tasks run when downloaded </li>
+  <li>Improve documentation, howto, FAQ </li>
+  <li>jfreechart - there are several features available in jfreechart, not currently exposed via jpivot. Most notable features:
+    <ul>
+      <li>multiple y axis support </li>
+      <li>pareto plot (variant on mult y axis, where one side is percentage) </li>
+      <li>callouts </li>
+      <li>difference chart </li>
+      <li>candlestick </li>
+      <li>For some of these, exposing via jpivot is trivial. See this page. </li>
+      <li>improve color palette support </li>
+      <li>chart to chart type mapping: </li>
+      <li>see com.tonbeller.jpivot.chart.ChartComponent.render(...) method </li>
+      <li>Build in samples saving chart state </li>
+    </ul>
+  </li>
+  <li>Bug fixes
+    <ul>
+      <li>xmla excel export (XMLA_Cell not fully implemented - getFormat method) </li>
+      <li>exception handling - some exceptions require some log parsing, not hard to find, but harder than it should be. I know that some users have been confused by some messages that may not be helpful - notable - when datasource is incorrectly configured. </li>
+    </ul>
+  </li>
+  <li>add support for multiple visualization formats, or even extract a visualization engine
+    <ul>
+      <li>image format - make configurable, not just png </li>
+      <li>Support flash-based charts as an output format
+        <ul>
+          <li>Reduces chart-rendering effort on the server-side, and also reduces the amount of network traffic </li>
+          <li>Much better look aesthetically compared to static gif or jpg's </li>
+          <li>Enabling a drill-down interface via flash will be interesting </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>cube browser (similar to dimension browser) </li>
+  <li>Create sample chart admin/creation pages </li>
+  <li>Exposure to MDX constructs without having to write MDX
+    <ul>
+      <li>A subset of this already available (sort, etc.) </li>
+      <li>Make the entire MDX functions available (kind-of like the interface MSAS provides when you are defining a calculated member) </li>
+    </ul>
+  </li>
+  <li>Security integration
+    <ul>
+      <li>Map hierarchial access. send the user login context all the way to the XMLA server so that visibility into the OLAP data is restricted by OLAP server security rules at the user-level </li>
+      <li>Integrate a standard (JAAS-based?) security layer so that (a) login can be validaed against existing user databases, either LDAP, Unix logins, or some rdbms-based user database, and (b) access to charts, etc. is restricted by role definition (role concept exists in wcf framework) </li>
+    </ul>
+  </li>
+</ul>
 
 <!--  ******************************************************************* -->
 
