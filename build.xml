@@ -33,7 +33,7 @@
   <property name="dist.home"            value="${basedir}/dist"/>
   <property name="src.home"             value="${basedir}/src"/>
   <property name="lib.home"             value="${basedir}/lib"/>
-
+  
   <property name="repository.home"      value="${basedir}/../jpivot_repository"/>
 
   <!-- override these in your build.properties -->
@@ -70,7 +70,7 @@
 
   <property name="wcf.dist"             value="${basedir}/../wcf/dist"/>
 
-  <property name="jboss.deploy"			value="${jboss.home}/server/default/deploy"/>
+  <property name="jboss.deploy"		value="${jboss.home}/server/default/deploy"/>
   <property name="jboss-portal.deploy"	value="${jboss.deploy}/jboss-portal.sar"/>
 
 <!-- ==================== File and Directory Names ======================== -->
@@ -496,7 +496,14 @@
     </jar>
 
   </target>
-
+  <target name="war-deploy" description="Deploy the Application" depends="archives">
+    <copy  todir="${jboss.deploy}">
+      <fileset dir="${build.home}">
+        <include name="jpivot.war"/>
+      </fileset>
+    </copy>
+    </target>
+    
   <target name="portlet-deploy" description="Deploy the portlet" depends="portlet-archive">
     <mkdir dir="${jboss.deploy}/jpivot-portlet-${jpivot.version}.war"/>
 
