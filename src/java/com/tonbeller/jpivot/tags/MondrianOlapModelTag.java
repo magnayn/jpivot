@@ -40,6 +40,7 @@ public class MondrianOlapModelTag extends OlapModelTag {
   String config;
   String role;
   String dynResolver;
+  String dynLocale;
   String connectionPooling;
 
   protected OlapModel getOlapModel(RequestContext context) throws JspException, OlapException, SAXException, IOException {
@@ -62,6 +63,7 @@ public class MondrianOlapModelTag extends OlapModelTag {
     cfg.setDataSource(dataSource);
     cfg.setRole(role);
     cfg.setDynResolver(dynResolver);
+    cfg.setDynLocale(dynLocale);
     cfg.setConnectionPooling(connectionPooling);
 
     allowOverride(cfg);
@@ -88,6 +90,7 @@ public class MondrianOlapModelTag extends OlapModelTag {
     cfg.setDataSource(allowOverwrite("jdbc.datasource", cfg.getDataSource()));
     cfg.setRole(allowOverwrite("role", cfg.getRole()));
     cfg.setDynResolver(allowOverwrite("dynResolver", cfg.getDynResolver()));
+    cfg.setDynLocale(allowOverwrite("dynLocale", cfg.getDynLocale()));
     cfg.setConnectionPooling(allowOverwrite("ConnectionPooling", cfg.getConnectionPooling()));
   }
 
@@ -272,4 +275,20 @@ public class MondrianOlapModelTag extends OlapModelTag {
   public String getRole() {
     return role;
   }
+/**
+ * Getter for property locale.
+ * @return Value of property locale.
+ */
+  public String getDynLocale() {
+      return this.dynLocale;
+  }
+  /**
+   * Setter for property locale.
+   * @param locale New value of property locale.
+   */
+  public void setDynLocale(String dynLocale) {
+      this.dynLocale = dynLocale;
+  }
+
+    
 }

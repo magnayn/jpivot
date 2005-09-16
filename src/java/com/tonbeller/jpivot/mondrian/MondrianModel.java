@@ -102,6 +102,10 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
   private String sessionId = null;
   private String dynresolver = null;
+  
+  // selected locale to be used by dynResolver (if given)
+  private String dynLocale = null;;
+  
   private boolean connectionPooling = true; // Mondrian connection Pooling
 
   private DataSource externalDataSource = null;
@@ -337,6 +341,8 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
     if (dynresolver != null && dynresolver.length() > 0)
       properties.put(RolapConnectionProperties.DynamicSchemaProcessor, dynresolver);
+    if (dynLocale!=null)
+      properties.put(RolapConnectionProperties.Locale, dynLocale);
 
     // if we do *not* want connection pooling, we must explicitly tell Mondrian
     if (!connectionPooling) {
@@ -1027,7 +1033,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     if (version <= 1) {
       if (loc != null && loc.getLanguage().equalsIgnoreCase("de")) {
         logger
-            .warn("Bookmark hat alten Stand (zukünftig nicht mehr unterstützt)!\nBitte neu speichern!");
+            .warn("Bookmark hat alten Stand (zukï¿½nftig nicht mehr unterstï¿½tzt)!\nBitte neu speichern!");
       } else {
         logger
             .warn("Bookmark is of old state (not supported any more in the future)!\nPlease save again!");
@@ -1298,6 +1304,21 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    */
   public void setExternalDataSource(DataSource externalDataSource) {
     this.externalDataSource = externalDataSource;
+  }
+  /**
+   * Getter for property dynLocale.
+   * @return Value of property dynLocale.
+   */
+  public String getDynLocale() {
+      return this.dynLocale;
+  }
+  
+  /**
+   * Setter for property dynLocale.
+   * @param dynLocale New value of property dynLocale.
+   */
+  public void setDynLocale(String dynLocale) {
+      this.dynLocale = dynLocale;
   }
 
 } // End MondrianModel

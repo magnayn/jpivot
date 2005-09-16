@@ -40,10 +40,10 @@ public class MondrianMemberProperties extends ExtensionSupport implements Member
     MemberPropertyMeta[] props = new MemberPropertyMeta[monProps.length];
     for (int i = 0; i < props.length; i++) {
       String name = monProps[i].getName();
-      String label = monProps[i].getCaption();
-      if (label != null)
-        name = label;
-      props[i] = new MemberPropertyMeta(name, name, scope);
+      String label = monProps[i].getCaption();      
+      if (label==null)
+          label=name;
+       props[i] = new MemberPropertyMeta(label, name, scope);
     }
     return props;
   }

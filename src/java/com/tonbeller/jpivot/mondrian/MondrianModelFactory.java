@@ -77,6 +77,9 @@ public class MondrianModelFactory {
       testDataSource(cfg.getDataSource());
     }
     sb.append(";Catalog=").append(cfg.getSchemaUrl());
+    
+    if (cfg.getDynLocale() != null)
+       sb.append(";Locale=").append(cfg.getDynLocale());
 
     // debug
     if (cfg.getRole() != null) {
@@ -151,6 +154,7 @@ public class MondrianModelFactory {
     mm.setConnectString(makeConnectString(cfg));
     mm.setJdbcDriver(cfg.getJdbcDriver());
     mm.setDynresolver(cfg.getDynResolver());
+    mm.setDynLocale(cfg.getDynLocale());
     if ("false".equalsIgnoreCase(cfg.getConnectionPooling()))
       mm.setConnectionPooling(false);
     mm.setExternalDataSource(cfg.getExternalDataSource());
@@ -189,6 +193,9 @@ public class MondrianModelFactory {
     String mdxQuery;
     String role;
     String dynResolver;
+    // Locale requested
+    String dynLocale;
+    
     String connectionPooling;
     // external DataSource to be used by Mondrian
     DataSource externalDataSource = null;
@@ -342,13 +349,29 @@ public class MondrianModelFactory {
     public void setExternalDataSource(DataSource externalDataSource) {
       this.externalDataSource = externalDataSource;
     }
-
+    
+    /**
+    * Getter for property dynLocale.
+    * @return Value of property dynLocale.
+    */
+    public String getDynLocale() {
+        return this.dynLocale;
+    }
+    
+    /**
+    * Setter for property dynLocale.
+    * @param dynLocale New value of property dynLocale.
+    */
+    public void setDynLocale(String dynLocale) {
+        this.dynLocale = dynLocale;
+    }
+    
     public String toString() {
       return "Config[" + "jdbcUrl=" + jdbcUrl + ", jdbcDriver=" + jdbcDriver + ", jdbcUser="
           + jdbcUser + ", jdbcPassword=" + jdbcPassword + ", dataSource=" + dataSource
           + ", schemaUrl=" + schemaUrl + ", mdxQuery=" + mdxQuery + ", role=" + role
           + ", dynResolver=" + dynResolver + ", connectionPooling=" + connectionPooling
-          + "externalDataSource=" + externalDataSource + "]";
+          + ", externalDataSource=" + externalDataSource + ", dynLocale="+dynLocale+"]";      
     }
   }
 }
