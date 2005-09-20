@@ -69,7 +69,7 @@ public class PropertyHolderImpl implements PropertyHolder {
   /**
    * very slow!
    */
-  public void addPropery(PropertyImpl property) {
+  public void addProperty(PropertyImpl property) {
     int N = properties.length;
     Property[] old = properties;
     properties = new Property[N + 1];

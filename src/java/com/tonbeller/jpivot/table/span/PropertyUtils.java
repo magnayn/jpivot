@@ -145,7 +145,7 @@ public class PropertyUtils {
           if (parent == null)
             result.add(child);
           else
-            parent.addPropery(child);
+            parent.addProperty(child);
         }
         parent = child;
       }
@@ -160,7 +160,10 @@ public class PropertyUtils {
       return false;
     for (int i = 0; i < properties.length; i++) {
       if (properties[i].getName().indexOf(delimiter) > 0) {
-        return true;
+          // if the property has a separate Label, then it does not require normalization
+          // since it is to be displayed as-is
+          if (!properties[i].getName().equals(properties[i].getLabel()))
+            return true;
       }
     }
     return false;
