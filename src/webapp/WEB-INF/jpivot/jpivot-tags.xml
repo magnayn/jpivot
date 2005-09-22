@@ -325,6 +325,10 @@ where ([Time].[1997])
       <descr lang="en">class resolving Mondrian Schema dynamic variables</descr>
       <descr lang="de">Klasse zum dynamischen Auflösen von Variablen im Mondrian Schema</descr>
     </attr>
+    <attr type="String" rtexpr="true" required="false" name="dynLocale">
+       <descr lang="en">Locale for dynamic Mondrian Schema Resolver </descr>
+       <descr lang="de">Klasse zum dynamischen Auflösen von Variablen im Mondrian Schema</descr>
+    </attr>
     <attr type="String" rtexpr="true" required="false" name="connectionPooling">
       <descr lang="en">"false" will prevent Mondrian from Connection Pooling</descr>
       <descr lang="de">"false" verhindert Mondrian Connection Pooling</descr>
