@@ -181,8 +181,8 @@ public class ScopedPropertyMetaSetTest extends TestCase {
 
   public void testAddMember() {
     MemberImpl m = new MemberImpl();
-    m.addPropery(new PropertyImpl("a", "av"));
-    m.addPropery(new PropertyImpl("b", "bv"));
+    m.addProperty(new PropertyImpl("a", "av"));
+    m.addProperty(new PropertyImpl("b", "bv"));
     LevelImpl l = new LevelImpl();
     l.setLabel("l");
     m.setLevel(l);
