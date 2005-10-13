@@ -1189,9 +1189,12 @@ public class XMLA_SOAP implements OlapDiscoverer {
     } else if (upperDSString.startsWith("PROVIDER=MONDRIAN")) {
       logger.debug("Provider is Mondrian");
       return OlapDiscoverer.PROVIDER_MONDRIAN;
-    } else if (upperDSString.startsWith("PROVIDER=MS")) {
-      logger.debug("Provider is Microsoft");
+    } else if (upperDSString.startsWith("PROVIDER=MS")) {//not sure if this is needed?
+      logger.debug("Provider is Microsoft"); 
       return OlapDiscoverer.PROVIDER_MICROSOFT;
+    } else if (upperDSString.startsWith("PROVIDER=MICROSOFT")) {// return value from MSAS: "Microsoft XML for Analysis"
+        logger.debug("Provider is Microsoft");
+        return OlapDiscoverer.PROVIDER_MICROSOFT; // 
     } else {
       logger.error("Error determining provider from: " + dataSourceString);
       throw new OlapException("Unexpected data source determining XML/A provider");
