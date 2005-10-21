@@ -35,11 +35,7 @@
 
 <form action="<portlet:renderURL/>" method="post">
 
-<%-- include query and title, so this jsp may be used with different queries 
-<wcf:include id="include01" httpParam="query" prefix="/WEB-INF/queries/" suffix=".jsp"/>
---%>
-
-<c:if test="${query01 == null}">
+<c:if test="$query01 == null">
 	<jp:mondrianQuery id="query01" jdbcDriver="sun.jdbc.odbc.JdbcOdbcDriver" jdbcUrl="jdbc:odbc:MondrianFoodMart" catalogUri="/WEB-INF/queries/FoodMart.xml">
 	select
 	  {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,
@@ -47,15 +43,16 @@
 	from Sales
 	where ([Time].[1997])
 	</jp:mondrianQuery>
+	
+	<c:set var="title01" scope="session">Test Query uses Mondrian OLAP</c:set>
 </c:if>
 
-<c:set var="title01" scope="session">Test Query uses Mondrian OLAP</c:set>
 
 <portlet:renderURL var="indexURL">
 	<portlet:param name="op" value="index"/>
 </portlet:renderURL>
 
-<c:if test="${query01 == null}">
+<c:if test="$query01 == null">
   <jsp:forward page="${indexURL}"/>
 </c:if>
 
@@ -120,7 +117,7 @@
 <p>
 
 <%-- if there was an overflow, show error message --%>
-<c:if test="${query01.result.overflowOccured}">
+<c:if test="$query01.result.overflowOccured">
   <p>
   <strong style="color:red">Resultset overflow occured</strong>
   <p>
@@ -130,7 +127,7 @@
 <wcf:render ref="navi01" xslUri="/WEB-INF/jpivot/navi/navigator.xsl" xslCache="true"/>
 
 <%-- edit mdx --%>
-<c:if test="${mdxedit01.visible}">
+<c:if test="$mdxedit01.visible">
   <h3>MDX Query Editor</h3>
   <wcf:render ref="mdxedit01" xslUri="/WEB-INF/wcf/wcf.xsl" xslCache="true"/>
 </c:if>

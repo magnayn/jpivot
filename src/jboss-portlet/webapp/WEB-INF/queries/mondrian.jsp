@@ -11,7 +11,7 @@
 <%-- uses a role defined in FoodMart.xml --%>
 <%-- jp:mondrianQuery role="California manager" id="query01" jdbcDriver="sun.jdbc.odbc.JdbcOdbcDriver" jdbcUrl="jdbc:odbc:MondrianFoodMart" catalogUri="/WEB-INF/FoodMart.xml" --%>
 
-<jp:mondrianQuery id="query01" jdbcDriver="sun.jdbc.odbc.JdbcOdbcDriver" jdbcUrl="jdbc:odbc:MondrianFoodMart" catalogUri="/WEB-INF/FoodMart.xml">
+<jp:mondrianQuery id="query01" jdbcDriver="sun.jdbc.odbc.JdbcOdbcDriver" jdbcUrl="jdbc:odbc:MondrianFoodMart" catalogUri="/WEB-INF/queries/FoodMart.xml">
 select
   {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,
   {([Promotion Media].[All Media], [Product].[All Products])} ON rows

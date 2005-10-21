@@ -46,7 +46,7 @@
 	<portlet:param name="query" value="/WEB-INF/queries/colors.jsp"/>
 </portlet:renderURL>
 
-<c:if test="${query01 != null}">
+<c:if test="$query01 != null">
   <jp:destroyQuery id="query01"/>
 </c:if>
 
