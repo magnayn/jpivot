@@ -3,19 +3,19 @@
 <!DOCTYPE taglib [
 
 <!ENTITY id.attr
-"<attr rtexpr='false' required='true' name='id' type='String'>
+"<attr rtexpr='true' required='true' name='id' type='String'>
   <descr lang='de'>Name des Session Attributes, das durch dieses Tag erzeugt wird</descr>
   <descr lang='en'>Name of the Session Attribute that is created by this tag</descr>
 </attr>">
 
 <!ENTITY visible.attr
-"<attr rtexpr='false' required='false' name='visible' type='boolean'>
+"<attr rtexpr='true' required='false' name='visible' type='boolean'>
   <descr lang='de'>Entscheidet, ob die Komponenente sichtbar ist oder nicht. Das WCF Render Tag zeigt eine Komponente mit visible == false nicht an</descr>
   <descr lang='en'>Sets the visible property of the component. The WCF Render tag will not show a component whose visible flag is false</descr>
 </attr>">
 
 <!ENTITY role.attr
-"<attr rtexpr='false' required='false' name='role' type='String'>
+"<attr rtexpr='true' required='false' name='role' type='String'>
   <descr lang='de'>
     Name einer Rolle, optional mit vorangestelltem '!'.
     Beispiel role='tomcat' erlaubt allen Mitgliedern der Rolle 'tomcat' den Zugriff,
@@ -29,7 +29,7 @@
 </attr>">
 
 <!ENTITY query.attr
-"<attr rtexpr='false' required='true' name='query' type='OlapModel'>
+"<attr rtexpr='true' required='true' name='query' type='OlapModel'>
   <descr lang='en'>
     Name of the Session Attribute that contains the OLAP Data (query and result) for this tag.
   </descr>
@@ -43,7 +43,7 @@
 </attr>">
 
 <!ENTITY xmluri.attr
-"<attr type='String' rtexpr='false' required='true' name='xmlUri'>
+"<attr type='true' rtexpr='false' required='true' name='xmlUri'>
   <descr lang='en'>
     Path of an XML config file that describes the HTML form.
   </descr>
@@ -80,7 +80,7 @@
     &visible.attr;
     &role.attr;
     &query.attr;
-    <attr rtexpr="false" required="false" name="configXml" type="String">
+    <attr rtexpr="true" required="false" name="configXml" type="String">
       <descr lang="en">Path for a config file that allows to add customer specific code</descr>
       <descr lang="de">Pfad einer Konfigurationsdatei mit der kundenspezifischer Code eingebunden werden kann</descr>
     </attr>
@@ -139,7 +139,7 @@
         Application context (d.h. der Kontext wird vorangestellt), ansonsten ist sie absolut.
       </descr>
     </attr>
-    <attr rtexpr="false" required="false" name="page" type="String">
+    <attr rtexpr="true" required="false" name="page" type="String">
       <descr lang="en">Name of the target page, must start with "/". If not set
         the current page is re-displayed.
       </descr>
@@ -147,19 +147,19 @@
         wird die gleiche Seite wieder angezeigt.
       </descr>
     </attr>
-    <attr rtexpr="false" required="true" name="uniqueName" type="String">
+    <attr rtexpr="true" required="true" name="uniqueName" type="String">
       <descr lang="en">unique name of a dimension, hierarchy or level, whose members will be clickable</descr>
       <descr lang="de">unique name einer Dimension, Hierarchy oder Level, deren Elemente angeklickt werden können.</descr>
     </attr>
-    <attr rtexpr="false" required="false" name="sessionParam" type="String">
+    <attr rtexpr="true" required="false" name="sessionParam" type="String">
       <descr lang="en">name of the parameter, that will be placed into the com.tonbeller.jpivot.param.SessionParamPool</descr>
       <descr lang="de">Name des Parameters, der in den com.tonbeller.jpivot.param.SessionParamPool gestellt wird</descr>
     </attr>
-    <attr rtexpr="false" required="false" name="propertyName" type="String">
+    <attr rtexpr="true" required="false" name="propertyName" type="String">
       <descr lang="en">if present, the value of that member property will be taken for the com.tonbeller.jpivot.param.Parameter sqlValue property</descr>
       <descr lang="de">Wenn vorhanden wird der Wert der Elementeigenschaft als sqlValue des com.tonbeller.jpivot.param.Parameter genommen</descr>
     </attr>
-    <attr rtexpr="false" required="false" name="propertyPrefix" type="String">
+    <attr rtexpr="true" required="false" name="propertyPrefix" type="String">
       <descr lang="en">if present, multiple SessionParam will be created, one for each
       member property whose name starts with propertyPrefix. The name of the SessionParam will be
       the name of the reminder of the member properties name after the prefix. If present,
@@ -168,7 +168,7 @@
       Der Name des SessionParam ist der Name des Member Property ohne das propertyPrefix. Wenn
       vorhanden, dürfen die Attribute sessionParam und propertyName nicht gesetzt sein.</descr>
     </attr>
-    <attr rtexpr="false" required="false" name="providerClass" type="String">
+    <attr rtexpr="true" required="false" name="providerClass" type="String">
       <descr lang="en">if present, an instance of this class will extract the SessionParam instances
       from the member. The class must implement com.tonbeller.jpivot.table.navi.ClickableMember.ParameterProvider.
       The attributes sessionParam, propertyName, propertyPrefix are not allowed in this case.</descr>
@@ -204,17 +204,17 @@
       Genau eines der Attribute httpParam oder sessionParam muss gesetzt sein.
     </descr>
     &query.attr;
-    <attr rtexpr="false" required="false" name="httpParam" type="String">
+    <attr rtexpr="true" required="false" name="httpParam" type="String">
       <descr lang="en">Name of a http parameter. If present, its value will be parsed
       and set into the mdx parameter</descr>
       <descr lang="de">Name des HTTP Parameters. Wenn der Parameter vorhanden ist,
       wird sein Wert in die MDX Query als Parameterwert eingetragen.</descr>
     </attr>
-    <attr rtexpr="false" required="false" name="sessionParam" type="String">
+    <attr rtexpr="true" required="false" name="sessionParam" type="String">
       <descr lang="en">name of the session parameter</descr>
       <descr lang="de">Name des Session Parameters</descr>
     </attr>
-    <attr rtexpr="false" required="true" name="mdxParam" type="String">
+    <attr rtexpr="true" required="true" name="mdxParam" type="String">
       <descr lang="en">Name of the MDX Parameter in the query to modify</descr>
       <descr lang="de">Name des zu setzenden MDX Parameters in der Query</descr>
     </attr>
@@ -289,31 +289,31 @@ where ([Time].[1997])
 </jp:mondrianQuery>]]></example>
 
     &id.attr;
-    <attr type="String" rtexpr="false" required="false" name="jdbcDriver">
+    <attr type="String" rtexpr="true" required="false" name="jdbcDriver">
       <descr lang="en">Java class name of the JDBC driver</descr>
       <descr lang="de">Java Klassenname des JDBC Treibers</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="jdbcUrl">
+    <attr type="String" rtexpr="true" required="false" name="jdbcUrl">
       <descr lang="en">Connection parameters, these are database specific</descr>
       <descr lang="de">Verbindungsparameter, diese sind Datenbankspezifisch</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="jdbcUser">
+    <attr type="String" rtexpr="true" required="false" name="jdbcUser">
       <descr lang="en">user name to connect to the database</descr>
       <descr lang="de">user Kennung für Verbindung zur Datenbank</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="jdbcPassword">
+    <attr type="String" rtexpr="true" required="false" name="jdbcPassword">
       <descr lang="en">password to connect to the database</descr>
       <descr lang="de">Passwort für Verbindung zur Datenbank</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="dataSource">
+    <attr type="String" rtexpr="true" required="false" name="dataSource">
       <descr lang="en">JNDI name of a preconfigured JDBC DataSource, e.g. jdbc/SironTDI. Must not be used with the other JDBC attributes</descr>
       <descr lang="de">JNDI Name einer vorkonfigurierten JDBC DataSource, e.g. jdbc/SironTDI. Kann nicht zusammen mit den anderen JDBC Attributen verwendet werden.</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="true" name="catalogUri">
+    <attr type="String" rtexpr="true" required="true" name="catalogUri">
       <descr lang="en">Path of the Mondrian schema, relative to the application context, e.g. <tt>/WEB-INF/FoodMart.xml</tt></descr>
       <descr lang="de">Pfad des Mondrian Schemas, relativ zum Application Context, z.B.<tt>/WEB-INF/FoodMart.xml</tt></descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="config">
+    <attr type="String" rtexpr="true" required="false" name="config">
       <descr lang="en">internal use only</descr>
       <descr lang="de">internal use only</descr>
     </attr>
@@ -459,19 +459,19 @@ where ([Time].[1997])
 </jp:xmlaQuery>]]></example>
 
     &id.attr;
-    <attr type="String" rtexpr="false" required="true" name="uri">
+    <attr type="String" rtexpr="true" required="true" name="uri">
       <descr lang="en">The URI used to access the XMLA server</descr>
       <descr lang="de">Die URI des XMLA Servers</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="dataSource">
+    <attr type="String" rtexpr="true" required="false" name="dataSource">
       <descr lang="en">DataSourceInfo specification like &quot;Provider=MSOLAP;Data Source=local&quot;</descr>
       <descr lang="de">DataSourceInfo Spezifikation, etwa &quot;Provider=MSOLAP;Data Source=local&quot;</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="true" name="catalog">
+    <attr type="String" rtexpr="true" required="true" name="catalog">
       <descr lang="en">Catalog spezification like &quot;Foodmart 2000&quot;</descr>
       <descr lang="de">Catalog Spezification, etwa &quot;Foodmart 2000&quot;</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="config">
+    <attr type="String" rtexpr="true" required="false" name="config">
       <descr lang="en">Path to a config file that allows to integrat customer specific code</descr>
       <descr lang="de">Pfad zu einer Konfigurationsdatei, relativ zum Application Context, über
         die Kundenspezifischer Code eingebunden werden kann</descr>
@@ -484,11 +484,11 @@ where ([Time].[1997])
     <descr lang="en">Creates test data that can be displayed by the table or chart components</descr>
     <descr lang="de">Erzeugt Testdaten, die mit Tabelle / Chart usw angezeigt werden können</descr>
     &id.attr;
-    <attr type="String" rtexpr="false" required="false" name="onRows">
+    <attr type="String" rtexpr="true" required="false" name="onRows">
       <descr lang="en">Whitespace separated list of dimensions to show on rows. Possible values are: Measures, Region, Products, Advertising, Material</descr>
       <descr lang="de">Namen der anzuzeigenden Dimensionen in den Zeilen, durch Leerzeichen getrennt. Mögliche Werte: Measures, Region, Products, Advertising, Material</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="onColumns">
+    <attr type="String" rtexpr="true" required="false" name="onColumns">
       <descr lang="en">Whitespace separated list of dimensions to show on columns. Possible values are: Measures, Region, Products, Advertising, Material</descr>
       <descr lang="de">Namen der anzuzeigenden Dimensionen in den Spalten, durch Leerzeichen getrennt. Mögliche Werte: Measures, Region, Products, Advertising, Material</descr>
     </attr>
@@ -552,15 +552,15 @@ where ([Time].[1997])
       des Tags bereitgestellt.
     </descr>
     &id.attr;
-    <attr type="String" rtexpr="false" required="true" name="value">
+    <attr type="String" rtexpr="true" required="true" name="value">
       <descr lang="en">EL expression evaluating to the value (number)</descr>
       <descr lang="de">EL expression evaluating to the value (number)</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="formattedValue">
+    <attr type="String" rtexpr="true" required="false" name="formattedValue">
       <descr lang="en">EL expression evaluating to the formatted value (String)</descr>
       <descr lang="de">EL expression evaluating to the formatted value (String)</descr>
     </attr>
-    <attr type="String" rtexpr="false" required="false" name="caption">
+    <attr type="String" rtexpr="true" required="false" name="caption">
       <descr lang="en">EL expression evaluating to the caption (String)</descr>
       <descr lang="de">EL expression evaluating to the caption (String)</descr>
     </attr>
