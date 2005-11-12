@@ -59,7 +59,7 @@
   <property name="regexp.home"          value="${repository.home}/jakarta-regexp-1.2"/>
   <property name="junit.home"           value="${repository.home}/junit-3.8.1"/>
   <property name="log4j.home"           value="${repository.home}/jakarta-log4j-1.2.8"/>
-  <property name="jfreechart.home"      value="${repository.home}/jfreechart-0.9.21"/>
+  <property name="jfreechart.home"      value="${repository.home}/jfreechart-1.0.0-rc1"/>
   <property name="jsf.home"             value="${repository.home}/jsf-1_1"/>
   <property name="fop.home"             value="${repository.home}/fop-0.20.5"/>
   <property name="jai.home"             value="${repository.home}/jai-1_1_2"/>

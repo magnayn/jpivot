@@ -25,6 +25,7 @@ import com.tonbeller.wcf.controller.RequestContext;
 public class ChartComponentTag extends ComponentTag {
 	String query;
     String baseDisplayURL;
+    String controllerURL;
 
   /**
    * creates a ChartComponent
@@ -44,7 +45,7 @@ public class ChartComponentTag extends ComponentTag {
 	  configUrl = getClass().getResource("config.xml");
 	return TableComponentFactory.instance(id, configUrl, olapModel);
 */
-    return new ChartComponent(id, null, query, baseDisplayURL, context);
+    return new ChartComponent(id, null, query, baseDisplayURL, controllerURL, context);
   }
 
   /**
@@ -78,5 +79,13 @@ public class ChartComponentTag extends ComponentTag {
   public void setBaseDisplayURL(String baseDisplayURL) {
     this.baseDisplayURL = baseDisplayURL;
   }
+
+public String getControllerURL() {
+	return controllerURL;
+}
+
+public void setControllerURL(String controllerURL) {
+	this.controllerURL = controllerURL;
+}
   
 }

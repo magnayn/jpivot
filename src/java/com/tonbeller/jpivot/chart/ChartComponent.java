@@ -10,8 +10,11 @@
  */
 package com.tonbeller.jpivot.chart;
 
+import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
@@ -25,10 +28,11 @@ import javax.xml.parsers.DocumentBuilder;
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.Legend;
-import org.jfree.chart.StandardLegend;
+import org.jfree.chart.OldLegend;
+import org.jfree.chart.DefaultOldLegend;
 import org.jfree.chart.axis.CategoryLabelPosition;
 import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.CategoryLabelWidthType;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.entity.StandardEntityCollection;
@@ -38,6 +42,7 @@ import org.jfree.chart.plot.PiePlot3D;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.servlet.ServletUtilities;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.chart.title.Title;
 import org.jfree.chart.urls.CategoryURLGenerator;
@@ -50,7 +55,9 @@ import org.jfree.text.TextBlockAnchor;
 import org.jfree.ui.HorizontalAlignment;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.RectangleInsets;
 import org.jfree.ui.TextAnchor;
+import org.jfree.ui.VerticalAlignment;
 import org.jfree.util.TableOrder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -107,7 +114,8 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 	String CHART_SERVLET = "/DisplayChart";
 	final String CHART_SERVLET_KEY = "chartServlet";
     boolean baseDisplayURLSet = false;
-
+    String webControllerURL = "";
+    
 	String filename = null;
 	// chart properties
 	final int DEFAULT_CHART_WIDTH = 500;
@@ -129,9 +137,9 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 	String legendFontName = "SansSerif";
 	int legendFontStyle = java.awt.Font.PLAIN;
 	int legendFontSize = 10;
-	int legendPosition = Legend.SOUTH;
-	int slicerPosition = Title.BOTTOM;
-	int slicerAlignment = Title.LEFT;
+	int legendPosition = OldLegend.SOUTH;
+	int slicerPosition = 1; // BOTTOM - see chartpropertiesform.xsl
+	int slicerAlignment = 3; // LEFT
 	//java.awt.Color bgColor = java.awt.Color.white;
 	int bgColorR = 255;
 	int bgColorG = 255;
@@ -154,9 +162,13 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 	/**
 	 * Constructor
 	 * @param id the id of this component
+	 * @param parent parent component
 	 * @param ref a reference to an olap model
+	 * @param baseDisplayURL URL for chart servlet. Overrides default
+	 * @param controllerURL URL for web application where JPivot/WCF is running. Overrides default
+	 * @param context RequestContext
 	 */
-	public ChartComponent(String id, Component parent, String ref, String baseDisplayURL, RequestContext context) {
+	public ChartComponent(String id, Component parent, String ref, String baseDisplayURL, String controllerURL, RequestContext context) {
 		super(id, parent);
 		this.ref = ref;
 
@@ -175,10 +187,13 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
         if ( chartServlet != null ) {
             this.CHART_SERVLET = chartServlet;
         }
+        if (controllerURL != null) {
+        	this.webControllerURL = controllerURL;
+        }
 	}
     
     public ChartComponent(String id, Component parent, String ref, RequestContext context) {
-        this(id, parent, ref, null, context);
+        this(id, parent, ref, null, null, context);
     }
     
 	/**
@@ -222,8 +237,8 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 
 			// create font
 			titleFont = new java.awt.Font(fontName, fontStyle, fontSize);
-                        //jpivotPieURLGenerator pieUrlgenerator = new jpivotPieURLGenerator(PiePlot.PER_ROW);
-			CategoryURLGenerator urlGenerator = new jpivotCategoryURLGenerator();
+
+			CategoryURLGenerator urlGenerator = new jpivotCategoryURLGenerator(webControllerURL);
 
 			// Create the chart object
 			JFreeChart chart=null;
@@ -435,7 +450,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 						showLegend,
 						showTooltips,
                                                 drillThroughEnabled,
-                                                new jpivotPieURLGenerator(TableOrder.BY_COLUMN,dataset)
+                                                new jpivotPieURLGenerator(TableOrder.BY_COLUMN,dataset, webControllerURL)
 						);
 					break;
 				case 16 :
@@ -447,7 +462,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 						showLegend,
 						showTooltips,
                                                 drillThroughEnabled,
-                                                new jpivotPieURLGenerator(TableOrder.BY_ROW,dataset)
+                                                new jpivotPieURLGenerator(TableOrder.BY_ROW,dataset, webControllerURL)
 						);
 					break;
                                 case 17 :
@@ -459,7 +474,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 						showLegend,
 						showTooltips,
                                                 drillThroughEnabled,
-                                                new jpivotPieURLGenerator(TableOrder.BY_COLUMN,dataset)
+                                                new jpivotPieURLGenerator(TableOrder.BY_COLUMN,dataset, webControllerURL)
 						);
 
 					break;
@@ -472,7 +487,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 						showLegend,
 						showTooltips,
                                                 drillThroughEnabled,
-                                                new jpivotPieURLGenerator(TableOrder.BY_ROW,dataset)
+                                                new jpivotPieURLGenerator(TableOrder.BY_ROW,dataset, webControllerURL)
 						);
 
 					break;
@@ -495,14 +510,14 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 					catPlot.getRangeAxis().setLabelFont(axisFont);
 					catPlot.getDomainAxis().setTickLabelFont(axisTickFont);
 					catPlot.getRangeAxis().setTickLabelFont(axisTickFont);
-					catPlot.getDomainAxis().setMaxCategoryLabelWidthRatio(100);
+					catPlot.getDomainAxis().setMaximumCategoryLabelWidthRatio(100.0f);
 					double angle = -2.0 * Math.PI / 360.0 * (double) tickLabelRotate;
 					CategoryLabelPositions oldp = catPlot.getDomainAxis().getCategoryLabelPositions();
 					CategoryLabelPositions newp = new CategoryLabelPositions(
 						oldp.getLabelPosition(RectangleEdge.TOP),
 						new CategoryLabelPosition(
 							RectangleAnchor.TOP, TextBlockAnchor.TOP_RIGHT,
-							TextAnchor.TOP_RIGHT, angle),
+							TextAnchor.TOP_RIGHT, 0.0D, CategoryLabelWidthType.RANGE, (new Float(angle)).floatValue()),
 						oldp.getLabelPosition(RectangleEdge.LEFT),
 						oldp.getLabelPosition(RectangleEdge.RIGHT)
 					);
@@ -526,10 +541,26 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
                                         //piePlot.setSectionLabelType(piePlot.NO_LABELS);
 
 				}
-				StandardLegend legend = (StandardLegend) chart.getLegend();
+				LegendTitle legend = (LegendTitle) chart.getLegend();
 				if ( legend != null ) {
 					legend.setItemFont(legendFont);
-					legend.setAnchor(legendPosition);
+                    RectangleAnchor legendRectAnchor=RectangleAnchor.BOTTOM;
+
+                        switch (legendPosition){
+                             case 0:
+                            	 legendRectAnchor = RectangleAnchor.LEFT;
+                                break;
+                            case 1:
+                            	legendRectAnchor = RectangleAnchor.TOP;
+                                break;
+                            case 2:
+                            	legendRectAnchor = RectangleAnchor.RIGHT;
+                                break;
+                            case 3:
+                            	legendRectAnchor = RectangleAnchor.BOTTOM;
+                                break;
+                        }
+					legend.setLegendItemGraphicAnchor(legendRectAnchor);
 				}
 				if ( showSlicer ) {
                                     RectangleEdge slicerRectPos=RectangleEdge.BOTTOM;
@@ -561,7 +592,13 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
                                                 slicerHorizAlignment = HorizontalAlignment.RIGHT;
                                                 break;
                                      }
-					TextTitle slicer = new TextTitle(buildSlicer(), slicerFont, slicerHorizAlignment);
+					TextTitle slicer = new TextTitle(buildSlicer(),
+											slicerFont, 
+											Color.BLACK, 
+											slicerRectPos,
+											slicerHorizAlignment, 
+											VerticalAlignment.CENTER, 
+											new RectangleInsets(0,0,0,0));
 
 
 					slicer.setPosition(slicerRectPos);
@@ -587,8 +624,13 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 		DocumentBuilder parser = XmlUtils.getParser();
 		// get an image map for the chart, wrap it in xchart tags
 		String xchart = "<xchart>" + writeImageMap(filename, info, false) + "</xchart>";
+/*		
+		if (logger.isDebugEnabled()) {
+			logger.debug("Chart XML");
+			logger.debug(xchart);
+		}
+*/
 		// create an InputStream from the DOM document
-
 		InputStream stream =
 			new ByteArrayInputStream(xchart.getBytes("UTF-8"));
 
@@ -652,7 +694,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 			// modify to valid xml tag
 			area = area.replaceAll("&", "&amp;");
 			//area = area.toLowerCase();
-			area = area.replaceAll(">$", "/>");
+			//area = area.replaceAll(">$", "/>");
 			if (area.length() > 0) {
 				sb.append(area);
 			}
@@ -1091,6 +1133,13 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
                         this.rowCount=dataset.getRowCount();
                 }
 
+                /*
+                 * As above with web controller URL
+                 */
+                jpivotPieURLGenerator(TableOrder order, DefaultCategoryDataset dataset, String controllerURL){
+                    this(order, dataset);
+                    this.prefix = controllerURL;
+                }
 		/**
 		 * Implementation of generateURL that integrates with jpivot/wcf framework.
 		 * A request handler is added for each cell/item.

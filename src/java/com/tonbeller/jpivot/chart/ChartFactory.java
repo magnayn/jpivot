@@ -368,8 +368,8 @@ public class ChartFactory {
 		ValueAxis valueAxis = new NumberAxis(valueAxisLabel);
 
 		LineAndShapeRenderer renderer = new LineAndShapeRenderer();
-		renderer.setDrawLines(true);
-		renderer.setDrawShapes(false);
+		renderer.setLinesVisible(true);
+		renderer.setShapesVisible(false);
 		if (tooltips) {
 			renderer.setToolTipGenerator(new StandardCategoryToolTipGenerator());
 		}

@@ -516,6 +516,11 @@ where ([Time].[1997])
     <attr type="String" rtexpr="true" required="false" name="baseDisplayURL">
       <descr lang="en">Base link to chart display servlet. Will be parameterized with '?filename=&lt;temp chart image file name&gt;'</descr>
     </attr>
+    <attr type="String" rtexpr="true" required="false" name="controllerURL">
+      <descr lang="en">Base link to web application controller for JPivot. 
+      Useful for complicated environments like a portal, where you would use
+      a portlet:renderURL</descr>
+    </attr>
   </tag>
     <example><![CDATA[
 <jp:chart id="chart01" query="#{query01}" visible="false"/>
