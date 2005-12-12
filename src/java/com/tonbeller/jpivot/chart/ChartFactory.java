@@ -20,7 +20,7 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.CategoryToolTipGenerator;
 import org.jfree.chart.labels.PieToolTipGenerator;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
-import org.jfree.chart.labels.StandardPieItemLabelGenerator;
+import org.jfree.chart.labels.StandardPieToolTipGenerator;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.labels.XYToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
@@ -89,7 +89,7 @@ public class ChartFactory {
                 //plot.setOutlineStroke(null);
 		PieToolTipGenerator tooltipGenerator = null;
 		if (tooltips) {
-			tooltipGenerator = new StandardPieItemLabelGenerator();
+			tooltipGenerator = new StandardPieToolTipGenerator();
 		}
                
 		//PieURLGenerator urlGenerator = null;
@@ -140,7 +140,7 @@ public class ChartFactory {
                 
                 PieToolTipGenerator tooltipGenerator = null;
 		if (tooltips) {
-			tooltipGenerator = new StandardPieItemLabelGenerator();
+			tooltipGenerator = new StandardPieToolTipGenerator();
 		}
                 
                 if (!urls) {

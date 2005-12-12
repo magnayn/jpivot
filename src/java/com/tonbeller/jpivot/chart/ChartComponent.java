@@ -28,8 +28,6 @@ import javax.xml.parsers.DocumentBuilder;
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.OldLegend;
-import org.jfree.chart.DefaultOldLegend;
 import org.jfree.chart.axis.CategoryLabelPosition;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.CategoryLabelWidthType;
@@ -137,7 +135,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 	String legendFontName = "SansSerif";
 	int legendFontStyle = java.awt.Font.PLAIN;
 	int legendFontSize = 10;
-	int legendPosition = OldLegend.SOUTH;
+	int legendPosition = 3; //RectangleEdge.BOTTOM;
 	int slicerPosition = 1; // BOTTOM - see chartpropertiesform.xsl
 	int slicerAlignment = 3; // LEFT
 	//java.awt.Color bgColor = java.awt.Color.white;
@@ -544,6 +542,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 				LegendTitle legend = (LegendTitle) chart.getLegend();
 				if ( legend != null ) {
 					legend.setItemFont(legendFont);
+					/*
                     RectangleAnchor legendRectAnchor=RectangleAnchor.BOTTOM;
 
                         switch (legendPosition){
@@ -561,6 +560,23 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
                                 break;
                         }
 					legend.setLegendItemGraphicAnchor(legendRectAnchor);
+					*/
+					RectangleEdge legendRectEdge=RectangleEdge.BOTTOM;
+					switch (legendPosition){
+						case 0:
+							legendRectEdge = RectangleEdge.LEFT;
+							break;
+						case 1:
+							legendRectEdge = RectangleEdge.TOP;
+							break;
+						case 2:
+							legendRectEdge = RectangleEdge.RIGHT;
+							break;
+						case 3:
+							legendRectEdge = RectangleEdge.BOTTOM;
+							break;
+					}
+					legend.setPosition(legendRectEdge);
 				}
 				if ( showSlicer ) {
                                     RectangleEdge slicerRectPos=RectangleEdge.BOTTOM;
@@ -568,16 +584,16 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 
                                         switch (slicerPosition){
                                              case 0:
-                                                slicerRectPos = RectangleEdge.LEFT;
+                                                slicerRectPos = RectangleEdge.TOP;
                                                 break;
                                             case 1:
-                                                slicerRectPos = RectangleEdge.TOP;
+                                                slicerRectPos = RectangleEdge.BOTTOM;
                                                 break;
                                             case 2:
                                                 slicerRectPos = RectangleEdge.RIGHT;
                                                 break;
                                             case 3:
-                                                slicerRectPos = RectangleEdge.BOTTOM;
+                                                slicerRectPos = RectangleEdge.LEFT;
                                                 break;
                                         }
 
