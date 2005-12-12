@@ -10,7 +10,7 @@
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jstl.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/junit.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/log4j-1.2.8.jar"/>
-	<classpathentry sourcepath="D:/repository/mondrian/pilot/mondrian-src.jar" kind="lib" path="build/web/WEB-INF/lib/mondrian.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/mondrian.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/saxpath.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/standard.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jsf-api.jar"/>
@@ -21,14 +21,14 @@
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-dbcp-1.2.1.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-pool-1.2.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jcommon-0.9.6.jar"/>
-	<classpathentry sourcepath="D:/repository/jfreechart-0.9.21/source" kind="lib" path="build/web/WEB-INF/lib/jfreechart-0.9.21.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jfreechart-0.9.21.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/saaj-api.jar"/>
 	<classpathentry kind="lib" path="lib/saaj-api.jar"/>
 	<classpathentry kind="lib" path="lib/eigenbase-resgen.jar"/>
 	<classpathentry kind="lib" path="lib/eigenbase-xom.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.0.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/tbutils-wcf.jar"/>
-	<classpathentry sourcepath="/wcf-CVS" kind="lib" path="build/web/WEB-INF/lib/wcf.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/wcf.jar"/>
 	<classpathentry kind="var" path="TOMCAT_5_5/common/lib/servlet-api.jar"/>
 	<classpathentry kind="var" path="TOMCAT_5_5/common/lib/jsp-api.jar"/>
 	<classpathentry kind="var" path="JBOSS_4_0_2/server/default/deploy/jboss-portal.sar/lib/portal-bridge-lib.jar"/>
@@ -39,7 +39,6 @@
 	<classpathentry kind="var" path="JBOSS_4_0_2/server/default/deploy/jboss-portal.sar/lib/portals-bridges-common-0.2.jar"/>
 	<classpathentry kind="var" path="JBOSS_4_0_2/server/default/deploy/jboss-portal.sar/lib/portal-server-lib.jar"/>
 	<classpathentry kind="var" path="JBOSS_4_0_2/server/default/deploy/jboss-portal.sar/lib/portlet-api-lib.jar"/>
-	<classpathentry kind="lib" path="/jpivot_repository/junit-3.8.1/junit.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-beanutils-1.6.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-digester-1.5.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-fileupload-1.0.jar"/>
