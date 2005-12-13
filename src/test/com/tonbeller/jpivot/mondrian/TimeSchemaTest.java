@@ -42,10 +42,11 @@ public class TimeSchemaTest extends TestCase {
     model.setMdxQuery(mdxQuery);
 
     // the catalog file is TestSchema.xml in "this" directory
-    URL url = this.getClass().getResource("TestSchema.xml");
-    String catUri = "file://" + url.getFile();
+//    URL url = this.getClass().getResource("TestSchema.xml");
+//    String catUri = "file://" + url.getFile();
 
-    String connectString = TestConnection.getConnectString(catUri);
+    URL url = this.getClass().getResource("TestSchema.xml");
+    String connectString = TestConnection.getConnectString(url.toExternalForm());
     model.setConnectString(connectString);
     String jdbcDriver = TestConnection.getJdbcDriver();
     model.setJdbcDriver(jdbcDriver);

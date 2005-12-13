@@ -24,6 +24,7 @@ import com.tonbeller.jpivot.mondrian.MondrianModelFactory;
 import com.tonbeller.jpivot.mondrian.MondrianModelFactory.Config;
 import com.tonbeller.jpivot.olap.model.OlapException;
 import com.tonbeller.jpivot.olap.model.OlapModel;
+import com.tonbeller.tbutils.res.Resources;
 import com.tonbeller.wcf.controller.RequestContext;
 
 /**
@@ -42,6 +43,8 @@ public class MondrianOlapModelTag extends OlapModelTag {
   String dynResolver;
   String dynLocale;
   String connectionPooling;
+  
+  Resources res = Resources.instance();
 
   protected OlapModel getOlapModel(RequestContext context) throws JspException, OlapException, SAXException, IOException {
     MondrianModelFactory.Config cfg = new MondrianModelFactory.Config();
@@ -99,13 +102,7 @@ public class MondrianOlapModelTag extends OlapModelTag {
    * Defaultwert
    */
   protected String allowOverwrite(String paramName, String defVal) {
-    String paramVal = pageContext.getRequest().getParameter(paramName);
-    if (paramVal != null)
-      return paramVal;
-    paramVal = System.getProperty(paramName);
-    if (paramVal != null)
-      return paramVal;
-    return defVal;
+    return res.getOptionalString(paramName, defVal);
   }
 
   protected URL getDefaultConfig() {

@@ -8,11 +8,12 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.table.span;
 
 import com.tonbeller.jpivot.olap.model.Dimension;
+import com.tonbeller.jpivot.olap.model.EmptyMember;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Level;
 import com.tonbeller.jpivot.olap.model.Member;
@@ -27,13 +28,13 @@ import com.tonbeller.jpivot.olap.model.VisitorSupportStrict;
  */
 public class LevelHeaderFactory extends VisitorSupportStrict implements SpanVisitor, SpanHeaderFactory {
   Span header;
-  
+
   /**
    * @see com.tonbeller.jpivot.ui.table.span.SpanHeaderFactory#create(Span)
    */
   public Span create(Span span) {
-  	header = (Span)span.clone();
-  	span.getObject().accept(this);
+    header = (Span)span.clone();
+    span.getObject().accept(this);
     // level/hierarchy does not have a position
     header.setPosition(null);
     return header;
@@ -41,26 +42,31 @@ public class LevelHeaderFactory extends VisitorSupportStrict implements SpanVisi
 
 
   public void visitDimension(Dimension v) {
-  	header.setObject(v);
+    header.setObject(v);
   }
 
   public void visitHierarchy(Hierarchy v) {
-  	header.setObject(v);
+    header.setObject(v);
   }
 
   public void visitLevel(Level v) {
-  	header.setObject(v);
+    header.setObject(v);
   }
 
   public void visitMember(Member v) {
-  	header.setObject(v.getLevel());
+    header.setObject(v.getLevel());
   }
 
   public void visitProperty(Property v) {
     header.setObject(new PropertyHeading(v.getName()));
   }
+
   public void visitPropertyHeading(PropertyHeading heading) {
     header.setObject(new PropertyHeading(heading.getLabel()));
+  }
+
+  public void visitEmptyMember(EmptyMember v) {
+    header.setObject(v);
   }
 
 }

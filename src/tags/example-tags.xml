@@ -481,7 +481,7 @@
     <example><![CDATA[
 <jsp:useBean id="testbean" class="com.tonbeller.wcf.form.TestBean" scope="session" />
 <wcf:form id="formcomp" xmlUri="/WEB-INF/formdemo.xml" model="${testbean}"/>
-<form action="formdemo.jsp" method="post" id="form01">
+<form action="formdemo.jsp" method="POST" id="form01">
   <wcf:render ref="${formcomp}" xslUri="/WEB-INF/wcf/wcf.xsl" xslCache="true"/>
 </form>
 ]]></example>
@@ -831,7 +831,7 @@
 <wcf:tree id="tree01"/>
 <wcf:connect form1="${formcomp.form}" form2="${tree01.form}"/>
 
-<form action="formdemo.jsp" method="post" id="form01">
+<form action="formdemo.jsp" method="POST" id="form01">
   <wcf:render ref="${formcomp}" xslUri="/WEB-INF/wcf/wcf.xsl" xslCache="true"/>
   <wcf:render ref="${tree01}" xslUri="/WEB-INF/wcf/wcf.xsl" xslCache="true">
     <wcf:renderParam name="border" value="1"/>
@@ -873,7 +873,7 @@
     </attr>
     <example><![CDATA[
 <wcf:logform id="logdemo" xmlUri="/WEB-INF/logdemo.xml" logDir=".wcf/logging"/>
-<form action="logdemo.jsp" method="post" id="logform">
+<form action="logdemo.jsp" method="POST" id="logform">
   <wcf:render ref="logdemo" xslUri="/WEB-INF/wcf/wcf.xsl" xslCache="true"/>
 </form>
     ]]></example>

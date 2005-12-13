@@ -7,8 +7,6 @@
  * All Rights Reserved.
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
- *
- * 
  */
 package com.tonbeller.jpivot.mondrian;
 
@@ -44,7 +42,7 @@ public class MondrianAxis implements Axis {
     if (iOrdinal >= 0) {
       // it is not the slicer
       // get hierarchies from mondrian query, rather than from result, which can be empty
- 
+
       MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
       mondrian.olap.Hierarchy[] monHiers = adapter.getMonQuery().getMdxHierarchiesOnAxis(iOrdinal);
       hierarchies = new MondrianHierarchy[monHiers.length];

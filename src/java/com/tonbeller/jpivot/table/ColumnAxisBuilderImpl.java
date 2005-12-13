@@ -20,7 +20,7 @@ import com.tonbeller.jpivot.table.span.Span;
  * @author av
  */
 public class ColumnAxisBuilderImpl extends AxisBuilderSupport implements ColumnAxisBuilder {
-
+  
   public ColumnAxisBuilderImpl() {
     super(new SpanBuilderImpl("column-heading", "heading-heading"));
     setMemberIndent(false);

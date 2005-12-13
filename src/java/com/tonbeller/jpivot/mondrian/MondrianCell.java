@@ -12,8 +12,6 @@
  */
 package com.tonbeller.jpivot.mondrian;
 
-import java.util.Locale;
-
 import org.apache.log4j.Logger;
 
 import com.tonbeller.jpivot.olap.model.NumberFormat;

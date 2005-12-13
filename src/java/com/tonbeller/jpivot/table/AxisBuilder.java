@@ -56,5 +56,9 @@ public interface AxisBuilder extends PartBuilder {
   SpanCalc getSpanCalc();
   
   AxisConfig getAxisConfig();
+  
+  AxisHeaderBuilder getAxisHeaderBuilder();
+  
+  void setAxisHeaderBuilder(AxisHeaderBuilder axisHeaderBuilder); 
 }
 

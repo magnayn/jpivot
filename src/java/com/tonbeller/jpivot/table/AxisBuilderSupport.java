@@ -17,9 +17,9 @@ import java.beans.PropertyChangeListener;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
-import com.tonbeller.jpivot.olap.model.Alignable;
 import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.Displayable;
 import com.tonbeller.jpivot.olap.model.Member;
@@ -41,9 +41,12 @@ import com.tonbeller.wcf.controller.RequestContext;
 public abstract class AxisBuilderSupport extends PartBuilderSupport implements AxisBuilder,
     AxisConfig, PropertyChangeListener {
 
+  private static final Logger logger = Logger.getLogger(AxisBuilderSupport.class);
+  
   protected SpanCalc spanCalc;
   protected SpanBuilder spanBuilder;
   protected PropertySpanBuilder propertySpanBuilder;
+  protected AxisHeaderBuilder axisHeaderBuilder;
 
   // from AxisConfig
   protected boolean showParentMembers = false;
@@ -57,14 +60,17 @@ public abstract class AxisBuilderSupport extends PartBuilderSupport implements A
   }
 
   public void initialize(RequestContext context, TableComponent table) throws Exception {
+    logger.info("initialize");
     super.initialize(context, table);
     spanBuilder.initialize(context, table);
     propertySpanBuilder = new PropertySpanBuilder(table.getOlapModel());
     propertySpanBuilder.addPropertyChangeListener(this);
     propertySpanBuilder.initialize(context);
+    axisHeaderBuilder = new AxisHeaderBuilderSupport(spanBuilder);
   }
 
   public void destroy(HttpSession session) throws Exception {
+    logger.info("destroy");
     propertySpanBuilder.destroy(session);
     propertySpanBuilder = null;
     super.destroy(session);
@@ -74,11 +80,15 @@ public abstract class AxisBuilderSupport extends PartBuilderSupport implements A
    * called from startBuild()
    */
   protected void initialize(Axis axis) {
+    logger.info("initialize(Axis)");
     if (showParentMembers) {
       MemberTree tree = (MemberTree) table.getOlapModel().getExtension(MemberTree.ID);
-      if (tree != null)
+      if (tree != null) {
+        logger.info("adding LevelAxisDecorator");
         axis = new LevelAxisDecorator(axis, tree);
+      }
     }
+    logger.info("creating SpanCalc");
     spanCalc = new SpanCalc(axis);
 
     SpanConfigSupport scs = new SpanConfigSupport();
@@ -240,38 +250,7 @@ public abstract class AxisBuilderSupport extends PartBuilderSupport implements A
    * @param row
    */
   protected void buildHeading(Element row, Span span, int rowspan, int colspan, boolean even) {
-    Element elem = spanBuilder.build(span, even);
-    elem.setAttribute("rowspan", Integer.toString(rowspan));
-    elem.setAttribute("colspan", Integer.toString(colspan));
-
-    // no special formatting present?
-    if (elem.getAttribute("style").length() == 0) {
-      // valid styles are { span, even, odd, span-right, even-right, odd-right}
-      String style;
-      if (colspan > 1 || rowspan > 1)
-        style = "span";
-      else if (even)
-        style = "even";
-      else
-        style = "odd";
-      if (isRightAligned(span))
-        style = style + "-right";
-      elem.setAttribute("style", style);
-    }
-
-    // indent level for hierarchy style view
-    if (isMemberIndent() && span.isMember()) {
-      elem.setAttribute("indent", Integer.toString(span.getIndent()));
-    }
-
-    row.appendChild(elem);
-  }
-
-  private boolean isRightAligned(Span span) {
-    Object obj = span.getObject();
-    if (obj instanceof Alignable)
-      return ((Alignable) obj).getAlignment() == Alignable.Alignment.RIGHT;
-    return false;
+    axisHeaderBuilder.build(row, span, rowspan, colspan, even, isMemberIndent());
   }
 
   public PropertyConfig getPropertyConfig() {
@@ -294,6 +273,14 @@ public abstract class AxisBuilderSupport extends PartBuilderSupport implements A
    */
   public void setBookmarkState(Object state) {
     getPropertyConfig().setBookmarkState(state);
+  }
+
+  public AxisHeaderBuilder getAxisHeaderBuilder() {
+    return axisHeaderBuilder;
+  }
+
+  public void setAxisHeaderBuilder(AxisHeaderBuilder axisHeaderBuilder) {
+    this.axisHeaderBuilder = axisHeaderBuilder;
   }
 
 }

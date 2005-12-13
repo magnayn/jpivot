@@ -8,13 +8,13 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.olap.model;
 
 /**
  * default implementation of Visitor. Does nothing
- * 
+ *
  * @author av
  */
 public abstract class VisitorSupportSloppy implements Visitor {
@@ -70,9 +70,11 @@ public abstract class VisitorSupportSloppy implements Visitor {
 
   public void visitParameterExpr(ParameterExpr v) {
   }
-  
+
   public void visitPropertyExpr(PropertyExpr v) {
   }
 
+  public void visitEmptyMember(EmptyMember v) {
+  }
 
 }

@@ -8,14 +8,14 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.olap.model;
 
 /**
  * default implementation of Visitor. Throws an UnsupportedOperationException
  * for each method.
- * 
+ *
  * @author av
  */
 public abstract class VisitorSupportStrict implements Visitor {
@@ -85,6 +85,10 @@ public abstract class VisitorSupportStrict implements Visitor {
   }
 
   public void visitPropertyExpr(PropertyExpr v) {
+    throw new UnsupportedOperationException();
+  }
+
+  public void visitEmptyMember(EmptyMember v) {
     throw new UnsupportedOperationException();
   }
 }

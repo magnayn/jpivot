@@ -518,7 +518,7 @@ public class XMLA_SOAP implements OlapDiscoverer {
     discover("MDSCHEMA_MEMBERS", url, rHash, pHash, rh);
     logger.debug("MDSCHEMA_MEMBERS: found " + mems.size());
     if (mems.size() == 0) {
-        throw new OlapException("No metadata schema members for catalog: " + cat + " and cube: " + cube);
+        logger.error("No metadata schema members for catalog: " + cat + " and cube: " + cube);
     }
 
     return mems;
@@ -590,7 +590,7 @@ public class XMLA_SOAP implements OlapDiscoverer {
     discover("MDSCHEMA_MEMBERS", url, rHash, pHash, rh);
     logger.debug("MDSCHEMA_MEMBERS Tree: found " + mems.size());
     if (mems.size() == 0) {
-        throw new OlapException("No metadata schema members tree for catalog: " + cat + " and cube: " + cube +
+        logger.error("No metadata schema members tree for catalog: " + cat + " and cube: " + cube +
                 ", member unique name: " + member + ", tree operation: " + String.valueOf(treeop));
     }
     return mems;

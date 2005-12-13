@@ -14,6 +14,8 @@ package com.tonbeller.jpivot.table.span;
 
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.Member;
 import com.tonbeller.jpivot.olap.model.Position;
@@ -28,7 +30,8 @@ import com.tonbeller.jpivot.olap.model.Position;
  * @author av
  */
 public class SpanCalc {
-
+  private static final Logger logger = Logger.getLogger(SpanCalc.class);
+  
   int positionCount, hierarchyCount;
   // index order is spans[positionIndex][hierarchyIndex]
   Span[][] spans;
@@ -54,6 +57,8 @@ public class SpanCalc {
       hierarchyCount = ((Position) axis.getPositions().get(0)).getMembers().length;
     else
       hierarchyCount = 0;
+    if (logger.isInfoEnabled())
+      logger.info("creating SpanCalc, positionCount = " + positionCount + ", hierarchyCount = " + hierarchyCount);
     spans = new Span[positionCount][];
     for (int i = 0; i < positionCount; i++)
       spans[i] = new Span[hierarchyCount];
@@ -66,6 +71,8 @@ public class SpanCalc {
   }
 
   void createSpansFromAxis(Axis axis, Position position, int posIndex, Span[] spans) {
+    if (logger.isDebugEnabled())
+      logger.debug("creating Span for position " + posIndex);
     Member[] members = position.getMembers();
     for (int hierIndex = 0; hierIndex < hierarchyCount; hierIndex++) {
       Member member = members[hierIndex];
@@ -110,6 +117,7 @@ public class SpanCalc {
   boolean[][] forcePositionBreak;
 
   void calcSpans() {
+    logger.info("calcSpans");
     forcePositionBreak = new boolean[positionCount][hierarchyCount];
 
     for (int hierIndex = 0; hierIndex < hierarchyCount; hierIndex++) {
@@ -145,6 +153,7 @@ public class SpanCalc {
 
   /** returns the number of hierarchy spans created */
   int makeHierSpan(Span span, int posSpans) {
+    logger.debug("makeHierSpan");
     int pi = span.positionIndex;
     int spanCount = 1;
     loop : for (int hi = span.hierarchyIndex + 1; hi < hierarchyCount; hi++) {
@@ -172,6 +181,7 @@ public class SpanCalc {
 
   /** returns the number of position spans created */
   int makePosSpan(Span span, int hierSpans) {
+    logger.debug("makePosSpan");
     int hi = span.hierarchyIndex;
     int spanCount = 1;
     loop : for (int pi = span.positionIndex + 1; pi < positionCount; pi++) {
@@ -230,6 +240,7 @@ public class SpanCalc {
    * is created by <code>shf.create(a)</code>, and <code>B = shf.create(b)</code>.
    */
   public SpanCalc createPositionHeader(SpanHeaderFactory shf) {
+    logger.info("createPositionHeader");
     if (!initialized)
       initialize();
 
@@ -264,6 +275,7 @@ public class SpanCalc {
   /* --------------------------------------------------------------------- */
 
   public void addHierarchyHeader(SpanHeaderFactory shf, boolean removeDuplicates) {
+    logger.info("addHierarchyHeader");
     boolean[] keep = new boolean[hierarchyCount * 2];
     createHeaderSpans(shf, keep);
     int newHierarchyCount = 0;
@@ -275,6 +287,7 @@ public class SpanCalc {
   }
 
   void removeDuplicateHeaders(boolean[] keep, int newHierarchyCount) {
+    logger.info("removeDuplicateHeaders");
     for (int posIndex = 0; posIndex < positionCount; posIndex++) {
       Span[] oldSpans = spans[posIndex];
       Span[] newSpans = new Span[newHierarchyCount];
@@ -295,6 +308,7 @@ public class SpanCalc {
    * A header is added if its different from the previous one.
    */
   void createHeaderSpans(SpanHeaderFactory shf, boolean[] keep) {
+    logger.info("createHeaderSpans");
     for (int posIndex = 0; posIndex < positionCount; posIndex++) {
       Span[] newSpans = new Span[hierarchyCount * 2];
       int newIndex = 0;
@@ -392,6 +406,7 @@ public class SpanCalc {
    * sets the indent attribute of all spans
    */
   void calcIndent() {
+    logger.info("calcIndent");
     for (int hi = 0; hi < hierarchyCount; hi++) {
 
       // find minimal root distance for this hierIndex
@@ -420,6 +435,7 @@ public class SpanCalc {
   /* -------------------------------------------------------------------- */
 
   public static SpanCalc appendBelow(SpanCalc above, SpanCalc below) {
+    logger.info("appendBelow");
     if (above == null)
       return below;
     if (below == null)

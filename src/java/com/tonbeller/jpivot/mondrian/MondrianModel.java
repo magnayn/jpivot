@@ -41,6 +41,9 @@ import mondrian.olap.Role;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
 import mondrian.olap.Util;
+import mondrian.olap.fun.FunTableImpl.MemberListScalarExp;
+import mondrian.olap.fun.FunTableImpl.MemberScalarExp;
+import mondrian.olap.fun.FunTableImpl.TupleScalarExp;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapConnectionProperties;
 
@@ -57,6 +60,7 @@ import com.tonbeller.jpivot.olap.model.Result;
 import com.tonbeller.jpivot.olap.navi.SortRank;
 import com.tonbeller.jpivot.olap.query.ExpBean;
 import com.tonbeller.jpivot.olap.query.MdxOlapModel;
+import com.tonbeller.jpivot.olap.query.Memento;
 import com.tonbeller.jpivot.olap.query.PositionNodeBean;
 import com.tonbeller.jpivot.olap.query.QueryAdapter;
 import com.tonbeller.wcf.bookmarks.Bookmarkable;
@@ -1031,13 +1035,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     MondrianMemento memento = (MondrianMemento) state;
     int version = memento.getVersion();
     if (version <= 1) {
-      if (loc != null && loc.getLanguage().equalsIgnoreCase("de")) {
-        logger
-            .warn("Bookmark hat alten Stand (zuk�nftig nicht mehr unterst�tzt)!\nBitte neu speichern!");
-      } else {
-        logger
-            .warn("Bookmark is of old state (not supported any more in the future)!\nPlease save again!");
-      }
+      logger.warn("Bookmark is of old state (not supported any more in the future)!\nPlease save again!");
     }
     mdxQuery = memento.getMdxQuery();
 
@@ -1212,15 +1210,27 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
   protected ExpBean createBeanFromExp(Object exp) throws OlapException {
     ExpBean bean = new ExpBean();
-    if (exp instanceof mondrian.olap.FunCall) {
+    
+    // we unwrap the new MemberListScalarExp etc, they will be wrapped again
+    // when we restore the bookmark and call resolve(). So here we do the
+    // opposite of {@link mondrian.olap.fun.FunTableImpl#createValueFunCall()}
+    
+    if (exp instanceof MemberListScalarExp) {
+      MemberListScalarExp mse = (MemberListScalarExp)exp;
+      bean.setType(ExpBean.TYPE_FUNCALL);
+      bean.setName("()");
+      bean.setArgs(createBeansFromExps(mse.getChildren()));
+    } else if (exp instanceof MemberScalarExp) {
+      MemberScalarExp mse = (MemberScalarExp)exp;
+      bean = createBeanFromExp(mse.getChildren()[0]);
+    } else if (exp instanceof TupleScalarExp) {
+      TupleScalarExp mse = (TupleScalarExp)exp;
+      bean = createBeanFromExp(mse.getChildren()[0]);
+    } else if (exp instanceof mondrian.olap.FunCall) {
       FunCall f = (FunCall) exp;
       bean.setType(ExpBean.TYPE_FUNCALL);
       bean.setName(f.getFunName());
-      ExpBean[] args = new ExpBean[f.getArgs().length];
-      for (int i = 0; i < args.length; i++) {
-        args[i] = createBeanFromExp(f.getArg(i));
-      }
-      bean.setArgs(args);
+      bean.setArgs(createBeansFromExps(f.getArgs()));
     } else if (exp instanceof mondrian.olap.Member) {
       mondrian.olap.Member m = (mondrian.olap.Member) exp;
       bean.setType(ExpBean.TYPE_MEMBER);
@@ -1260,6 +1270,14 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     }
 
     return bean;
+  }
+
+  private ExpBean[] createBeansFromExps(Object[] exps) throws OlapException {
+    ExpBean[] beans = new ExpBean[exps.length];
+    for (int i = 0; i < exps.length; i++) {
+      beans[i] = createBeanFromExp(exps[i]);
+    }
+    return beans;
   }
 
   public DataSource getSqlDataSource() {

@@ -8,16 +8,18 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.table;
 
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
 import com.tonbeller.jpivot.olap.model.Dimension;
 import com.tonbeller.jpivot.olap.model.Displayable;
+import com.tonbeller.jpivot.olap.model.EmptyMember;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Level;
 import com.tonbeller.jpivot.olap.model.Member;
@@ -29,17 +31,19 @@ import com.tonbeller.jpivot.table.span.PropertyHeading;
 import com.tonbeller.jpivot.table.span.PropertyUtils;
 import com.tonbeller.jpivot.table.span.Span;
 import com.tonbeller.jpivot.table.span.SpanVisitor;
+import com.tonbeller.wcf.controller.RequestContext;
 
 /**
- * renders a row or column heading. Creates a DOM Element from a Member, Hierarchy, 
+ * renders a row or column heading. Creates a DOM Element from a Member, Hierarchy,
  * Dimension or Level.
- * 
+ *
  * @author av
  */
 public class SpanBuilderImpl extends PartBuilderSupport implements SpanBuilder {
   String memberName;
   String headingName;
   RenderSwitch renderSwitch = new RenderSwitch();
+  private static final Logger logger = Logger.getLogger(SpanBuilderImpl.class);
 
   /**
    * creates an instance
@@ -104,24 +108,37 @@ public class SpanBuilderImpl extends PartBuilderSupport implements SpanBuilder {
       renderMember(v);
     }
 
+    public void visitEmptyMember(EmptyMember v) {
+      renderMember(v);
+    }
+
     public Element getElem() {
       return elem;
     }
+
     public void setElem(Element elem) {
       this.elem = elem;
     }
   }
-  
+
+  public void startBuild(RequestContext context) {
+    super.startBuild(context);
+    logger.info("start build");
+  }
+
   public void stopBuild() {
-    super.stopBuild();
     // avoid memory leak
     renderSwitch.setElem(null);
+    logger.info("stop build");
+    super.stopBuild();
   }
 
   /**
    * renders a row- or column heading
    */
   public Element build(Span span, boolean even) {
+    if (logger.isDebugEnabled())
+      logger.debug("build " + span);
     Visitable v = span.getObject();
     v.accept(renderSwitch);
     Element elem = renderSwitch.getElem();

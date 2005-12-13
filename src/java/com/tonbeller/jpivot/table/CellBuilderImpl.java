@@ -12,11 +12,12 @@
  */
 package com.tonbeller.jpivot.table;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
 import com.tonbeller.jpivot.olap.model.Cell;
 import com.tonbeller.jpivot.olap.model.Property;
-import com.tonbeller.jpivot.table.span.*;
+import com.tonbeller.jpivot.table.span.PropertyUtils;
 
 /**
  * Created on 18.10.2002
@@ -25,7 +26,7 @@ import com.tonbeller.jpivot.table.span.*;
  */
 public class CellBuilderImpl extends PartBuilderSupport implements CellBuilder {
 
-  
+  private static final Logger logger = Logger.getLogger(CellBuilderImpl.class);
   private static final String STYLE = "style";
   private static final String NBSP = "\u00a0";
   /**
@@ -38,6 +39,8 @@ public class CellBuilderImpl extends PartBuilderSupport implements CellBuilder {
     if (s.length() == 0)
       s = NBSP;
     cellElem.setAttribute("value", s);
+    if (logger.isDebugEnabled())
+      logger.debug("building cell " + s);
 
     PropertyUtils.addProperties(cellElem, cell.getProperties());
     Property style = cell.getProperty(STYLE);

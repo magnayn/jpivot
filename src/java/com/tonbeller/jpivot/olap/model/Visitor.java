@@ -8,14 +8,14 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.olap.model;
 
 
 /**
  * Created on 29.10.2002
- * 
+ *
  * @author av
  */
 public interface Visitor {
@@ -29,7 +29,7 @@ public interface Visitor {
   void visitProperty(Property v);
   void visitResult(Result v);
   void visitMemberPropertyMeta(MemberPropertyMeta v);
-  
+
   void visitBooleanExpr(BooleanExpr v);
   void visitIntegerExpr(IntegerExpr v);
   void visitDoubleExpr(DoubleExpr v);
@@ -37,5 +37,6 @@ public interface Visitor {
   void visitFunCallExpr(FunCallExpr v);
   void visitParameterExpr(ParameterExpr v);
   void visitPropertyExpr(PropertyExpr v);
-  
+  void visitEmptyMember(EmptyMember v);
+
 }

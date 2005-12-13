@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!DOCTYPE xform [
-<!ENTITY buttons SYSTEM "../../wcf/buttons.xml">
-]>
-
 <xform style="manual">
 <table border="1" cellspacing="0" cellpadding="2" id="mdxEditForm">
 

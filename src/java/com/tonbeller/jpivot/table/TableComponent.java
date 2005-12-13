@@ -85,6 +85,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
 
   public TableComponent(String id, Component parent, OlapModel newOlapModel) {
     super(id, parent);
+    logger.info("TableComponent");
     this.olapModel = newOlapModel;
     olapModel.addModelChangeListener(this);
   }
@@ -98,6 +99,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
   }
 
   public void setOlapModel(OlapModel newOlapModel) {
+    logger.info("setOlapModel");
     if (olapModel != null)
       olapModel.removeModelChangeListener(this);
     olapModel = newOlapModel;
@@ -136,7 +138,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
   }
 
   public Object getBookmarkState(int levelOfDetail) {
-    logger.info("enter");
+    logger.info("getBookmarkState");
     Map map = (Map) super.getBookmarkState(levelOfDetail);
     map.put("slicerBuilder", slicerBuilder.getBookmarkState(levelOfDetail));
     map.put("cornerBuilder", cornerBuilder.getBookmarkState(levelOfDetail));
@@ -153,6 +155,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
   public void setBookmarkState(Object state) {
     if (state == null)
       return;
+    logger.info("setBookmarkState");
     super.setBookmarkState(state);
     Map map = (Map) state;
     slicerBuilder.setBookmarkState(map.get("slicerBuilder"));
@@ -183,7 +186,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
    * notifies PartBuilders that a new DOM will be created
    */
   private void startBuild(RequestContext context) {
-    logger.info("enter");
+    logger.info("enter startBuild");
     columnAxisBuilder.startBuild(context);
     rowAxisBuilder.startBuild(context);
     cellBuilder.startBuild(context);
@@ -193,14 +196,14 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
        ((TableComponentExtension) it.next()).startBuild(context);
     for (Iterator it = clickableIterator(); it.hasNext();)
       ((ClickableMember) it.next()).startRendering(context, this);
-    logger.info("leave");
+    logger.info("leave startBuild");
   }
 
   /**
    * notifies PartBuilders that a new DOM has been created
    */
   private void stopBuild() {
-    logger.info("enter");
+    logger.info("enter stopBuild");
     for (Iterator it = extensionList.iterator(); it.hasNext();)
        ((TableComponentExtension) it.next()).stopBuild();
     slicerBuilder.stopBuild();
@@ -215,7 +218,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
     result = null;
     cellIterator = null;
     
-    logger.info("leave");
+    logger.info("leave stopBuild");
     
   }
 
@@ -223,7 +226,9 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
    * main entry point
    */
   public Document render(RequestContext context) throws Exception {
+    logger.info("render");
     if (document == null) {
+      logger.info("creating document");
       long t1 = System.currentTimeMillis();
       document = XmlUtils.createDocument();
       Element elem = render2(context);
@@ -241,6 +246,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
   }
 
   private Element render2(RequestContext context) throws Exception {
+    logger.info("render2");
     this.result = updateOlapModel();
     this.cellIterator = result.getCells().iterator();
     this.dimCount = result.getAxes().length;
@@ -279,6 +285,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
   }
 
   private Element buildSlicer() {
+    logger.info("buildSlicer");
     Element slicer = elem("slicer");
     Iterator pi = getResult().getSlicer().getPositions().iterator();
     while (pi.hasNext()) {
@@ -295,6 +302,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
   /* ---------------------- 0 dim ------------------------------- */
 
   private void buildRows0Dim(Element parent) {
+    logger.info("buildRows0Dim");
     // if result is empty, dont show anything
     if (!cellIterator.hasNext())
       return;
@@ -308,11 +316,13 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
   /* ---------------------- 1 dim ------------------------------- */
 
   private void buildRows1Dim(Element parent) {
+    logger.info("buildRows1Dim");
     Element row = append("row", parent);
     buildCells(row, false);
   }
 
   private void buildColumns1Dim(Element parent) {
+    logger.info("buildColumns1Dim");
     final int N = columnAxisBuilder.getRowCount();
     for (int i = 0; i < N; i++) {
       Element row = append("row", parent);
@@ -358,10 +368,14 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
    */
 
   private void buildColumns2Dim(Element parent) {
+    logger.info("enter buildColumns2Dim");
     int colAxisCount = columnAxisBuilder.getRowCount();
     int rowAxisCount = rowAxisBuilder.getHeaderRowCount();
     int colAxisIndex = 0;
     int rowAxisIndex = 0;
+    
+    if (logger.isInfoEnabled())
+      logger.info("colAxisCount = " + colAxisCount + ", rowAxisCount = " + rowAxisCount);
 
     if (rowAxisCount > colAxisCount) {
       logger.info("rowAxisCount > colAxisCount");
@@ -390,6 +404,8 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
       // number of rows left to add
       colAxisCount -= N;
     }
+    
+    logger.info("building cells");
     // case 3
     // assert(colAxisCount == rowAxisCount)
     for (int i = 0; i < colAxisCount; i++) {
@@ -397,9 +413,11 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
       rowAxisBuilder.buildHeaderRow(row, rowAxisIndex++);
       columnAxisBuilder.buildRow(row, colAxisIndex++);
     }
+    logger.info("leave buildColumns2Dim");
   }
 
   private void buildRows2Dim(Element parent) {
+    logger.info("enter buildRows2Dim");
     final int N = rowAxisBuilder.getRowCount();
     for (int i = 0; i < N; i++) {
       boolean even = (i % 2 == 0);
@@ -407,6 +425,7 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
       rowAxisBuilder.buildRow(row, i);
       buildCells(row, even);
     }
+    logger.info("leave buildRows2Dim");
   }
 
   /* ---------------------- common ------------------------------- */

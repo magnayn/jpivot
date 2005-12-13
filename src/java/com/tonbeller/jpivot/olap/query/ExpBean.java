@@ -26,8 +26,7 @@ public class ExpBean {
   public static final int TYPE_INTEGER_LITERAL = 6;
   public static final int TYPE_DOUBLE_LITERAL = 7;
   public static final int TYPE_TOPLEVEL_MEMBERS = 8;
-
-
+  
   private int type;
   private String name;
   private ExpBean[] args;

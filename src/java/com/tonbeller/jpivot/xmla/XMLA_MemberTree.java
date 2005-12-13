@@ -64,7 +64,7 @@ public class XMLA_MemberTree extends ExtensionSupport implements MemberTree {
     try {
       rootMembers = rootLevel.getMembers();
     } catch (OlapException e) {
-      logger.error(e);
+      logger.error(null, e);
     }
     // find the calculated members for this hierarchy
     //  show them together with root level members

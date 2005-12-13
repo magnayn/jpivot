@@ -12,6 +12,7 @@
  */
 package com.tonbeller.jpivot.table;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
 import com.tonbeller.jpivot.olap.model.Axis;
@@ -28,6 +29,7 @@ import com.tonbeller.jpivot.table.span.SpanCalc;
 public class RowAxisBuilderImpl extends AxisBuilderSupport implements RowAxisBuilder, RowAxisConfig {
   int positionHeader;
   SpanCalc headerSpans;
+  private static final Logger logger = Logger.getLogger(RowAxisBuilderImpl.class);
 
   public RowAxisBuilderImpl() {
     super(new SpanBuilderImpl("row-heading", "heading-heading"));
@@ -86,6 +88,8 @@ public class RowAxisBuilderImpl extends AxisBuilderSupport implements RowAxisBui
     boolean even = (rowIndex % 2 == 0);
     for (int i = 0; i < headerSpans.getHierarchyCount(); i++) {
       Span span = headerSpans.getSpan(rowIndex, i);
+      if (logger.isInfoEnabled())
+        logger.info("building header row: " + span);
       if (span.isSignificant()) {
         int rowspan = span.getPositionSpan();
         int colspan = span.getHierarchySpan();
@@ -112,14 +116,17 @@ public class RowAxisBuilderImpl extends AxisBuilderSupport implements RowAxisBui
 
     switch (positionHeader) {
     case HIERARCHY_LEVEL_HEADER:
+      logger.info("HIERARCHY_LEVEL_HEADER");
       SpanCalc sc1 = spanCalc.createPositionHeader(new IgnorePropertiesHierarchyHeaderFactory());
       SpanCalc sc2 = spanCalc.createPositionHeader(new LevelHeaderFactory());
       headerSpans = SpanCalc.appendBelow(sc1, sc2);
       break;
     case LEVEL_HEADER:
+      logger.info("LEVEL_HEADER");
       headerSpans = spanCalc.createPositionHeader(new LevelHeaderFactory());
       break;
     case HIERARCHY_HEADER:
+      logger.info("HIERARCHY_HEADER");
       headerSpans = spanCalc.createPositionHeader(new HierarchyHeaderFactory());
       break;
     default:

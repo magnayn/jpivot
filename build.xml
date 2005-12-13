@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<project name="JPivot" default="dist" basedir=".">
+<project name="JPivot" default="build" basedir=".">
 
 <!--
      ======================================================================
 	 This script depends on a repository of jars and a checkout/build of WCF
 	 to run the build and tests.
-	 
+
 	 There is a separate module in JPivot CVS for WCF. It needs to be checked out
 	 and built via the "dist" target in order for this script to be successful.
 	 Set the "wcf.dist" property to the dist directory within the WCF structure.
-	 
+
 	 There is a separate module in JPivot CVS, jpivot_repository, that contains
-	 the right jars and structure. 
+	 the right jars and structure.
 
 	 There are a set of targets named portlet-* in this script to build and deploy
 	 the JBoss JPivot portlet. See src/jboss-portlet for more details.
-	 
-	 
+
+
      For tests to run: requires in $ANT_HOME/lib
        junit.jar
        bcel-5.1 from jakarta.apache.org
@@ -32,8 +32,8 @@
   <property name="build.home"           value="${basedir}/build"/>
   <property name="dist.home"            value="${basedir}/dist"/>
   <property name="src.home"             value="${basedir}/src"/>
-  <property name="lib.home"             value="${basedir}/lib"/>
-  
+  <property name="viewcvs"              value="http://cvs.sourceforge.net/viewcvs.py/jpivot"/>
+
   <property name="repository.home"      value="${basedir}/../jpivot_repository"/>
 
   <!-- override these in your build.properties -->
@@ -46,7 +46,7 @@
 
   <!-- the following are included in lib/ directory (no need to override) -->
   <property name="mondrian.version"     value="pilot"/>
-  <property name="mondrian.home"        value="${repository.home}/mondrian/${mondrian.version}"/>
+  <property name="mondrian.home"        value="${repository.home}/mondrian-2.0/${mondrian.version}"/>
   <property name="jstl.home"            value="${repository.home}/jakarta-taglibs-standard-1.0.6"/>
 
   <property name="digester.home"        value="${repository.home}/commons-digester-1.5"/>
@@ -65,8 +65,6 @@
   <property name="jai.home"             value="${repository.home}/jai-1_1_2"/>
   <property name="jwsdp.home"           value="${repository.home}/jwsdp-1.1"/>
   <property name="dom4j.home"           value="${repository.home}/dom4j-1.4"/>
-
-  <property name="resgen.home"          value="${repository.home}/resgen/lib"/>
 
   <property name="wcf.dist"             value="${basedir}/../wcf/dist"/>
 
@@ -133,11 +131,11 @@
 
   <!-- classpath for portal build -->
   <path id="portlet.classpath">
-  	
+
     <path refid="compile.classpath"/>
-  	
+
     <pathelement location="${build.home}/web/WEB-INF/classes"/>
-  	
+
     <fileset dir="${jboss-portal.deploy}/lib">
       <include name="portal-common-lib.jar"/>
       <include name="portal-core-lib.jar"/>
@@ -152,10 +150,48 @@
 
   <!-- ==================== Prepare Target ================================== -->
 
-  <target name="create.lib.home" unless="lib.home.present" description="Creates the lib directory unless its already present">
+  <!--
+        ===============================================================
+        wcf is a separate build now.
+        This copies stuff from WCF Project into JPivot build directory
+        ===============================================================
+  -->
 
-    <mkdir  dir="${lib.home}"/>
-    <copy todir="${lib.home}" flatten="true">
+  <target name="initialize.wcf">
+    <delete dir="${src.home}/java/com/tonbeller/wcf"/>
+    <delete dir="${src.home}/java/com/tonbeller/tbutils"/>
+    <delete dir="${src.home}/test/com/tonbeller/tbutils"/>
+    <delete dir="${src.home}/webapp/wcf"/>
+    <delete dir="${src.home}/webapp/WEB-INF/wcf"/>
+    <copy todir="${build.home}/web">
+      <fileset dir="${wcf.dist}/web"/>
+    </copy>
+  </target>
+
+  <!--
+        ===============================================================
+        copies all necessary files
+        ===============================================================
+  -->
+
+  <target name="prepare" description="copies all necessary files">
+
+    <mkdir dir="${build.home}/src"/>
+
+    <antcall target="initialize.wcf"/>
+
+    <!-- Create build directories as needed -->
+    <mkdir dir="${build.home}/web/WEB-INF/classes"/>
+    <mkdir dir="${build.home}/web/WEB-INF/lib"/>
+
+    <!-- copy binaries -->
+    <copy todir="${build.home}/web">
+      <fileset dir="${basedir}/src/webapp" />
+    </copy>
+
+    <!-- Copy external dependencies -->
+    <mkdir  dir="${build.home}/web/WEB-INF/lib"/>
+    <copy todir="${build.home}/web/WEB-INF/lib" flatten="true">
 
       <fileset dir="${beanutils.home}">
         <include name="*.jar"/>
@@ -182,12 +218,13 @@
       </fileset>
 
       <fileset dir="${mondrian.home}">
-        <include name="*.jar"/>
+        <include name="eigenbase-properties.jar"/>
+        <include name="eigenbase-resgen.jar"/>
+        <include name="eigenbase-xom.jar"/>
         <include name="FoodMart.xml"/>
-      </fileset>
-
-      <fileset dir="${resgen.home}">
-        <include name="*.jar"/>
+        <include name="javacup.jar"/>
+        <include name="mondrian.dtd"/>
+        <include name="mondrian.jar"/>
       </fileset>
 
       <fileset dir="${junit.home}">
@@ -195,9 +232,8 @@
       </fileset>
 
       <fileset dir="${jfreechart.home}">
-        <include name="jfreechart-*.jar"/>
+        <include name="lib/jfreechart-*.jar"/>
         <include name="lib/jcommon-*.jar"/>
-        <exclude name="jfreechart*demo.jar"/>
       </fileset>
 
       <fileset dir="${jstl.home}">
@@ -217,6 +253,7 @@
         <include name="lib/avalon-framework-cvs-20020806.jar"/>
         <include name="lib/batik.jar"/>
       </fileset>
+
       <fileset dir="${jai.home}">
         <include name="lib/jai_core.jar"/>
         <include name="lib/jai_codec.jar"/>
@@ -247,88 +284,16 @@
       </fileset>
 
     </copy>
-  </target>
 
+    <copy  todir="${build.home}/web/WEB-INF/queries" file="${mondrian.home}/FoodMart.xml"/>
 
-  <target name="delete.lib.home" description="deletes the lib directory">
-    <delete dir="${lib.home}"/>
-  </target>
-
-  <!--
-        ===============================================================
-        wcf is a separate build now.
-        This copies stuff from WCF Project into JPivot build directory
-        ===============================================================
-  -->
-
-  <target name="initialize.wcf">
-    <delete dir="${src.home}/java/com/tonbeller/wcf"/>
-    <delete dir="${src.home}/java/com/tonbeller/tbutils"/>
-    <delete dir="${src.home}/test/com/tonbeller/tbutils"/>
-    <delete dir="${src.home}/webapp/wcf"/>
-    <delete dir="${src.home}/webapp/WEB-INF/wcf"/>
-    <copy todir="${build.home}/web">
-      <fileset dir="${wcf.dist}/web"/>
-    </copy>
-  </target>
-
-  <!--
-        ===============================================================
-        copies all necessary files
-        ===============================================================
-  -->
-
-  <target name="prepare" description="copies all necessary files">
-
-    <!-- build lib.home unless its present -->
-    <available property="lib.home.present" file="${lib.home}"/>
-    <antcall target="create.lib.home"/>
-    <antcall target="initialize.wcf"/>
-
-    <!-- Create build directories as needed -->
-    <mkdir dir="${build.home}/web/WEB-INF/classes"/>
-    <mkdir dir="${build.home}/web/WEB-INF/lib"/>
-
-    <!-- copy binaries -->
-    <copy todir="${build.home}/web">
-      <fileset dir="${basedir}/src/webapp">
-        <exclude name="**/*.jsp"/>
-        <exclude name="**/*.xml"/>
-        <exclude name="**/*.properties"/>
-        <exclude name="**/*.mf"/>
-        <exclude name="**/*.txt"/>
-      </fileset>
-    </copy>
-
-    <!-- copy text files -->
-    <copy todir="${build.home}/web">
-      <fileset dir="${basedir}/src/webapp">
-        <include name="**/*.jsp"/>
-        <include name="**/*.xml"/>
-        <exclude name="**/*-tags.xml"/>
-        <include name="**/*.properties"/>
-        <include name="**/*.mf"/>
-        <include name="**/*.txt"/>
-      </fileset>
-      <filterset>
-        <filter token="VERSION" value="${jpivot.version}"/>
-      </filterset>
-    </copy>
-
-    <!-- Copy external dependencies -->
-    <mkdir  dir="${build.home}/web/WEB-INF/lib"/>
-    <copy todir="${build.home}/web/WEB-INF/lib" flatten="true">
-      <fileset dir="${lib.home}">
-        <include name="*.jar"/>
-        <exclude name="*-src.jar"/>
-      </fileset>
-    </copy>
-    <copy  todir="${build.home}/web/WEB-INF/queries" file="${lib.home}/FoodMart.xml"/>
-
-    <!-- taglibs -->
+    <!-- create taglibs -->
     <antcall target="taglibs"/>
 
+    <!-- for debugging -->
+    <copy  todir="${build.home}/src" file="${mondrian.home}/mondrian-src.jar"/>
   </target>
+
 
   <target name="portlet-prepare" description="Set up for JBoss portlet build">
 
@@ -344,7 +309,7 @@
         <exclude name="**/*.properties"/>
       </fileset>
     </copy>
-    
+
 
     <!-- copy text files -->
     <copy todir="${build.home}/jboss-portlet/web">
@@ -447,7 +412,9 @@
 
 <!-- ==================== Dist Target ===================================== -->
 
-  <target name="dist" depends="clean,compile,javadoc,projdocs,archives" description="Create binary distribution">
+  <target name="build" depends="clean,compile,archives" description="build w/o tests" />
+
+  <target name="dist" depends="clean,compile,tests,javadoc,projdocs,archives" description="build everything">
 
     <!-- Create distribution -->
     <zip destfile="${dist.home}/jpivot-${jpivot.version}.zip" update="false" duplicate="fail">
@@ -456,9 +423,7 @@
         <include name="docs/**"/>
       </zipfileset>
       <zipfileset dir="${src.home}" defaultexcludes="true" prefix="jpivot-${jpivot.version}/src"/>
-      <zipfileset dir="${lib.home}" defaultexcludes="true" prefix="jpivot-${jpivot.version}/lib">
-        <include name="*-src.jar"/>
-      </zipfileset>
+      <zipfileset dir="${build.home}/src" defaultexcludes="true" prefix="jpivot-${jpivot.version}/src"/>
       <zipfileset dir="${basedir}" prefix="jpivot-${jpivot.version}">
         <include name="build.xml"/>
         <include name="*.example"/>
@@ -503,7 +468,7 @@
       </fileset>
     </copy>
     </target>
-    
+
   <target name="portlet-deploy" description="Deploy the portlet" depends="portlet-archive">
     <mkdir dir="${jboss.deploy}/jpivot-portlet-${jpivot.version}.war"/>
 
@@ -512,7 +477,7 @@
         <include name="jpivot-portlet-theme.war"/>
       </fileset>
     </copy>
-	
+
     <unzip src="${build.home}/jpivot-portlet-${jpivot.version}.war" dest="${jboss.deploy}/jpivot-portlet-${jpivot.version}.war"/>
   </target>
 
@@ -525,10 +490,8 @@
         <include name="jpivot-portlet-${jpivot.version}-theme.war"/>
         <include name="docs/**"/>
       </zipfileset>
-        <zipfileset dir="${src.home}" defaultexcludes="true" prefix="jpivot-${jpivot.version}/src"/>
-        <zipfileset dir="${lib.home}" defaultexcludes="true" prefix="jpivot-${jpivot.version}/lib">
-          <include name="*-src.jar"/>
-        </zipfileset>
+      <zipfileset dir="${src.home}" defaultexcludes="true" prefix="jpivot-${jpivot.version}/src"/>
+      <zipfileset dir="${build.home}/src" defaultexcludes="true" prefix="jpivot-${jpivot.version}/src"/>
       <zipfileset dir="${basedir}" prefix="jpivot-portlet-${jpivot.version}">
         <include name="build.xml"/>
         <include name=".project"/>
@@ -569,7 +532,7 @@
       </fileset>
     </copy>
 
-    <java jar="${xalan.home}/xalan.jar" fork="true">
+    <java jar="${xalan.home}/bin/xalan.jar" fork="true">
       <jvmarg value="-Duser.language=en"/>
       <jvmarg value="-Duser.region=US"/>
       <arg value="-in"/>
@@ -580,6 +543,18 @@
       <arg value="${build.home}/docs/dummy.html"/>
     </java>
 
+  </target>
+
+  <target name="changelog" description="creates CVS Changelog">
+    <mkdir dir="${build.home}/docs"/>
+    <cvschangelog dir="${src.home}" destfile="${build.home}/docs/changelog.xml" daysinpast="300" />
+    <style in="${build.home}/docs/changelog.xml"
+           out="${build.home}/docs/changelog.html"
+           style="${ant.home}/etc/changelog.xsl">
+      <param name="title" expression="JPivot ChangeLog"/>
+      <param name="module" expression="/jpivot/src"/>
+      <param name="cvsweb" expression="${viewcvs}"/>
+    </style>
   </target>
 
 <!-- ==================== Javadoc Target ================================== -->
@@ -596,7 +571,7 @@
 
 <!-- ==================== JUnit Tests =================================== -->
 
-  <target name="tests" description="JUnit Tests" depends="runtests,checktests"/>
+  <target name="tests" description="JUnit Tests" depends="compile,runtests,checktests"/>
 
   <target name="runtests" description="JUnit Tests">
     <mkdir dir="${build.home}/docs/junit"/>

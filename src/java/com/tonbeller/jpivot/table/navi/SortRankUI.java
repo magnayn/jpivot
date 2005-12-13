@@ -213,7 +213,7 @@ public class SortRankUI extends TableComponentExtensionSupport implements ModelC
   /*
    * tristate sort handler: ascending -&gt; descending -&gt; disabled
    */
-  class SortHandler3 implements RequestListener {
+  private class SortHandler3 implements RequestListener {
     Position position;
     Axis axis;
 
@@ -240,7 +240,7 @@ public class SortRankUI extends TableComponentExtensionSupport implements ModelC
       }
 
       // asc -> desc
-      if (isAscending()) {
+      if (isAscending() || isTopBottomCount()) {
         flipAscending();
         extension.sort(axis, position);
         return;
@@ -255,7 +255,7 @@ public class SortRankUI extends TableComponentExtensionSupport implements ModelC
   /**
    * two state sort handler: asc &gt; desc
    */
-  class SortHandler2 implements RequestListener {
+  private class SortHandler2 implements RequestListener {
     Position position;
     Axis axis;
 
@@ -277,6 +277,11 @@ public class SortRankUI extends TableComponentExtensionSupport implements ModelC
     return ext != null && !(ext instanceof DummySortRank);
   }
 
+  boolean isTopBottomCount() {
+    int mode = extension.getSortMode();
+    return mode == SortRank.TOPCOUNT || mode == SortRank.BOTTOMCOUNT;
+  }
+  
   boolean isAscending() {
     int mode = extension.getSortMode();
     return mode == SortRank.ASC || mode == SortRank.BASC || mode == SortRank.BOTTOMCOUNT;

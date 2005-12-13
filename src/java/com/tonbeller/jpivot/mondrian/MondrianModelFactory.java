@@ -110,29 +110,6 @@ public class MondrianModelFactory {
     }
   }
 
-  /** 
-   * replaces " with "" and ' with ''
-   */
-  private static String escape(String s) {
-    if (s.indexOf('"') < 0 && s.indexOf('\'') < 0)
-      return s;
-    StringBuffer sb = new StringBuffer();
-    char[] carr = s.toCharArray();
-    for (int i = 0; i < carr.length; i++) {
-      switch (carr[i]) {
-      case '"':
-        sb.append("\"\"");
-        break;
-      case '\'':
-        sb.append("''");
-        break;
-      default:
-        sb.append(carr[i]);
-        break;
-      }
-    }
-    return sb.toString();
-  }
 
   public static MondrianModel instance() throws SAXException, IOException {
     URL url = MondrianModelFactory.class.getResource("config.xml");
@@ -159,27 +136,6 @@ public class MondrianModelFactory {
       mm.setConnectionPooling(false);
     mm.setExternalDataSource(cfg.getExternalDataSource());
     return mm;
-  }
-
-  public static Config createFoodmartConfig() {
-    Config cfg = new Config();
-
-    String schemaUrl = System.getProperty("catalog.uri");
-    if (schemaUrl == null)
-      throw new IllegalArgumentException(
-          "missing foodmart catalog.uri, e.g. -Dcatalog.uri=file:///path/to/FoodMart.xml");
-    cfg.setSchemaUrl(schemaUrl);
-
-    cfg.setJdbcDriver(System.getProperty("jdbc.driver", "sun.jdbc.odbc.JdbcOdbcDriver"));
-    cfg.setJdbcUrl(System.getProperty("jdbc.url", "jdbc:odbc:MondrianFoodMart"));
-    cfg.setJdbcUser(System.getProperty("jdbc.user", ""));
-    cfg.setJdbcPassword(System.getProperty("jdbc.password", ""));
-    cfg
-        .setMdxQuery("select "
-            + "  {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns, "
-            + "  {([Promotion Media].[All Media], [Product].[All Products])} ON rows "
-            + "from Sales " + "where ([Time].[1997]) ");
-    return cfg;
   }
 
   public static class Config {

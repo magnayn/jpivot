@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.table.span;
 
@@ -45,6 +45,22 @@ public class Span implements Cloneable {
 
   public Span(Displayable object) {
     this.object = object;
+  }
+
+  public String toString() {
+    StringBuffer sb = new StringBuffer("Span[");
+    if (object == null)
+      sb.append("null ");
+    else
+      sb.append(object.getLabel());
+    sb.append(" positionSpan=").append(positionSpan);
+    sb.append(" hierarchySpan=").append(hierarchySpan);
+    sb.append(" positionIndex=").append(positionIndex);
+    sb.append(" hierarchyIndex=").append(hierarchyIndex);
+    sb.append(" significant=").append(significant);
+    sb.append(" indent=").append(indent);
+    sb.append("]");
+    return sb.toString();
   }
 
 
