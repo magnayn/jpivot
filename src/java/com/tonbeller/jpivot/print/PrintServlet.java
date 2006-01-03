@@ -140,8 +140,9 @@ public class PrintServlet extends HttpServlet {
               String host = request.getServerName();
               int port = request.getServerPort();
               String location = request.getContextPath();
+              String protocol = request.getProtocol();
 
-              String chartServlet = "http://" + host + ":" + port + location + "/GetChart";
+              String chartServlet = protocol + "://" + host + ":" + port + location + "/GetChart";
               parameters.put("chartimage", chartServlet + "?filename=" + chart.getFilename());
               parameters.put("chartheight", new Integer(chart.getChartHeight()));
               parameters.put("chartwidth", new Integer(chart.getChartWidth()));
