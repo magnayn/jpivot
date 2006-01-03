@@ -10,7 +10,7 @@
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jstl.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/junit.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/log4j-1.2.8.jar"/>
-	<classpathentry kind="lib" path="build/web/WEB-INF/lib/mondrian.jar"/>
+	<classpathentry sourcepath="C:/dev/sourceforge/jpivot_repository/mondrian-2.0/pilot/mondrian-src.jar" kind="lib" path="build/web/WEB-INF/lib/mondrian.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/saxpath.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/standard.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jsf-api.jar"/>
@@ -20,13 +20,7 @@
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-collections-3.1.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-dbcp-1.2.1.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-pool-1.2.jar"/>
-	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jcommon-0.9.6.jar"/>
-	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jfreechart-0.9.21.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/saaj-api.jar"/>
-	<classpathentry kind="lib" path="lib/saaj-api.jar"/>
-	<classpathentry kind="lib" path="lib/eigenbase-resgen.jar"/>
-	<classpathentry kind="lib" path="lib/eigenbase-xom.jar"/>
-	<classpathentry kind="lib" path="lib/commons-fileupload-1.0.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/tbutils-wcf.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/wcf.jar"/>
 	<classpathentry kind="var" path="TOMCAT_5_5/common/lib/servlet-api.jar"/>
@@ -43,5 +37,16 @@
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-digester-1.5.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-fileupload-1.0.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/activation.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/dom4j.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/eigenbase-properties.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/eigenbase-resgen.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/eigenbase-xom.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jai_codec.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jai_core.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jcommon-1.0.0.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jfreechart-1.0.0.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/mail.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/saaj-ri.jar"/>
 	<classpathentry kind="output" path="build/web/WEB-INF/classes"/>
 </classpath>

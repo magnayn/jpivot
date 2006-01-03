@@ -4,18 +4,10 @@
   <display-name>JPivot</display-name>
   <description/>
 
-  <!-- was commented -->
   <context-param>
     <param-name>com.tonbeller.wcf.controller.RequestContextFactory</param-name>
     <param-value>com.tonbeller.wcf.controller.RequestContextFactoryImpl</param-value>
   </context-param>
-
-  <!-- optional
-  <context-param>
-    <param-name>chartServlet</param-name>
-    <param-value>/path/to/chartServlet</param-value>
-  </context-param>
-  -->
 
   <filter>
     <filter-name>JPivotController</filter-name>
@@ -25,18 +17,18 @@
       <param-value>/index.jsp</param-value>
       <description>forward to this page if session is new</description>
     </init-param>
-    <init-param>
-      <param-name>errorJSP</param-name>
-      <param-value>/error.jsp</param-value>
-      <description>URI of error page</description>
-    </init-param>
+    <!--
     <init-param>
       <param-name>busyJSP</param-name>
       <param-value>/busy.jsp</param-value>
       <description>This page is displayed if a the user clicks
         on a query before the previous query has finished</description>
     </init-param>
-    <!--
+    <init-param>
+      <param-name>errorJSP</param-name>
+      <param-value>/error.jsp</param-value>
+      <description>URI of error page</description>
+    </init-param>
     <init-param>
       <param-name>forceExtension</param-name>
       <param-value>.faces</param-value>
@@ -109,11 +101,13 @@
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>
 
+  <!-- 
   <error-page>
     <exception-type>java.lang.Exception</exception-type>
     <location>/error.jsp</location>
   </error-page>
-
+  -->
+  
   <taglib>
     <taglib-uri>http://www.tonbeller.com/wcf</taglib-uri>
     <taglib-location>/WEB-INF/wcf/wcf-tags.tld</taglib-location>
