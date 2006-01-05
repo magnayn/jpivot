@@ -791,9 +791,9 @@ public class XMLA_SOAP implements OlapDiscoverer {
       // <Command>
       // <Statement>select [Measures].members on Columns from Sales</Statement>
       // </Command>
-      Name nCom = envelope.createName("Command");
+      Name nCom = envelope.createName("Command", "", XMLA_URI);
       SOAPElement eCommand = eEx.addChildElement(nCom);
-      Name nSta = envelope.createName("Statement");
+      Name nSta = envelope.createName("Statement", "", XMLA_URI);
       SOAPElement eStatement = eCommand.addChildElement(nSta);
       eStatement.addTextNode(query);
 
@@ -1367,11 +1367,11 @@ public class XMLA_SOAP implements OlapDiscoverer {
       SOAPEnvelope envelope = soapPart.getEnvelope();
       SOAPBody body = envelope.getBody();
       Name nDiscover = envelope
-          .createName("Discover", "", "urn:schemas-microsoft-com:xml-analysis");
+          .createName("Discover", "", XMLA_URI);
 
       SOAPElement eDiscover = body.addChildElement(nDiscover);
 
-      Name nPara = envelope.createName("RequestType");
+      Name nPara = envelope.createName("RequestType", "", XMLA_URI);
       SOAPElement eRequestType = eDiscover.addChildElement(nPara);
       eRequestType.addTextNode(request);
 
