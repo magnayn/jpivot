@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.mondrian;
 
@@ -23,6 +23,9 @@ import mondrian.olap.Member;
 import mondrian.olap.Parameter;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.UnresolvedFunCall;
 
 import com.tonbeller.jpivot.util.TreeNode;
 import com.tonbeller.jpivot.util.TreeNodeCallback;
@@ -43,12 +46,13 @@ public class MondrianUtil {
     String s = "";
     if (exp instanceof FunCall) {
       FunCall f = (FunCall) exp;
-      s += "<function:" + f.getFunName() + ">";
+      final String name = f.getFunName();
+      s += "<function:" + name + ">";
       Exp[] args = f.getArgs();
       for (int i = 0; i < args.length; i++) {
         s += expString(args[i]);
       }
-      s += "</function:" + f.getFunName() + ">";
+      s += "</function:" + name + ">";
     } else if (exp instanceof mondrian.olap.Member) {
       mondrian.olap.Member m = (mondrian.olap.Member) exp;
       s += "<member>" + m.getUniqueName() + "</member>";
@@ -86,9 +90,9 @@ public class MondrianUtil {
     return true;
   }
 
-  /** 
+  /**
    * display member array for debugging purposes
-   * @param member
+   * @param mPath
    * @return
    */
   public static String memberString(mondrian.olap.Member[] mPath) {
@@ -106,7 +110,7 @@ public class MondrianUtil {
   /**
    * generate Exp for top level members of hierarchy
    * @param monHier
-   * @param expandAllMember - true if an "All" member is to be expanded 
+   * @param expandAllMember - true if an "All" member is to be expanded
    * @return Exp for top level members
    */
   static Exp topLevelMembers(mondrian.olap.Hierarchy monHier, boolean expandAllMember,
@@ -118,25 +122,33 @@ public class MondrianUtil {
       mondrian.olap.Member mona = (Member) scr.lookupCompound(monHier.getDimension(),
           new String[] { sAll}, false, Category.Member);
        if (mona != null) {
-        mondrian.olap.Member[] monar = new mondrian.olap.Member[] { mona};
-        Exp monaSet = new FunCall("{}", Syntax.Braces, monar);
         if (!expandAllMember)
-          return mona;
+          return new MemberExpr(mona);
+        MemberExpr[] monar = { new MemberExpr(mona)};
+        Exp monaSet = new UnresolvedFunCall("{}", Syntax.Braces, monar);
 
         // must expand
         // create Union({AllMember}, AllMember.children)
-        Exp mAllChildren = new FunCall("children", Syntax.Property, monar);
-        Exp union = new FunCall("union", Syntax.Function, new Exp[] { monaSet, mAllChildren});
+        Exp mAllChildren = new UnresolvedFunCall("children", Syntax.Property, monar);
+        Exp union = new UnresolvedFunCall("union", Syntax.Function, new Exp[] { monaSet, mAllChildren});
         return union;
       }
     }
     // does this call work with parent-child
     mondrian.olap.Member[] topMembers = scr.getHierarchyRootMembers(monHier);
     if (topMembers.length == 1)
-      return topMembers[0]; // single member
+      return new MemberExpr(topMembers[0]); // single member
     else if (topMembers.length == 0)
       return null; // possible if access control active
-    return new FunCall("{}", Syntax.Braces, topMembers);
+    return new UnresolvedFunCall("{}", Syntax.Braces, toExprArray(topMembers));
+  }
+
+  static MemberExpr[] toExprArray(Member[] members) {
+    MemberExpr[] memberExprs = new MemberExpr[members.length];
+    for (int i = 0; i < memberExprs.length; i++) {
+      memberExprs[i] = new MemberExpr(members[i]);
+    }
+    return memberExprs;
   }
 
   /**
@@ -164,7 +176,7 @@ public class MondrianUtil {
    * Map function names to Mondrian Syntax type
    *  must be synchronized with mondrian/olap/fun/BuiltinFunTable.java
    * @param fuName - function name
-   * @param nArgs - number of function args 
+   * @param nArgs - number of function args
    * @return Syntax type
    */
   public static Syntax funCallSyntax(String fuName, int nArgs) {
@@ -264,7 +276,7 @@ public class MondrianUtil {
   }
 
   /**
-   * 
+   *
    * @param root
    * @param iDim
    * @return
@@ -285,15 +297,15 @@ public class MondrianUtil {
           return TreeNodeCallback.CONTINUE; // we are below iDim, don't care
 
         // iDimNode == iDim
-        //  node Exp must contain children of member[iDim] 
-        Exp exp = (Exp) node.getReference();
-        if (exp instanceof mondrian.olap.Member) {
-          mondrian.olap.Member m = (mondrian.olap.Member) exp;
+        //  node Exp must contain children of member[iDim]
+        final Object ref = node.getReference();
+        if (ref instanceof mondrian.olap.Member) {
+          mondrian.olap.Member m = (mondrian.olap.Member) ref;
           if (!memberList.contains(m))
             memberList.add(m);
         } else {
           // must be FunCall
-          FunCall f = (FunCall) exp;
+          FunCall f = (FunCall) ref;
           boolean b = MondrianUtil.resolveFunCallMembers(f, memberList, scr);
           if (!b)
             return TreeNodeCallback.BREAK; // indicate: cannot handle
@@ -307,40 +319,44 @@ public class MondrianUtil {
       return memberList;
   }
 
+  static boolean isCallTo(FunCall f, String name) {
+    return f.getFunName().compareToIgnoreCase(name) == 0;
+  }
+
   /**
-   * 
+   *
    * @param f
    * @param memberList
    * @return true, if Funcalls could be handled, otherwise false
    */
   static boolean resolveFunCallMembers(FunCall f, List memberList, SchemaReader scr) {
     boolean canHandle = true;
-    if (f.isCallTo("Children")) {
-      mondrian.olap.Member m = (mondrian.olap.Member) f.getArg(0);
+    if (isCallTo(f, "Children")) {
+      mondrian.olap.Member m = ((MemberExpr) f.getArg(0)).getMember();
       mondrian.olap.Member[] members = scr.getMemberChildren(m);
       for (int i = 0; i < members.length; i++) {
         if (!memberList.contains(members[i]))
           memberList.add(members[i]);
       }
-    } else if (f.isCallTo("Descendants")) {
-      mondrian.olap.Member m = (mondrian.olap.Member) f.getArg(0);
-      mondrian.olap.Level level = (mondrian.olap.Level) f.getArg(1);
+    } else if (isCallTo(f, "Descendants")) {
+      mondrian.olap.Member m = ((MemberExpr) f.getArg(0)).getMember();
+      mondrian.olap.Level level = ((LevelExpr) f.getArg(1)).getLevel();
       mondrian.olap.Member[] members = MondrianUtil.getMemberDescendants(scr, m, level);
       for (int i = 0; i < members.length; i++) {
         if (!memberList.contains(members[i]))
           memberList.add(members[i]);
       }
-    } else if (f.isCallTo("Members")) {
-      mondrian.olap.Level level = (mondrian.olap.Level) f.getArg(0);
-      mondrian.olap.Member[] members = scr.getLevelMembers(level);
+    } else if (isCallTo(f, "Members")) {
+      mondrian.olap.Level level = ((LevelExpr) f.getArg(0)).getLevel();
+      mondrian.olap.Member[] members = scr.getLevelMembers(level, false);
       for (int i = 0; i < members.length; i++) {
         if (!memberList.contains(members[i]))
           memberList.add(members[i]);
       }
-    } else if (f.isCallTo("Union")) {
+    } else if (isCallTo(f, "Union")) {
       resolveFunCallMembers((FunCall) f.getArg(0), memberList, scr);
       resolveFunCallMembers((FunCall) f.getArg(1), memberList, scr);
-    } else if (f.isCallTo("{}")) {
+    } else if (isCallTo(f, "{}")) {
       for (int i = 0; i < f.getArgs().length; i++) {
         if (!memberList.contains(f.getArg(i)))
           memberList.add(f.getArg(i));
@@ -350,4 +366,4 @@ public class MondrianUtil {
     }
     return canHandle;
   }
-} // End MondrianUtil.java 
+} // End MondrianUtil.java

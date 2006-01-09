@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 
 package com.tonbeller.jpivot.xmla;
@@ -38,7 +38,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   static Logger logger = Logger.getLogger(XMLA_QuaxUti.class);
 
   /**
-   * 
+   *
    * @param f
    * @param m
    * @return true if FunCall matches member
@@ -166,7 +166,7 @@ public class XMLA_QuaxUti implements QuaxUti {
    FunCall set = (FunCall) f.getArgs()[0];
    if (set.isCallTo("Children")) {
    return isMemberInChildren(set, mSearch);
-   
+
    } else if (set.isCallTo("Descendants")) {
    return isMemberInDescendants(set, mSearch);
    } else if (set.isCallTo("Members")) {
@@ -177,7 +177,7 @@ public class XMLA_QuaxUti implements QuaxUti {
    */
 
   /**
-   * 
+   *
    * @param f
    * @param m
    * @return true if FunCall contains child of member
@@ -240,7 +240,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   }
 
   /**
-   * 
+   *
    * @param f
    * @param m
    * @return true if FunCall contains descendants of member
@@ -308,7 +308,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   }
 
   /**
-   * check level and add a member's uncles to list 
+   * check level and add a member's uncles to list
    * @param m
    */
   public void addMemberUncles(List list, Member m, int[] maxLevel) {
@@ -358,7 +358,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   }
 
   /**
-   * check level and add a member's parents children to list 
+   * check level and add a member's parents children to list
    * @param m
    */
   public void addMemberSiblings(List list, Member m, int[] maxLevel) {
@@ -390,7 +390,7 @@ public class XMLA_QuaxUti implements QuaxUti {
         }
       }
       FunCall fSiblings = new FunCall("Children", new Exp[] { parent}, FunCall.TypeProperty);
-      /*      
+      /*
        // remove all existing children of parent from worklist;
        for (Iterator iter = workList.iterator(); iter.hasNext();) {
        Exp exp = (Exp) iter.next();
@@ -404,7 +404,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   }
 
   /**
-   * check level and add a member to list 
+   * check level and add a member to list
    * @param m
    */
   public void addMemberChildren(List list, Member m, int[] maxLevel) {
@@ -442,7 +442,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   }
 
   /**
-   * check level and add a members descendatns to list 
+   * check level and add a members descendatns to list
    * @param m
    */
   public void addMemberDescendants(List list, Member m, Level lev, int[] maxLevel) {
@@ -482,7 +482,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   }
 
   /**
-   * check level and add a levels members to list 
+   * check level and add a levels members to list
    * @param m
    */
   public void addLevelMembers(List list, Level lev, int[] maxLevel) {
@@ -612,7 +612,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   }
 
   /**
-   * @param oExp expression 
+   * @param oExp expression
    * @return true, if  exp is member
    * @see QuaxUti#isMember(java.lang.Object)
    */
@@ -657,7 +657,7 @@ public class XMLA_QuaxUti implements QuaxUti {
     return new FunCall("Children", new Exp[] { (XMLA_Member) member}, FunCall.TypeProperty);
   }
 
-  /** 
+  /**
    * @return a members hierarchy
    * @see QuaxUti#hierForMember(com.tonbeller.jpivot.olap.model.Member)
    */
@@ -709,7 +709,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   }
 
   /**
-   * @return true if member (2.arg) is child of Member (1.arg) 
+   * @return true if member (2.arg) is child of Member (1.arg)
    * @see com.tonbeller.jpivot.olap.query.QuaxUti#checkParent
    */
   public boolean checkParent(Member pMember, Object cMemObj) {
@@ -730,7 +730,7 @@ public class XMLA_QuaxUti implements QuaxUti {
   }
 
   /**
-   * @return true if member (1.arg) is child of Member (2.arg) 
+   * @return true if member (1.arg) is child of Member (2.arg)
    * @see com.tonbeller.jpivot.olap.query.QuaxUti#checkParent
    */
   public boolean checkChild(Member cMember, Object pMemObj) {
@@ -777,7 +777,7 @@ public class XMLA_QuaxUti implements QuaxUti {
     return (Member) oExp;
   }
 
-  /** 
+  /**
    * display member array for debugging purposes
    * @param member
    * @return
@@ -794,7 +794,7 @@ public class XMLA_QuaxUti implements QuaxUti {
     return sb.toString();
   }
 
- 
+
   /**
    * generate an object for a list of members
    * @param mList list of members
@@ -820,9 +820,9 @@ public class XMLA_QuaxUti implements QuaxUti {
   public boolean isFunCallNotTopLevel(Object oExp) throws CannotHandleException {
     FunCall f = (FunCall) oExp;
     if (f.isCallTo("Children")) {
-      return true; // children *not* top level 
+      return true; // children *not* top level
     } else if (f.isCallTo("Descendants")) {
-      return true; // descendants*not* top level 
+      return true; // descendants*not* top level
     } else if (f.isCallTo("Members")) {
       XMLA_Level lev = (XMLA_Level) f.getArgs()[0];
       return (lev.getDepth() > 0);
@@ -896,7 +896,11 @@ public class XMLA_QuaxUti implements QuaxUti {
     return ((XMLA_Level) level).getParentLevel();
   }
 
-  /**
+  public mondrian.olap.Exp toExp(Object o) {
+    return (mondrian.olap.Exp) o;
+  }
+
+    /**
    * create FunCall
    * @see QuaxUti#createFunCall(java.lang.String, java.lang.Object[], int)
    */

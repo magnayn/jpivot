@@ -8,16 +8,17 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 
   package com.tonbeller.jpivot.mondrian;
 
   import mondrian.olap.Exp;
-  import mondrian.olap.FunCall;
   import mondrian.olap.Syntax;
+import mondrian.mdx.UnresolvedFunCall;
+import mondrian.mdx.MemberExpr;
 
-  import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
   import com.tonbeller.jpivot.olap.model.Member;
   import com.tonbeller.jpivot.olap.model.OlapException;
@@ -33,7 +34,7 @@
     static Logger logger = Logger.getLogger(MondrianModel.class);
 
     /**
-     * create Position Tree from old Member Sets 
+     * create Position Tree from old Member Sets
      * @param quax
      * @param quaxBean
      */
@@ -53,7 +54,7 @@
         switch (msbType) {
           case 0 : // member list
             String[] memberList = msbs[j].getMemberList();
-            mondrian.olap.Member[] monMembers = new mondrian.olap.Member[memberList.length];
+            MemberExpr[] monMembers = new MemberExpr[memberList.length];
             for (int k = 0; k < monMembers.length; k++) {
               MondrianMember m = (MondrianMember) model.lookupMemberByUName(memberList[k]);
               if (m == null) {
@@ -64,9 +65,9 @@
                     + memberList[k]);
                 return;
               }
-              monMembers[k] = m.getMonMember();
+              monMembers[k] = new MemberExpr(m.getMonMember());
             }
-            FunCall fSet = new FunCall("{}", Syntax.Braces, monMembers);
+            UnresolvedFunCall fSet = new UnresolvedFunCall("{}", Syntax.Braces, monMembers);
             node = new TreeNode(fSet);
             currentNode.addChildNode(node);
             break;
@@ -82,9 +83,9 @@
                   + memberList[0]);
               return;
             }
-            mondrian.olap.Member monMember = m.getMonMember();
+            final mondrian.olap.Member monMember = m.getMonMember();
 
-            FunCall fChildren = new FunCall("Children", Syntax.Property, new Exp[] { monMember });
+            UnresolvedFunCall fChildren = new UnresolvedFunCall("Children", Syntax.Property, new Exp[] { new MemberExpr(monMember) });
             node = new TreeNode(fChildren);
             currentNode.addChildNode(node);
             break;
@@ -104,7 +105,7 @@
     }
 
     /**
-     * apply old DrillExes to quax 
+     * apply old DrillExes to quax
      * @param quax
      * @param quaxBean
      */

@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.mondrian;
 
@@ -16,9 +16,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import mondrian.olap.AxisOrdinal;
 import mondrian.olap.Exp;
-import mondrian.olap.FunCall;
+import mondrian.olap.QueryAxis;
 import mondrian.olap.Syntax;
+import mondrian.mdx.UnresolvedFunCall;
+import mondrian.mdx.MemberExpr;
 
 import org.apache.log4j.Logger;
 
@@ -86,7 +89,7 @@ public class MondrianChangeSlicer extends ExtensionSupport implements ChangeSlic
 
     if (members.length == 0) {
       // empty slicer
-      monQuery.setSlicer(null);
+      monQuery.setSlicerAxis(null);
       if (logInfo)
         logger.info("slicer set to null");
     } else {
@@ -95,8 +98,8 @@ public class MondrianChangeSlicer extends ExtensionSupport implements ChangeSlic
         monExpr[i] = createExpressionFor(monQuery, (MondrianMember) members[i]);
       }
 
-      FunCall f = new FunCall("()", Syntax.Parentheses, monExpr);
-      monQuery.setSlicer(f);
+      UnresolvedFunCall f = new UnresolvedFunCall("()", Syntax.Parentheses, monExpr);
+      monQuery.setSlicerAxis(new QueryAxis(false, f, AxisOrdinal.Slicer, QueryAxis.SubtotalVisibility.Undefined));
       if (logInfo) {
         StringBuffer sb = new StringBuffer("slicer=(");
         for (int i = 0; i < monExpr.length; i++) {
@@ -112,7 +115,7 @@ public class MondrianChangeSlicer extends ExtensionSupport implements ChangeSlic
   }
 
   protected Exp createExpressionFor(mondrian.olap.Query monQuery, MondrianMember member) {
-    return member.getMonMember();
+    return new MemberExpr(member.getMonMember());
   }
 
 } // End MondrianChangeSlicer

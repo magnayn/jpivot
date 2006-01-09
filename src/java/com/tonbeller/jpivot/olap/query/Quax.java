@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.olap.query;
 
@@ -83,7 +83,7 @@ public class Quax {
 
   /**
    * c'tor
-   * 
+   *
    * @param ordinal
    */
   public Quax(int ordinal) {
@@ -93,7 +93,7 @@ public class Quax {
 
   /**
    * register change listener
-   * 
+   *
    * @param listener
    */
   public void addChangeListener(QuaxChangeListener listener) {
@@ -102,7 +102,7 @@ public class Quax {
 
   /**
    * unregister change listener
-   * 
+   *
    * @param listener
    */
   public void removeChangeListener(QuaxChangeListener listener) {
@@ -111,7 +111,7 @@ public class Quax {
 
   /**
    * handle change
-   * 
+   *
    * @param source
    *          Originator of the quax change
    * @param changedMemberSet
@@ -131,8 +131,8 @@ public class Quax {
 
   /**
    * Initialize quax from result positions
-   * 
-   * @param result
+   *
+   * @param positions
    */
   public void init(List positions) {
     Member[][] aPosMem;
@@ -196,7 +196,7 @@ public class Quax {
 
   /**
    * Initialize position member arrays after first result gotten
-   * 
+   *
    * @param aPosMemStart
    */
   private void initPositions(Member[][] aPosMemStart) {
@@ -262,7 +262,7 @@ public class Quax {
 
   /**
    * add members of dimension to tree recursively
-   * 
+   *
    * @param aPosMem
    *          positon member array
    * @param iStartPos
@@ -300,8 +300,8 @@ public class Quax {
 
   /**
    * find out, whether axis contains dimension
-   * 
-   * @param monDim
+   *
+   * @param dim
    * @return index of dimension, -1 if not there
    */
   public int dimIdx(Dimension dim) {
@@ -316,7 +316,7 @@ public class Quax {
 
   /**
    * regenerate the position tree as crossjoin between sets
-   * 
+   *
    * @param hiersChanged
    *          indicates that the hierarchies were changed
    */
@@ -413,7 +413,7 @@ public class Quax {
 
   /**
    * check, whether a member in a specific position path can be expanded
-   * 
+   *
    * @param pathMembers
    *          position path to be expanded
    */
@@ -445,7 +445,7 @@ public class Quax {
 
   /**
    * expand position path
-   * 
+   *
    * @param mPath
    */
   public void expand(Member[] mPath) {
@@ -540,8 +540,8 @@ public class Quax {
 
   /**
    * check, whether a member can be expanded
-   * 
-   * @param monMember
+   *
+   * @param member
    *          member to be expanded
    */
   public boolean canExpand(Member member) {
@@ -570,8 +570,8 @@ public class Quax {
 
   /**
    * expand member all over position tree
-   * 
-   * @param mPath
+   *
+   * @param member
    */
   public void expand(final Member member) {
 
@@ -647,7 +647,7 @@ public class Quax {
 
   /**
    * check, whether a member path can be collapsed this is true if there is a child position path
-   * 
+   *
    * @param pathMembers
    *          position path to be collapsed
    */
@@ -680,7 +680,7 @@ public class Quax {
 
   /**
    * remove child positions of mPath from position tree
-   * 
+   *
    * @param mPath
    *          member path to be collapsed
    */
@@ -788,7 +788,7 @@ public class Quax {
               return TreeNodeCallback.CONTINUE_SIBLING;
           } else {
             // FunCall
-            // cannot match as we just did the split of FunCalls 
+            // cannot match as we just did the split of FunCalls
             return TreeNodeCallback.CONTINUE_SIBLING;
           }
         } else if (idi == iDim) {
@@ -880,8 +880,8 @@ public class Quax {
 
   /**
    * check, whether a member path can be collapsed this is true if there is a child position path
-   * 
-   * @param pathMembers
+   *
+   * @param member
    *          position path to be collapsed
    */
   public boolean canCollapse(Member member) {
@@ -910,8 +910,8 @@ public class Quax {
 
   /**
    * remove child nodes of monMember
-   * 
-   * @param monMember
+   *
+   * @param member
    *          member to be collapsed
    */
   public void collapse(final Member member) {
@@ -992,8 +992,8 @@ public class Quax {
 
   /**
    * drill down
-   * 
-   * @param monMember
+   *
+   * @param member
    *          drill down member
    */
   public void drillDown(Member member) {
@@ -1068,8 +1068,8 @@ public class Quax {
 
   /**
    * drill down
-   * 
-   * @param monMember
+   *
+   * @param hier
    *          drill down member
    */
   public void drillUp(Hierarchy hier) {
@@ -1101,7 +1101,7 @@ public class Quax {
   /**
    * MDX Generation
    * generate Exp from tree
-   * 
+   *
    * @return Exp for axis set
    */
   public Object genExp(boolean genHierarchize) {
@@ -1114,7 +1114,7 @@ public class Quax {
 
   /**
    * Normal MDX Generation - no Generate
-   * 
+   *
    * @return Exp for axis set
    */
   private Object genNormalExp(boolean genHierarchize) {
@@ -1151,8 +1151,8 @@ public class Quax {
   }
 
   /**
-   * generate an expression 
-   * with hierarchize for the hierarchies < nHierExclude 
+   * generate an expression
+   * with hierarchize for the hierarchies < nHierExclude
    * without hierarchize for the hierarchies >= nHierExclude
    */
   private Object genLeftRight(ExpGenerator expGenerator, int nLeft, int nRight) {
@@ -1176,7 +1176,7 @@ public class Quax {
     for (int i = 0; i < nRight; i++) {
       rightHiers[i] = hiers[nLeft + i];
     }
-    
+
     // go down to the first hier to be excluded from hierarchize
     // note: the subtree tree under any node of the hierarchy above
     //  is always the same, so we can replicate any subtree under
@@ -1208,7 +1208,7 @@ public class Quax {
 
   /**
    * MDX Generation for Generate
-   * 
+   *
    * @return Exp for axis set
    */
   private Object genGenerateExp(boolean genHierarchize) {
@@ -1218,7 +1218,7 @@ public class Quax {
     // Generate(GSet, FSet) to be generated
     //  hierarchies >= generateIndex will not be "hierarchized"
     // we expect the hierarchies >= generateIndex to be excluded
-    //  from hierarchize. 
+    //  from hierarchize.
     if (nDimension - generateIndex > nHierExclude)
       logger.warn("unexpected values: nHierExclude=" + nHierExclude + " generateIndex="
           + generateIndex);
@@ -1237,7 +1237,7 @@ public class Quax {
     // 3.step
     //  append the tail nodes , here Product
     //  Crossjoin(set2 , Product dimension nodes)
-    // 
+    //
     // 1. step left expression, potentially hierarchized
 
     Object leftExp = null;
@@ -1320,7 +1320,7 @@ public class Quax {
 
   /**
    * generate {(dim1.Currentmember, dim2.Currentmember, ... )}
-   * 
+   *
    * @return
    */
   private Object genCurrentTuple() {
@@ -1597,7 +1597,7 @@ public class Quax {
 
   /**
    * build tree resolving crossjoin
-   * 
+   *
    * @param currentNode
    * @param iDim
    */
@@ -1650,7 +1650,7 @@ public class Quax {
 
   /**
    * remove Children node
-   * 
+   *
    * @param nodeToRemove
    */
   private void removePathToNode(TreeNode nodeToRemove) {
@@ -1670,7 +1670,7 @@ public class Quax {
 
   /**
    * generate Exp for all nodes of dimension iDimension
-   * 
+   *
    * @param iDimension
    * @return Exp for all nodes
    */
@@ -1724,7 +1724,7 @@ public class Quax {
 
   /**
    * create drillup expression for dimension
-   * 
+   *
    * @param iDim
    *          dimension to be drilled up
    * @return
@@ -1771,7 +1771,7 @@ public class Quax {
 
   /**
    * collect drillup Exps of dimension i
-   * 
+   *
    * @param iDim
    */
   private List collectDrillup(final int iDim, final int[] maxLevel) {
@@ -1803,7 +1803,7 @@ public class Quax {
 
   /**
    * collect Funcalls of dimension iDim
-   * 
+   *
    * @param iDim
    */
   private List collectFunCalls(final int iDim) {
@@ -1846,7 +1846,7 @@ public class Quax {
 
   /**
    * remove members from member list being in FunCall list
-   * 
+   *
    * @param funCallList
    * @param memberList
    */
@@ -1868,9 +1868,8 @@ public class Quax {
 
   /**
    * collect Members of dimension iDim
-   * 
+   *
    * @param iDim
-   * @param fList
    */
   List collectMembers(final int iDim) {
     if (posTreeRoot == null)
@@ -1897,8 +1896,6 @@ public class Quax {
 
   /**
    * add a Funcall to Drillup list
-   * 
-   * @param f
    */
   private void addFunCallToDrillup(List list, Object oFun, int[] maxLevel) {
     if (uti.isFunCallTo(oFun, "Union")) {
@@ -1952,8 +1949,8 @@ public class Quax {
 
   /**
    * add FunCall to list
-   * 
-   * @param f
+   *
+   * @param oFun
    * @param list
    */
   private void funToList(Object oFun, List list) {
@@ -2040,7 +2037,7 @@ public class Quax {
   //       * callback
   //       * find child node of monMember
   //       */
-  //       
+  //
   //      public int handleTreeNode(TreeNode node) {
   //        int iDimNode = node.getLevel() - 1;
   //        if (iDimNode < iDim)
@@ -2156,7 +2153,7 @@ public class Quax {
 
   /**
    * get Ordinal for axis, this is the immutable id of the quax
-   * 
+   *
    * @return ordinal
    */
   public int getOrdinal() {
@@ -2213,7 +2210,7 @@ public class Quax {
 
   /**
    * check, whether member is in set defined by funcall
-   * 
+   *
    * @param oExp -
    *          set funcall
    * @param member
@@ -2321,7 +2318,7 @@ public class Quax {
     try {
       return removeDescendantsFromFunCall(oFun, member);
     } catch (CannotHandleException e) {
-      // the FunCall was not handled, 
+      // the FunCall was not handled,
       //  assume that it is an "Unkown FunCall" which was resolved by the latest result
       // the "Unknown Functions" are probably not properly resolved
       logger.error("Unkown FunCall " + uti.funCallName(oFun));
@@ -2403,7 +2400,7 @@ public class Quax {
     try {
       return createComplement(oFun, member);
     } catch (CannotHandleException e) {
-      // the FunCall was not handled, 
+      // the FunCall was not handled,
       //  assume that it is an "Unkown FunCall" which was resolved by the latest result
       // the "Unknown Functions" are probably not properly resolved
       logger.error("Unkown FunCall " + uti.funCallName(oFun));
@@ -2645,7 +2642,7 @@ public class Quax {
 
     /**
      * Constructor for CannotHandleException.
-     * 
+     *
      * @param arg0
      */
     public CannotHandleException(String arg0) {

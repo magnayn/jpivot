@@ -8,15 +8,16 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.mondrian;
 
 import mondrian.olap.Exp;
-import mondrian.olap.FunCall;
 import mondrian.olap.Literal;
 import mondrian.olap.SortDirection;
 import mondrian.olap.Syntax;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.UnresolvedFunCall;
 
 import org.apache.log4j.Logger;
 
@@ -68,7 +69,7 @@ public class MondrianSortRank extends SortRankBase implements SortRank, QuaxChan
 
   /**
   * convert sort mode to mondrian
-  * @param sort mode according to JPivot
+  * @param sortMode mode according to JPivot
   * @return sort mode according to Mondrian
   */
   static private int sortMode2Mondrian(int sortMode) {
@@ -88,7 +89,7 @@ public class MondrianSortRank extends SortRankBase implements SortRank, QuaxChan
 
   /**
    * add Order Funcall to QueryAxis
-   * @param monAx
+   * @param monQuery
    * @param monSortMode
    */
   private void orderAxis(mondrian.olap.Query monQuery, int monSortMode) {
@@ -98,24 +99,22 @@ public class MondrianSortRank extends SortRankBase implements SortRank, QuaxChan
     Exp setForAx = monAx.getSet();
     Exp memToSort;
     if (sortPosMembers.length == 1) {
-      memToSort = ((MondrianMember) sortPosMembers[0]).getMonMember();
+      memToSort = new MemberExpr(((MondrianMember) sortPosMembers[0]).getMonMember());
     } else {
-      mondrian.olap.Member[] monMembers = new mondrian.olap.Member[sortPosMembers.length];
-      for (int i = 0; i < monMembers.length; i++) {
-        monMembers[i] = ((MondrianMember) sortPosMembers[i]).getMonMember();
+      MemberExpr[] memberExprs = new MemberExpr[sortPosMembers.length];
+      for (int i = 0; i < memberExprs.length; i++) {
+        memberExprs[i] = new MemberExpr(((MondrianMember) sortPosMembers[i]).getMonMember());
       }
-      memToSort = new FunCall("()", Syntax.Parentheses, monMembers);
+      memToSort = new UnresolvedFunCall("()", Syntax.Parentheses, memberExprs);
     }
     String sDirection = SortDirection.instance().getName(monSortMode);
-    FunCall funOrder =
-      new FunCall("Order", new Exp[] { setForAx, memToSort, Literal.createSymbol(sDirection)});
+    UnresolvedFunCall funOrder =
+      new UnresolvedFunCall("Order", new Exp[] { setForAx, memToSort, Literal.createSymbol(sDirection)});
     monAx.setSet(funOrder);
   }
 
   /**
    * add Top/BottomCount Funcall to QueryAxis
-   * @param monAx
-   * @param nShow
    */
   private void topBottomAxis(mondrian.olap.Query monQuery, String function) {
     // TopCount(TopCount) and TopCount(Order) is not permitted
@@ -124,16 +123,16 @@ public class MondrianSortRank extends SortRankBase implements SortRank, QuaxChan
     Exp setForAx = monAx.getSet();
     Exp memToSort;
     if (sortPosMembers.length > 1) {
-      mondrian.olap.Member[] monMembers = new mondrian.olap.Member[sortPosMembers.length];
-      for (int i = 0; i < monMembers.length; i++) {
-        monMembers[i] = ((MondrianMember) sortPosMembers[i]).getMonMember();
+      MemberExpr[] memberExprs = new MemberExpr[sortPosMembers.length];
+      for (int i = 0; i < memberExprs.length; i++) {
+        memberExprs[i] = new MemberExpr(((MondrianMember) sortPosMembers[i]).getMonMember());
       }
-      memToSort = new FunCall("()", Syntax.Parentheses, monMembers);
+      memToSort = new UnresolvedFunCall("()", Syntax.Parentheses, memberExprs);
     } else {
-      memToSort = ((MondrianMember) sortPosMembers[0]).getMonMember();
+      memToSort = new MemberExpr(((MondrianMember) sortPosMembers[0]).getMonMember());
     }
-    FunCall funOrder =
-      new FunCall(
+    UnresolvedFunCall funOrder =
+      new UnresolvedFunCall(
         function,
         new Exp[] { setForAx, Literal.create(new Integer(topBottomCount)), memToSort });
     monAx.setSet(funOrder);
@@ -161,7 +160,7 @@ public class MondrianSortRank extends SortRankBase implements SortRank, QuaxChan
      }
      if (!found)
        return;
-  
+
      // remove sort function from current set
      mondrian.olap.QueryAxis monAx = monQuery.axes[quaxToSort.getOrdinal()];
      Exp setForAx = monAx.set;

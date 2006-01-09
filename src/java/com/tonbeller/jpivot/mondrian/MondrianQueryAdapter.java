@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.mondrian;
 
@@ -20,6 +20,8 @@ import mondrian.olap.FunCall;
 import mondrian.olap.Query;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.UnresolvedFunCall;
 
 import org.apache.log4j.Logger;
 
@@ -102,16 +104,16 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
   public void setMonQuery(Query q) {
     this.monQuery = q;
   }
-  
+
   /**
    * Update the Mondrian Query before Execute.
    * The current query is build from
    * - the original query
-   * - adding the drilldown groups 
+   * - adding the drilldown groups
    * - apply pending swap axes
    * - apply pending sorts.
    *
-   * Called from MondrianModel.getResult before the query is executed. 
+   * Called from MondrianModel.getResult before the query is executed.
    */
   protected void onExecute() {
 
@@ -139,7 +141,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
     if (sortMan != null) {
       if (!useQuax) {
         // if Quax is used, the axis exp's are re-generated every time.
-        // if not - 
+        // if not -
         //    adding a sort to the query must not be permanent.
         //    Therefore, we clone the orig state of the query object and use
         //    the clone furthermore in order to avoid duplicate "Order" functions.
@@ -178,18 +180,18 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
   }
 
   /**
-   * create set expression for list of members 
+   * create set expression for list of members
    * @param memList
-   * @return set expression 
+   * @return set expression
    */
   protected Object createMemberSet(List memList) {
     Exp[] exps = new Exp[memList.size()];
     int i = 0;
     for (Iterator iter = memList.iterator(); iter.hasNext();) {
       MondrianMember m = (MondrianMember) iter.next();
-      exps[i++] = m.getMonMember();
+      exps[i++] = new MemberExpr(m.getMonMember());
     }
-    FunCall f = new FunCall("{}", Syntax.Braces, exps);
+    UnresolvedFunCall f = new UnresolvedFunCall("{}", Syntax.Braces, exps);
     return f;
   }
 
@@ -199,7 +201,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
 
   /**
    * find out, whether a member can be expanded.
-   * this is true, if 
+   * this is true, if
    * - the member is on an axis  and
    * - the member is not yet expanded  and
    * - the member has children
@@ -279,7 +281,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
   /**
    * expand a member in all positions
    *  this is done by applying ToggleDrillState to the Query
-   * 
+   *
    * @see com.tonbeller.jpivot.olap.navi.DrillExpand#expand(Member)
    * @param Member member to be expanded
    */
@@ -300,7 +302,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
 
   /**
    * expand a member in a specific position
-   * 
+   *
    * @see com.tonbeller.jpivot.olap.navi.DrillExpand#expand(Member)
    * @param position position to be expanded
    * @param Member member to be expanded

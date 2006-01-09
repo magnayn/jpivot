@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 
 package com.tonbeller.jpivot.mondrian;
@@ -19,8 +19,14 @@ import java.util.List;
 
 import mondrian.olap.Exp;
 import mondrian.olap.FunCall;
+import mondrian.olap.OlapElement;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.UnresolvedFunCall;
 
 import org.apache.log4j.Logger;
 
@@ -54,28 +60,32 @@ public class MondrianQuaxUti implements QuaxUti {
     scr = model.getConnection().getSchemaReader();
   }
 
+  private static boolean isCallTo(FunCall f, String name) {
+    return f.getFunName().compareToIgnoreCase(name) == 0;
+  }
+
   /**
    * check whether a Funcall does NOT resolve to top level of hierarchy
    *
-   * @param f
+   * @param oFun
    * @return
    */
   public boolean isFunCallNotTopLevel(Object oFun) throws CannotHandleException {
     FunCall f = (FunCall) oFun;
-    if (f.isCallTo("Children")) {
+    if (isCallTo(f, "Children")) {
       return true; // children *not* top level
-    } else if (f.isCallTo("Descendants")) {
+    } else if (isCallTo(f, "Descendants")) {
       return true; // descendants*not* top level
-    } else if (f.isCallTo("Members")) {
-      mondrian.olap.Level lev = (mondrian.olap.Level) f.getArg(0);
+    } else if (isCallTo(f, "Members")) {
+      mondrian.olap.Level lev = getLevelArg(f, 0);
       return (lev.getDepth() > 0);
-    } else if (f.isCallTo("Union")) {
+    } else if (isCallTo(f, "Union")) {
       if (isFunCallNotTopLevel(f.getArg(0)))
         return true;
       return isFunCallNotTopLevel(f.getArg(1));
-    } else if (f.isCallTo("{}")) {
+    } else if (isCallTo(f, "{}")) {
       for (int i = 0; i < f.getArgs().length; i++) {
-        if (!isMemberOnToplevel((mondrian.olap.Member) f.getArg(i)))
+        if (!isMemberOnToplevel(getMemberArg(f, i)))
           return true;
       }
       return false;
@@ -103,8 +113,8 @@ public class MondrianQuaxUti implements QuaxUti {
 
   /**
    *
-   * @param f
-   * @param m
+   * @param oFun
+   * @param member
    * @return true if FunCall matches member
    */
   public boolean isMemberInFunCall(Object oFun, Member member) throws CannotHandleException {
@@ -120,15 +130,17 @@ public class MondrianQuaxUti implements QuaxUti {
    * @return true if FunCall matches member
    */
   private boolean isMemberInFunCall(FunCall f, mondrian.olap.Member m) throws CannotHandleException {
-    if (f.isCallTo("Children")) {
+    if (isCallTo(f, "Children")) {
       return isMemberInChildren(f, m);
-    } else if (f.isCallTo("Descendants")) {
+    } else if (isCallTo(f, "Descendants")) {
       return isMemberInDescendants(f, m);
-    } else if (f.isCallTo("Members")) {
+    } else if (isCallTo(f, "Members")) {
       return isMemberInLevel(f, m);
-    } else if (f.isCallTo("Union")) {
+    } else if (isCallTo(f, "Union")) {
       return isMemberInUnion(f, m);
-    } else if (f.isCallTo("{}")) { return isMemberInSet(f, m); }
+    } else if (isCallTo(f, "{}")) {
+      return isMemberInSet(f, m);
+    }
     throw new Quax.CannotHandleException(f.getFunName());
   }
 
@@ -139,10 +151,10 @@ public class MondrianQuaxUti implements QuaxUti {
    *          member to search for
    * @return true if member mSearch is in set of children function
    */
-  private boolean isMemberInChildren(mondrian.olap.FunCall f, mondrian.olap.Member mSearch) {
+  private boolean isMemberInChildren(FunCall f, mondrian.olap.Member mSearch) {
     if (mSearch.isCalculatedInQuery())
       return false;
-    mondrian.olap.Member parent = (mondrian.olap.Member) f.getArg(0);
+    mondrian.olap.Member parent = getMemberArg(f, 0);
     if (parent.equals(mSearch.getParentMember()))
       return true;
     return false;
@@ -158,8 +170,8 @@ public class MondrianQuaxUti implements QuaxUti {
   private boolean isMemberInDescendants(FunCall f, mondrian.olap.Member mSearch) {
     if (mSearch.isCalculatedInQuery())
       return false;
-    mondrian.olap.Member ancestor = (mondrian.olap.Member) f.getArg(0);
-    mondrian.olap.Level level = (mondrian.olap.Level) f.getArg(1);
+    mondrian.olap.Member ancestor = getMemberArg(f, 0);
+    mondrian.olap.Level level = getLevelArg(f, 1);
     if (mSearch.equals(ancestor))
       return false;
     if (!mSearch.isChildOrEqualTo(ancestor))
@@ -176,10 +188,10 @@ public class MondrianQuaxUti implements QuaxUti {
    *          member to search for
    * @return true if member mSearch is in set of Members function
    */
-  private boolean isMemberInLevel(mondrian.olap.FunCall f, mondrian.olap.Member mSearch) {
+  private boolean isMemberInLevel(FunCall f, mondrian.olap.Member mSearch) {
     if (mSearch.isCalculatedInQuery())
       return false;
-    mondrian.olap.Level level = (mondrian.olap.Level) f.getArg(0);
+    mondrian.olap.Level level = getLevelArg(f, 0);
     if (level.equals(mSearch.getLevel()))
       return true;
     return false;
@@ -192,10 +204,10 @@ public class MondrianQuaxUti implements QuaxUti {
    *          member to search for
    * @return true if member mSearch is in set function
    */
-  private boolean isMemberInSet(mondrian.olap.FunCall f, mondrian.olap.Member mSearch) {
+  private boolean isMemberInSet(FunCall f, mondrian.olap.Member mSearch) {
     // set of members expected
     for (int i = 0; i < f.getArgs().length; i++) {
-      mondrian.olap.Member m = (mondrian.olap.Member) f.getArg(i);
+      mondrian.olap.Member m = getMemberArg(f, i);
       if (m.equals(mSearch))
         return true;
     }
@@ -209,7 +221,7 @@ public class MondrianQuaxUti implements QuaxUti {
    *          member to search for
    * @return true if member mSearch is in set function
    */
-  private boolean isMemberInUnion(mondrian.olap.FunCall f, mondrian.olap.Member mSearch)
+  private boolean isMemberInUnion(FunCall f, mondrian.olap.Member mSearch)
       throws CannotHandleException {
     // Unions may be nested
     for (int i = 0; i < 2; i++) {
@@ -222,18 +234,18 @@ public class MondrianQuaxUti implements QuaxUti {
 
   /**
    *
-   * @param f
-   * @param m
+   * @param oFun
+   * @param member
    * @return true if FunCall contains child of member
    */
   public boolean isChildOfMemberInFunCall(Object oFun, Member member) throws CannotHandleException {
     FunCall f = (FunCall) oFun;
     mondrian.olap.Member m = ((MondrianMember) member).getMonMember();
-    if (f.isCallTo("Children")) {
-      return (((mondrian.olap.Member) f.getArg(0)).equals(m));
-    } else if (f.isCallTo("Descendants")) {
-      mondrian.olap.Member ancestor = (mondrian.olap.Member) f.getArg(0);
-      mondrian.olap.Level lev = (mondrian.olap.Level) f.getArg(1);
+    if (isCallTo(f, "Children")) {
+      return (getMemberArg(f, 0).equals(m));
+    } else if (isCallTo(f, "Descendants")) {
+      mondrian.olap.Member ancestor = getMemberArg(f, 0);
+      mondrian.olap.Level lev = getLevelArg(f, 1);
       mondrian.olap.Level parentLevel = lev.getParentLevel();
       if (parentLevel != null && m.getLevel().equals(parentLevel)) {
         if (m.isChildOrEqualTo(ancestor))
@@ -242,21 +254,21 @@ public class MondrianQuaxUti implements QuaxUti {
           return false;
       } else
         return false;
-    } else if (f.isCallTo("Members")) {
-      mondrian.olap.Level lev = (mondrian.olap.Level) f.getArg(0);
+    } else if (isCallTo(f, "Members")) {
+      mondrian.olap.Level lev = getLevelArg(f, 0);
       mondrian.olap.Level parentLevel = lev.getParentLevel();
       if (parentLevel != null && m.getLevel().equals(parentLevel))
         return true;
       else
         return false;
-    } else if (f.isCallTo("Union")) {
+    } else if (isCallTo(f, "Union")) {
       if (isChildOfMemberInFunCall(f.getArg(0), member))
         return true;
       else
         return isChildOfMemberInFunCall(f.getArg(1), member);
-    } else if (f.isCallTo("{}")) {
+    } else if (isCallTo(f, "{}")) {
       for (int i = 0; i < f.getArgs().length; i++) {
-        mondrian.olap.Member mm = (mondrian.olap.Member) f.getArg(i);
+        mondrian.olap.Member mm = getMemberArg(f, i);
         if (mm.isCalculatedInQuery())
           continue;
         mondrian.olap.Member mmp = mm.getParentMember();
@@ -268,32 +280,40 @@ public class MondrianQuaxUti implements QuaxUti {
     throw new Quax.CannotHandleException(f.getFunName());
   }
 
+  private static mondrian.olap.Level getLevelArg(FunCall f, final int index) {
+    return ((LevelExpr) f.getArg(index)).getLevel();
+  }
+
+  private static mondrian.olap.Member getMemberArg(FunCall f, int index) {
+    return ((MemberExpr) f.getArg(index)).getMember();
+  }
+
   /**
-   * @param f
-   * @param m
+   * @param oFun
+   * @param member
    * @return true if FunCall contains descendants of member
    */
   public boolean isDescendantOfMemberInFunCall(Object oFun, Member member)
       throws CannotHandleException {
     FunCall f = (FunCall) oFun;
     mondrian.olap.Member m = ((MondrianMember) member).getMonMember();
-    if (f.isCallTo("Children")) {
-      mondrian.olap.Member mExp = (mondrian.olap.Member) f.getArg(0);
+    if (isCallTo(f, "Children")) {
+      mondrian.olap.Member mExp = getMemberArg(f, 0);
       return (mExp.isChildOrEqualTo(m));
-    } else if (f.isCallTo("Descendants")) {
-      mondrian.olap.Member mExp = (mondrian.olap.Member) f.getArg(0);
+    } else if (isCallTo(f, "Descendants")) {
+      mondrian.olap.Member mExp = getMemberArg(f, 0);
       return (mExp.isChildOrEqualTo(m));
-    } else if (f.isCallTo("Members")) {
-      mondrian.olap.Level levExp = (mondrian.olap.Level) f.getArg(0);
+    } else if (isCallTo(f, "Members")) {
+      mondrian.olap.Level levExp = getLevelArg(f, 0);
       return (levExp.getDepth() > m.getLevel().getDepth());
-    } else if (f.isCallTo("Union")) {
+    } else if (isCallTo(f, "Union")) {
       if (isDescendantOfMemberInFunCall(f.getArg(0), member))
         return true;
       else
         return isDescendantOfMemberInFunCall(f.getArg(1), member);
-    } else if (f.isCallTo("{}")) {
+    } else if (isCallTo(f, "{}")) {
       for (int i = 0; i < f.getArgs().length; i++) {
-        mondrian.olap.Member mExp = (mondrian.olap.Member) f.getArg(i);
+        mondrian.olap.Member mExp = getMemberArg(f, i);
         if (mExp.isCalculatedInQuery())
           continue;
         if (!m.equals(mExp) && mExp.isChildOrEqualTo(m))
@@ -308,42 +328,42 @@ public class MondrianQuaxUti implements QuaxUti {
    * remove descendants of member from set Funcall this function is only called if there *are*
    * descendants of member in funcall
    *
-   * @param f
-   * @param m
+   * @param oFun
+   * @param member
    * @return the remainder after descendants were removed
    */
   public Object removeDescendantsFromFunCall(Object oFun, Member member)
       throws CannotHandleException {
     FunCall f = (FunCall) oFun;
     mondrian.olap.Member m = ((MondrianMember) member).getMonMember();
-    if (f.isCallTo("Children")) {
+    if (isCallTo(f, "Children")) {
       // as we know, that there is a descendent of m in x.children,
       //  we know that *all* x.children are descendants of m
       return null;
-    } else if (f.isCallTo("Descendants")) {
+    } else if (isCallTo(f, "Descendants")) {
       // as we know, that there is a descendent of m in x.descendants
       //  we know that *all* x.descendants are descendants of m
       return null;
-    } else if (f.isCallTo("Members")) {
-      mondrian.olap.Level levExp = (mondrian.olap.Level) f.getArg(0);
-      mondrian.olap.Member[] members = scr.getLevelMembers(levExp);
+    } else if (isCallTo(f, "Members")) {
+      mondrian.olap.Level levExp = getLevelArg(f, 0);
+      mondrian.olap.Member[] members = scr.getLevelMembers(levExp, false);
       List remainder = new ArrayList();
       for (int i = 0; i < members.length; i++) {
         if (!members[i].isChildOrEqualTo(m))
           remainder.add(members[i]);
       }
       return createMemberSet(remainder);
-    } else if (f.isCallTo("{}")) {
+    } else if (isCallTo(f, "{}")) {
       List remainder = new ArrayList();
       for (int i = 0; i < f.getArgs().length; i++) {
-        mondrian.olap.Member mExp = (mondrian.olap.Member) f.getArg(i);
+        mondrian.olap.Member mExp = getMemberArg(f, i);
         if (mExp.isCalculatedInQuery())
           continue;
         if (mExp.equals(m) || !mExp.isChildOrEqualTo(m))
           remainder.add(mExp);
       }
       return createMemberSet(remainder);
-    } else if (f.isCallTo("Union")) {
+    } else if (isCallTo(f, "Union")) {
       // TODO XMLA
       Exp[] uargs = new Exp[2];
       uargs[0] = (Exp) removeDescendantsFromFunCall(f.getArg(0), member);
@@ -356,13 +376,13 @@ public class MondrianQuaxUti implements QuaxUti {
         return uargs[1];
       if (uargs[0] instanceof mondrian.olap.Member) {
         Exp e = uargs[0];
-        uargs[0] = new FunCall("{}", Syntax.Braces, new Exp[] { e});
+        uargs[0] = new UnresolvedFunCall("{}", Syntax.Braces, new Exp[] { e});
       }
       if (uargs[1] instanceof mondrian.olap.Member) {
         Exp e = uargs[1];
-        uargs[1] = new FunCall("{}", Syntax.Braces, new Exp[] { e});
+        uargs[1] = new UnresolvedFunCall("{}", Syntax.Braces, new Exp[] { e});
       }
-      return new FunCall("Union", uargs);
+      return new UnresolvedFunCall("Union", uargs);
     }
     throw new Quax.CannotHandleException(f.getFunName());
   }
@@ -382,7 +402,7 @@ public class MondrianQuaxUti implements QuaxUti {
       return (Exp) mList.get(0);
     else {
       Exp[] remExps = (Exp[]) mList.toArray(new Exp[0]);
-      return new FunCall("{}", Syntax.Braces, remExps);
+      return new UnresolvedFunCall("{}", Syntax.Braces, remExps);
     }
 
   }
@@ -391,25 +411,25 @@ public class MondrianQuaxUti implements QuaxUti {
    * remove children FunCall from Union should never be called
    *
    * @param f
-   * @param mPath
+   * @param monMember
    */
   static FunCall removeChildrenFromUnion(FunCall f, mondrian.olap.Member monMember) {
 
     FunCall f1 = (FunCall) f.getArg(0);
     FunCall f2 = (FunCall) f.getArg(1);
-    if (f1.isCallTo("Children") && ((mondrian.olap.Member) f1.getArg(0)).equals(monMember)) { return f2; }
-    if (f2.isCallTo("Children") && ((mondrian.olap.Member) f1.getArg(0)).equals(monMember)) { return f1; }
+    if (isCallTo(f1, "Children") && getMemberArg(f1, 0).equals(monMember)) { return f2; }
+    if (isCallTo(f2, "Children") && getMemberArg(f1, 0).equals(monMember)) { return f1; }
     FunCall f1New = f1;
-    if (f1.isCallTo("Union"))
+    if (isCallTo(f1, "Union"))
       f1New = removeChildrenFromUnion(f1, monMember);
     FunCall f2New = f2;
-    if (f2.isCallTo("Union"))
+    if (isCallTo(f2, "Union"))
       f2New = removeChildrenFromUnion(f2, monMember);
 
     if (f1 == f1New && f2 == f2New)
       return f;
 
-    return new FunCall("Union", new Exp[] { f1New, f2New});
+    return new UnresolvedFunCall("Union", new Exp[] { f1New, f2New});
   }
 
   /**
@@ -418,7 +438,7 @@ public class MondrianQuaxUti implements QuaxUti {
    * @see QuaxUti#memberForObj(java.lang.Object)
    */
   public Member memberForObj(Object oExp) {
-    mondrian.olap.Member monMember = (mondrian.olap.Member) oExp;
+    mondrian.olap.Member monMember = toMember(oExp);
     Member member = model.lookupMemberByUName(monMember.getUniqueName());
     return member;
   }
@@ -467,7 +487,7 @@ public class MondrianQuaxUti implements QuaxUti {
    * @see QuaxUti#LevelForObj(java.lang.Object)
    */
   public Level LevelForObj(Object oLevel) {
-    mondrian.olap.Level monLevel = (mondrian.olap.Level) oLevel;
+    mondrian.olap.Level monLevel = ((LevelExpr) oLevel).getLevel();
     return model.lookupLevel(monLevel.getUniqueName());
   }
 
@@ -485,8 +505,9 @@ public class MondrianQuaxUti implements QuaxUti {
    *
    * @see QuaxUti#funCallArg(java.lang.Object, int)
    */
-  public Object funCallArg(Object oExp, int index) {
-    return ((FunCall) oExp).getArg(index);
+  public Object funCallArg(Object oFun, int index) {
+    FunCall f = (FunCall) oFun;
+    return f.getArg(index);
   }
 
   /**
@@ -499,8 +520,6 @@ public class MondrianQuaxUti implements QuaxUti {
 
   /**
    * check level and add a members descendatns to list
-   *
-   * @param m
    */
   public void addMemberDescendants(List list, Member member, Level level, int[] maxLevel) {
     mondrian.olap.Member m = ((MondrianMember) member).getMonMember();
@@ -518,16 +537,16 @@ public class MondrianQuaxUti implements QuaxUti {
         Exp exp = (Exp) iter.next();
         if (exp instanceof FunCall) {
           FunCall f = (FunCall) exp;
-          if (f.isCallTo("Descendants") && ((mondrian.olap.Member) f.getArg(0)).equals(m)) {
+          if (isCallTo(f, "Descendants") && getMemberArg(f, 0).equals(m)) {
             break AddDescendants;
           }
         }
       }
-      FunCall fChildren = new FunCall("Descendants", Syntax.Function, new Exp[] { m, lev});
+      UnresolvedFunCall fChildren = new UnresolvedFunCall("Descendants", Syntax.Function, new Exp[] { new MemberExpr(m), new LevelExpr(lev)});
       /*
        * // remove all existing Descendants of m from worklist for (Iterator iter =
        * workList.iterator(); iter.hasNext();) { Exp exp = (Exp) iter.next(); if (exp instanceof
-       * mondrian.olap.Member && ((mondrian.olap.Member) exp).isChildOrEqualTo(m)) iter.remove(); }
+       * mondrian.olap.Member && ((MemberExpr) exp).isChildOrEqualTo(m)) iter.remove(); }
        */
       list.add(fChildren);
     } // AddDescendants
@@ -537,7 +556,7 @@ public class MondrianQuaxUti implements QuaxUti {
    * @see QuaxUti#getParentMember(java.lang.Object)
    */
   public Member getParentMember(Object oExp) {
-    mondrian.olap.Member m = (mondrian.olap.Member) oExp;
+    mondrian.olap.Member m = toMember(oExp);
     mondrian.olap.Member monParent = m.getParentMember();
     if (monParent == null)
       return null;
@@ -553,7 +572,7 @@ public class MondrianQuaxUti implements QuaxUti {
   public Object createFunCall(String function, Object[] args, int funType) {
     Exp[] expArgs = new Exp[args.length];
     for (int i = 0; i < expArgs.length; i++) {
-      expArgs[i] = (Exp) args[i];
+      expArgs[i] = toExp(args[i]);
     }
     Syntax syntax;
     switch (funType) {
@@ -572,15 +591,15 @@ public class MondrianQuaxUti implements QuaxUti {
     default:
       syntax = Syntax.Function;
     }
-    return new FunCall(function, syntax, expArgs);
+    return new UnresolvedFunCall(function, syntax, expArgs);
   }
 
   /**
    * @return true, if an expression is a FunCall to e specific function
-   * @see QuaxUti#funCallTo(java.lang.Object, java.lang.String)
+   * @see QuaxUti#isFunCallTo(Object, String)
    */
   public boolean isFunCallTo(Object oExp, String function) {
-    return ((FunCall) oExp).isCallTo(function);
+    return isCallTo((FunCall) oExp, function);
   }
 
   /**
@@ -588,7 +607,7 @@ public class MondrianQuaxUti implements QuaxUti {
    * @see com.tonbeller.jpivot.olap.query.QuaxUti#checkParent
    */
   public boolean checkParent(Member pMember, Object cMemObj) {
-    mondrian.olap.Member mc = (mondrian.olap.Member) cMemObj;
+    mondrian.olap.Member mc = toMember(cMemObj);
     if (mc.isCalculatedInQuery())
       return false;
     mondrian.olap.Member mp = mc.getParentMember();
@@ -598,7 +617,7 @@ public class MondrianQuaxUti implements QuaxUti {
       return mp.equals(((MondrianMember) pMember).getMonMember());
   }
 
-  /**
+    /**
    * @return true if member (1.arg) is child of Member (2.arg)
    * @see com.tonbeller.jpivot.olap.query.QuaxUti#checkParent
    */
@@ -616,7 +635,7 @@ public class MondrianQuaxUti implements QuaxUti {
   /**
    * return true if Member (2.arg) is descendant of Member (1.arg)
    *
-   * @see QuaxUti#isDescendant(java.lang.Object, com.tonbeller.jpivot.olap.model.Member)
+   * @see QuaxUti#isDescendantOfMemberInFunCall(Object, com.tonbeller.jpivot.olap.model.Member)
    */
   public boolean checkDescendantM(Member aMember, Member dMember) {
     mondrian.olap.Member monMember = ((MondrianMember) aMember).getMonMember();
@@ -629,11 +648,11 @@ public class MondrianQuaxUti implements QuaxUti {
   /**
    * return true if Expression (2.arg) is descendant of Member (1.arg)
    *
-   * @see QuaxUti#isDescendant(java.lang.Object, com.tonbeller.jpivot.olap.model.Member)
+   * @see QuaxUti#isDescendantOfMemberInFunCall(Object, com.tonbeller.jpivot.olap.model.Member)
    */
   public boolean checkDescendantO(Member aMember, Object oMember) {
     mondrian.olap.Member monMember = ((MondrianMember) aMember).getMonMember();
-    mondrian.olap.Member monDesc = (mondrian.olap.Member) oMember;
+    mondrian.olap.Member monDesc = toMember(oMember);
     if (monDesc.isCalculatedInQuery() || monDesc.equals(monMember))
       return false;
     return monDesc.isChildOrEqualTo(monMember);
@@ -641,8 +660,6 @@ public class MondrianQuaxUti implements QuaxUti {
 
   /**
    * check level and add a levels members to list
-   *
-   * @param m
    */
   public void addLevelMembers(List list, Level level, int[] maxLevel) {
     mondrian.olap.Level lev = ((MondrianLevel) level).getMonLevel();
@@ -659,16 +676,16 @@ public class MondrianQuaxUti implements QuaxUti {
         Exp exp = (Exp) iter.next();
         if (exp instanceof FunCall) {
           FunCall f = (FunCall) exp;
-          if (f.isCallTo("Members")) {
+          if (isCallTo(f, "Members")) {
             break AddMembers;
           }
         }
       }
-      FunCall fMembers = new FunCall("Members", Syntax.Property, new Exp[] { lev});
+      UnresolvedFunCall fMembers = new UnresolvedFunCall("Members", Syntax.Property, new Exp[] { new LevelExpr(lev)});
       /*
        * // remove all existing level members from worklist for (Iterator iter =
        * workList.iterator(); iter.hasNext();) { Exp exp = (Exp) iter.next(); if (exp instanceof
-       * mondrian.olap.Member && ((mondrian.olap.Member) exp).getLevel().equals(lev)) iter.remove(); }
+       * mondrian.olap.Member && ((MemberExpr) exp).getLevel().equals(lev)) iter.remove(); }
        */
       list.add(fMembers);
     } // AddDescendants
@@ -677,12 +694,12 @@ public class MondrianQuaxUti implements QuaxUti {
   /**
    * determine hierarchy for Exp
    *
-   * @param exp
+   * @param oExp
    * @return hierarchy
    */
   public Hierarchy hierForExp(Object oExp) throws CannotHandleException {
     if (oExp instanceof mondrian.olap.Member)
-      return model.lookupHierarchy(((mondrian.olap.Member) oExp).getHierarchy().getUniqueName());
+      return model.lookupHierarchy(toMember(oExp).getHierarchy().getUniqueName());
     else if (oExp instanceof SetExp) {
       // set expression generated by CalcSet extension
       SetExp set = (SetExp) oExp;
@@ -691,23 +708,23 @@ public class MondrianQuaxUti implements QuaxUti {
 
     // must be FunCall
     FunCall f = (FunCall) oExp;
-    if (f.isCallTo("Children")) {
-      mondrian.olap.Member m = (mondrian.olap.Member) f.getArg(0);
+    if (isCallTo(f, "Children")) {
+      mondrian.olap.Member m = getMemberArg(f, 0);
       return model.lookupHierarchy(m.getHierarchy().getUniqueName());
-    } else if (f.isCallTo("Descendants")) {
-      mondrian.olap.Member m = (mondrian.olap.Member) f.getArg(0);
+    } else if (isCallTo(f, "Descendants")) {
+      mondrian.olap.Member m = getMemberArg(f, 0);
       return model.lookupHierarchy(m.getHierarchy().getUniqueName());
-    } else if (f.isCallTo("Members")) {
-      mondrian.olap.Level lev = (mondrian.olap.Level) f.getArg(0);
+    } else if (isCallTo(f, "Members")) {
+      mondrian.olap.Level lev = getLevelArg(f, 0);
       return model.lookupHierarchy(lev.getHierarchy().getUniqueName());
-    } else if (f.isCallTo("Union")) {
+    } else if (isCallTo(f, "Union")) {
       // continue with first set
       return hierForExp(f.getArg(0));
-    } else if (f.isCallTo("{}")) {
-      mondrian.olap.Member m = (mondrian.olap.Member) f.getArg(0);
+    } else if (isCallTo(f, "{}")) {
+      mondrian.olap.Member m = getMemberArg(f, 0);
       return model.lookupHierarchy(m.getHierarchy().getUniqueName());
-    } else if (f.isCallTo("TopCount") || f.isCallTo("BottomCount") || f.isCallTo("TopPercent")
-        || f.isCallTo("BottomPercent") || f.isCallTo("Filter")) {
+    } else if (isCallTo(f, "TopCount") || isCallTo(f, "BottomCount") || isCallTo(f, "TopPercent")
+        || isCallTo(f, "BottomPercent") || isCallTo(f, "Filter")) {
       // continue with base set of top bottom function
       return hierForExp(f.getArg(0));
     }
@@ -719,14 +736,14 @@ public class MondrianQuaxUti implements QuaxUti {
    * @see QuaxUti#levelDepthForMember(java.lang.Object)
    */
   public int levelDepthForMember(Object oExp) {
-    mondrian.olap.Member m = (mondrian.olap.Member) oExp;
+    mondrian.olap.Member m = toMember(oExp);
     mondrian.olap.Level level = m.getLevel();
     return level.getDepth();
   }
 
   /**
    * @return an Expression Object for the top level members of an hierarchy
-   * @see QuaxUti#topLevelMembers(com.tonbeller.jpivot.olap.model.Hierarchy)
+   * @see QuaxUti#topLevelMembers(com.tonbeller.jpivot.olap.model.Hierarchy, boolean)
    */
   public Object topLevelMembers(Hierarchy hier, boolean expandAllMember) {
     return MondrianUtil.topLevelMembers(((MondrianHierarchy) hier).getMonHierarchy(),
@@ -743,27 +760,51 @@ public class MondrianQuaxUti implements QuaxUti {
     return model.lookupLevel(monParentLevel.getUniqueName());
   }
 
-  /**
+    public Exp toExp(Object o) {
+      if (o instanceof OlapElement) {
+        if (o instanceof mondrian.olap.Member) {
+          return new MemberExpr((mondrian.olap.Member) o);
+        } else if (o instanceof mondrian.olap.Level) {
+          return new LevelExpr((mondrian.olap.Level) o);
+        } else if (o instanceof mondrian.olap.Hierarchy) {
+          return new HierarchyExpr((mondrian.olap.Hierarchy) o);
+        } else {
+          return new DimensionExpr((mondrian.olap.Dimension) o);
+        }
+      } else {
+        return (Exp) o;
+      }
+    }
+
+    /**
    * @param oExp
    *          expression
    * @return true, if exp is member
    * @see QuaxUti#isMember(java.lang.Object)
    */
   public boolean isMember(Object oExp) {
-    return (oExp instanceof mondrian.olap.Member);
+    return (oExp instanceof mondrian.olap.Member ||
+            oExp instanceof MemberExpr);
+  }
+
+  private mondrian.olap.Member toMember(Object cMemObj) {
+    if (cMemObj instanceof mondrian.olap.Member) {
+      return (mondrian.olap.Member) cMemObj;
+    } else {
+      MemberExpr memberExpr = (MemberExpr) cMemObj;
+      return memberExpr.getMember();
+    }
   }
 
   /**
    * @see com.tonbeller.jpivot.olap.query.QuaxUti#isFunCall
    */
   public boolean isFunCall(Object oExp) {
-    return (oExp instanceof FunCall);
+    return oExp instanceof mondrian.olap.FunCall;
   }
 
   /**
    * check level and add a member's parents children to list
-   *
-   * @param m
    */
   public void addMemberSiblings(List list, Member member, int[] maxLevel) {
     mondrian.olap.Member m = ((MondrianMember) member).getMonMember();
@@ -779,18 +820,18 @@ public class MondrianQuaxUti implements QuaxUti {
       // do nothing if already on List
       for (Iterator iter = list.iterator(); iter.hasNext();) {
         Exp exp = (Exp) iter.next();
-        if (exp instanceof FunCall) {
+        if (isFunCall(exp)) {
           FunCall f = (FunCall) exp;
-          if (f.isCallTo("Children") && ((mondrian.olap.Member) f.getArg(0)).equals(parent)) {
+          if (isCallTo(f, "Children") && getMemberArg(f, 0).equals(parent)) {
             break AddSiblings;
           }
         }
       }
-      FunCall fSiblings = new FunCall("Children", Syntax.Property, new Exp[] { parent});
+      UnresolvedFunCall fSiblings = new UnresolvedFunCall("Children", Syntax.Property, new Exp[] { new MemberExpr(parent)});
       /*
        * // remove all existing children of parent from worklist; for (Iterator iter =
        * workList.iterator(); iter.hasNext();) { Exp exp = (Exp) iter.next(); if (exp instanceof
-       * mondrian.olap.Member && ((mondrian.olap.Member) exp).getParentMember().equals(parent))
+       * mondrian.olap.Member && ((MemberExpr) exp).getParentMember().equals(parent))
        * iter.remove(); }
        */
       list.add(fSiblings);
@@ -799,8 +840,6 @@ public class MondrianQuaxUti implements QuaxUti {
 
   /**
    * check level and add a member to list
-   *
-   * @param m
    */
   public void addMemberChildren(List list, Member member, int[] maxLevel) {
     mondrian.olap.Member m = ((MondrianMember) member).getMonMember();
@@ -815,18 +854,18 @@ public class MondrianQuaxUti implements QuaxUti {
       // do nothing if already on List
       for (Iterator iter = list.iterator(); iter.hasNext();) {
         Exp exp = (Exp) iter.next();
-        if (exp instanceof FunCall) {
+        if (isFunCall(exp)) {
           FunCall f = (FunCall) exp;
-          if (f.isCallTo("Children") && ((mondrian.olap.Member) f.getArg(0)).equals(m)) {
+          if (isCallTo(f, "Children") && getMemberArg(f, 0).equals(m)) {
             break AddChildren;
           }
         }
       }
-      FunCall fChildren = new FunCall("Children", Syntax.Property, new Exp[] { m});
+      UnresolvedFunCall fChildren = new UnresolvedFunCall("Children", Syntax.Property, new Exp[] { new MemberExpr(m)});
       /*
        * // remove all existing children of m from worklist; for (Iterator iter =
        * workList.iterator(); iter.hasNext();) { Exp exp = (Exp) iter.next(); if (exp instanceof
-       * mondrian.olap.Member && ((mondrian.olap.Member) exp).getParentMember().equals(m))
+       * mondrian.olap.Member && ((MemberExpr) exp).getParentMember().equals(m))
        * iter.remove(); }
        */
       list.add(fChildren);
@@ -835,8 +874,6 @@ public class MondrianQuaxUti implements QuaxUti {
 
   /**
    * check level and add a member's uncles to list
-   *
-   * @param m
    */
   public void addMemberUncles(List list, Member member, int[] maxLevel) {
     mondrian.olap.Member m = ((MondrianMember) member).getMonMember();
@@ -854,18 +891,18 @@ public class MondrianQuaxUti implements QuaxUti {
       // do nothing if already on List
       for (Iterator iter = list.iterator(); iter.hasNext();) {
         Exp exp = (Exp) iter.next();
-        if (exp instanceof FunCall) {
+        if (isFunCall(exp)) {
           FunCall f = (FunCall) exp;
-          if (f.isCallTo("Children") && ((mondrian.olap.Member) f.getArg(0)).equals(grandPa)) {
+          if (isCallTo(f, "Children") && getMemberArg(f, 0).equals(grandPa)) {
             break AddUncels; // already there
           }
         }
       }
-      FunCall fUncles = new FunCall("Children", Syntax.Property, new Exp[] { grandPa});
+      UnresolvedFunCall fUncles = new UnresolvedFunCall("Children", Syntax.Property, new Exp[] { new MemberExpr(grandPa)});
       /*
        * // remove all existing children of grandPa from worklist; for (Iterator iter =
        * workList.iterator(); iter.hasNext();) { Exp exp = (Exp) iter.next(); if (exp instanceof
-       * mondrian.olap.Member && ((mondrian.olap.Member) exp).getParentMember().equals(grandPa))
+       * mondrian.olap.Member && ((MemberExpr) exp).getParentMember().equals(grandPa))
        * iter.remove(); }
        */
       list.add(fUncles);
@@ -877,36 +914,36 @@ public class MondrianQuaxUti implements QuaxUti {
    * @see QuaxUti#getMemberUniqueName(java.lang.Object)
    */
   public String getMemberUniqueName(Object oExp) {
-    mondrian.olap.Member m = (mondrian.olap.Member) oExp;
+    mondrian.olap.Member m = toMember(oExp);
     return m.getUniqueName();
   }
 
   /**
    * create String representation for FunCall
    *
-   * @param f
+   * @param oFun
    * @return
    */
   public StringBuffer funString(Object oFun) {
     FunCall f = (FunCall) oFun;
     StringBuffer buf = new StringBuffer();
-    if (f.isCallTo("Children")) {
-      mondrian.olap.Member m = (mondrian.olap.Member) f.getArg(0);
+    if (isCallTo(f, "Children")) {
+      mondrian.olap.Member m = getMemberArg(f, 0);
       buf.append(m.getUniqueName());
       buf.append(".children");
-    } else if (f.isCallTo("Descendants")) {
-      mondrian.olap.Member m = (mondrian.olap.Member) f.getArg(0);
-      mondrian.olap.Level lev = (mondrian.olap.Level) f.getArg(1);
+    } else if (isCallTo(f, "Descendants")) {
+      mondrian.olap.Member m = getMemberArg(f, 0);
+      mondrian.olap.Level lev = getLevelArg(f, 1);
       buf.append("Descendants(");
       buf.append(m.getUniqueName());
       buf.append(",");
       buf.append(lev.getUniqueName());
       buf.append(")");
-    } else if (f.isCallTo("members")) {
-      mondrian.olap.Level lev = (mondrian.olap.Level) f.getArg(0);
+    } else if (isCallTo(f, "members")) {
+      mondrian.olap.Level lev = getLevelArg(f, 0);
       buf.append(lev.getUniqueName());
       buf.append(".Members");
-    } else if (f.isCallTo("Union")) {
+    } else if (isCallTo(f, "Union")) {
       buf.append("Union(");
       FunCall f1 = (FunCall) f.getArg(0);
       buf.append(funString(f1));
@@ -914,17 +951,17 @@ public class MondrianQuaxUti implements QuaxUti {
       FunCall f2 = (FunCall) f.getArg(1);
       buf.append(funString(f2));
       buf.append(")");
-    } else if (f.isCallTo("{}")) {
+    } else if (isCallTo(f, "{}")) {
       buf.append("{");
       for (int i = 0; i < f.getArgs().length; i++) {
         if (i > 0)
           buf.append(",");
-        mondrian.olap.Member m = (mondrian.olap.Member) f.getArg(i);
+        mondrian.olap.Member m = getMemberArg(f, i);
         buf.append(m.getUniqueName());
       }
       buf.append("}");
-    } else if (f.isCallTo("TopCount") || f.isCallTo("BottomCount") || f.isCallTo("TopPercent")
-        || f.isCallTo("BottomPercent")) {
+    } else if (isCallTo(f, "TopCount") || isCallTo(f, "BottomCount") || isCallTo(f, "TopPercent")
+        || isCallTo(f, "BottomPercent")) {
       // just generate Topcount(set)
       buf.append(f.getFunName());
       buf.append("(");
@@ -938,7 +975,7 @@ public class MondrianQuaxUti implements QuaxUti {
   /**
    * display member array for debugging purposes
    *
-   * @param member
+   * @param mPath
    * @return
    */
   public String memberString(Member[] mPath) {
@@ -976,15 +1013,15 @@ public class MondrianQuaxUti implements QuaxUti {
     if (isMember(oExp))
       return true;
     FunCall f = (FunCall) oExp;
-    if (f.isCallTo("children"))
+    if (isCallTo(f, "children"))
       return true;
-    if (f.isCallTo("descendants"))
+    if (isCallTo(f, "descendants"))
       return true;
-    if (f.isCallTo("members"))
+    if (isCallTo(f, "members"))
       return true;
-    if (f.isCallTo("{}"))
+    if (isCallTo(f, "{}"))
       return true;
-    if (f.isCallTo("union")) {
+    if (isCallTo(f, "union")) {
       for (int i = 0; i < f.getArgs().length; i++) {
         if (!canHandle(f.getArg(i)))
           return false;
@@ -1000,7 +1037,7 @@ public class MondrianQuaxUti implements QuaxUti {
    * @see com.tonbeller.jpivot.olap.query.QuaxUti#getChildren(java.lang.Object)
    */
   public Object[] getChildren(Object oMember) {
-    mondrian.olap.Member[] members = scr.getMemberChildren((mondrian.olap.Member) oMember);
+    mondrian.olap.Member[] members = scr.getMemberChildren(toMember(oMember));
     return members;
   }
 
@@ -1009,7 +1046,7 @@ public class MondrianQuaxUti implements QuaxUti {
    */
   public Object[] getLevelMembers(Level level) {
     mondrian.olap.Level monLevel = ((MondrianLevel) level).getMonLevel();
-    mondrian.olap.Member[] members = scr.getLevelMembers(monLevel);
+    mondrian.olap.Member[] members = scr.getLevelMembers(monLevel, false);
     return members;
   }
 

@@ -8,15 +8,15 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.mondrian;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-import mondrian.olap.Exp;
 import mondrian.olap.Query;
+import mondrian.olap.OlapElement;
 import mondrian.olap.Util;
 
 import org.apache.log4j.Logger;
@@ -94,12 +94,12 @@ public class MondrianExpressionParser extends ExtensionSupport implements Expres
     if (trimmed.charAt(0) == '\'' && trimmed.charAt(len - 1) == '\'')
       return new StringExprImpl(trimmed.substring(1, trimmed.length() - 1));
 
-    // is it a Number ?   
+    // is it a Number ?
     Number number = null;
     try {
       number = nf.parse(trimmed);
     } catch (ParseException pex) {
-      // nothing to do, should be member 
+      // nothing to do, should be member
     }
     if (number != null) {
       if (number instanceof Double) {
@@ -113,26 +113,27 @@ public class MondrianExpressionParser extends ExtensionSupport implements Expres
     Query query = ((MondrianQueryAdapter)model.getQueryAdapter()).getMonQuery();
 
     // assume member,dimension,hierarchy,level
-    Exp exp;
+    OlapElement element;
     try {
-      exp = Util.lookup(query, Util.explode(trimmed));
+      element = Util.lookup(query, Util.explode(trimmed));
     } catch (Exception e) {
       logger.info(e);
       throw new InvalidSyntaxException(trimmed);
     }
-    if (exp instanceof mondrian.olap.Member) {
-      Member member = model.lookupMemberByUName(((mondrian.olap.Member) exp).getUniqueName());
+    if (element instanceof mondrian.olap.Member) {
+      final mondrian.olap.Member monMember = (mondrian.olap.Member) element;
+      Member member = model.lookupMemberByUName(monMember.getUniqueName());
       return member;
-    } else if (exp instanceof mondrian.olap.Level) {
-      mondrian.olap.Level monLevel = (mondrian.olap.Level) exp;
+    } else if (element instanceof mondrian.olap.Level) {
+      mondrian.olap.Level monLevel = (mondrian.olap.Level) element;
       MondrianLevel level = model.lookupLevel(monLevel.getUniqueName());
       return level;
-    } else if (exp instanceof mondrian.olap.Hierarchy) {
-      mondrian.olap.Hierarchy monHier = (mondrian.olap.Hierarchy) exp;
+    } else if (element instanceof mondrian.olap.Hierarchy) {
+      mondrian.olap.Hierarchy monHier = (mondrian.olap.Hierarchy) element;
       MondrianHierarchy hier = model.lookupHierarchy(monHier.getUniqueName());
       return hier;
-    } else if (exp instanceof mondrian.olap.Dimension) {
-      mondrian.olap.Dimension monDim = (mondrian.olap.Dimension) exp;
+    } else if (element instanceof mondrian.olap.Dimension) {
+      mondrian.olap.Dimension monDim = (mondrian.olap.Dimension) element;
       MondrianDimension dim = model.lookupDimension(monDim.getUniqueName());
       return dim;
     }

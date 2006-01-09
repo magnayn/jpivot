@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 
 package com.tonbeller.jpivot.mondrian;
@@ -35,17 +35,21 @@ import mondrian.olap.Formula;
 import mondrian.olap.FunCall;
 import mondrian.olap.Literal;
 import mondrian.olap.MondrianException;
+import mondrian.olap.OlapElement;
 import mondrian.olap.Query;
 import mondrian.olap.QueryAxis;
 import mondrian.olap.Role;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
 import mondrian.olap.Util;
-import mondrian.olap.fun.FunTableImpl.MemberListScalarExp;
-import mondrian.olap.fun.FunTableImpl.MemberScalarExp;
-import mondrian.olap.fun.FunTableImpl.TupleScalarExp;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.UnresolvedFunCall;
+
 
 import org.apache.log4j.Logger;
 
@@ -106,10 +110,10 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
   private String sessionId = null;
   private String dynresolver = null;
-  
+
   // selected locale to be used by dynResolver (if given)
   private String dynLocale = null;;
-  
+
   private boolean connectionPooling = true; // Mondrian connection Pooling
 
   private DataSource externalDataSource = null;
@@ -353,7 +357,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       properties.put(RolapConnectionProperties.PoolNeeded, "false");
     }
 
-    // use external DataSource if present 
+    // use external DataSource if present
     monConnection = mondrian.olap.DriverManager.getConnection(properties, servletContext,
         externalDataSource, false);
 
@@ -450,7 +454,6 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    *
    * @param monDimension -
    *          the "key" is the Mondrian Dimension
-   * @return the corresponding dimension
    */
   private void addDimension(mondrian.olap.Dimension monDimension) {
     String uniqueName = monDimension.getUniqueName();
@@ -470,7 +473,6 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    *
    * @param monHierarchy -
    *          the "key" is the Mondrian Hierarchy
-   * @return the corresponding hierarchy
    */
   private void addHierarchy(mondrian.olap.Hierarchy monHierarchy, MondrianDimension dimension) {
     String uniqueName = monHierarchy.getUniqueName();
@@ -491,7 +493,6 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    *
    * @param monLevel -
    *          the "key" is the Mondrian Level
-   * @return the corresponding level
    */
   protected void addLevel(mondrian.olap.Level monLevel, MondrianHierarchy hierarchy) {
     String uniqueName = monLevel.getUniqueName();
@@ -526,9 +527,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   /**
    * remove Member from Hashtable (for a calculated member)
    *
-   * @param monMember -
-   *          the "key" is the Mondrian Member
-   * @return the corresponding member
+   * @param uniqueName
    */
   public void removeMember(String uniqueName) {
     if (hMembers.containsKey(uniqueName)) {
@@ -609,7 +608,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   /**
    * find level in the Olap Hierarchy.
    *
-   * @param monLevel
+   * @param uniqueName
    *          is the search key (Mondrian level)
    * @return the corresponding level
    */
@@ -680,7 +679,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    * get the MDX for the user to edit
    *
    * @return current MDX statement
-   * @see MdxOlapModel.getCurrentMdx()
+   * @see MdxOlapModel#getCurrentMdx()
    */
   public String getCurrentMdx() {
     // if the model was changed, due to ModelChangeListener,
@@ -895,7 +894,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     queryAdapter.setQuaxes(quaxes);
     Query mQuery = queryAdapter.getMonQuery();
     // clear slicer, members in slicer are supposed to be not intensional
-    mQuery.slicer = null;
+    mQuery.setSlicerAxis(null);
     // regenerate query from quaxes
     queryAdapter.onExecute();
     // remove formulas, which are not for measures only
@@ -931,7 +930,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   }
 
   /**
-   * @return true, 
+   * @return true,
    *    if exp refers to members of a dimension other than Measures
    */
   private boolean notMeasures(mondrian.olap.Exp exp) {
@@ -1021,14 +1020,13 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     if (measuresList.size() == 1)
       return (Exp) measuresList.get(0);
     Exp[] args = (Exp[]) measuresList.toArray(new Exp[measuresList.size()]);
-    return new FunCall("{}", Syntax.Braces, args);
+    return new UnresolvedFunCall("{}", Syntax.Braces, args);
   }
 
   /**
    * restore state from Memento.
    *
-   * @param Object
-   *          state bean to be restored
+   * @param state bean to be restored
    */
   public void setBookmarkState(Object state) {
 
@@ -1164,7 +1162,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       ExpBean[] argBeans = expBean.getArgs();
       Exp[] args = createExpsFromBeans(argBeans);
       Syntax syntax = MondrianUtil.funCallSyntax(name, argBeans.length);
-      return new FunCall(name, syntax, args);
+      return new UnresolvedFunCall(name, syntax, args);
     }
 
     if (expBean.getType() == ExpBean.TYPE_LEVEL) {
@@ -1210,44 +1208,54 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
   protected ExpBean createBeanFromExp(Object exp) throws OlapException {
     ExpBean bean = new ExpBean();
-    
-    // we unwrap the new MemberListScalarExp etc, they will be wrapped again
-    // when we restore the bookmark and call resolve(). So here we do the
-    // opposite of {@link mondrian.olap.fun.FunTableImpl#createValueFunCall()}
-    
-    if (exp instanceof MemberListScalarExp) {
-      MemberListScalarExp mse = (MemberListScalarExp)exp;
-      bean.setType(ExpBean.TYPE_FUNCALL);
-      bean.setName("()");
-      bean.setArgs(createBeansFromExps(mse.getChildren()));
-    } else if (exp instanceof MemberScalarExp) {
-      MemberScalarExp mse = (MemberScalarExp)exp;
-      bean = createBeanFromExp(mse.getChildren()[0]);
-    } else if (exp instanceof TupleScalarExp) {
-      TupleScalarExp mse = (TupleScalarExp)exp;
-      bean = createBeanFromExp(mse.getChildren()[0]);
+
+    if (exp instanceof OlapElement) {
+      if (exp instanceof mondrian.olap.Member) {
+        mondrian.olap.Member m = (mondrian.olap.Member) exp;
+        bean.setType(ExpBean.TYPE_MEMBER);
+        bean.setName(m.getUniqueName());
+        bean.setArgs(new ExpBean[0]);
+      } else if (exp instanceof mondrian.olap.Level) {
+        mondrian.olap.Level lev = (mondrian.olap.Level) exp;
+        bean.setType(ExpBean.TYPE_LEVEL);
+        bean.setName(lev.getUniqueName());
+        bean.setArgs(new ExpBean[0]);
+      } else if (exp instanceof mondrian.olap.Hierarchy) {
+        mondrian.olap.Hierarchy hier = (mondrian.olap.Hierarchy) exp;
+        bean.setType(ExpBean.TYPE_HIER);
+        bean.setName(hier.getUniqueName());
+        bean.setArgs(new ExpBean[0]);
+      } else if (exp instanceof mondrian.olap.Dimension) {
+        mondrian.olap.Dimension dim = (mondrian.olap.Dimension) exp;
+        bean.setType(ExpBean.TYPE_DIM);
+        bean.setName(dim.getUniqueName());
+        bean.setArgs(new ExpBean[0]);
+      } else {
+        logger.fatal("cannot create ExpBean type =" + exp.getClass().toString());
+        throw new IllegalArgumentException(exp.getClass().toString());
+      }
     } else if (exp instanceof mondrian.olap.FunCall) {
       FunCall f = (FunCall) exp;
       bean.setType(ExpBean.TYPE_FUNCALL);
       bean.setName(f.getFunName());
       bean.setArgs(createBeansFromExps(f.getArgs()));
-    } else if (exp instanceof mondrian.olap.Member) {
-      mondrian.olap.Member m = (mondrian.olap.Member) exp;
+    } else if (exp instanceof MemberExpr) {
+      mondrian.olap.Member m = ((MemberExpr) exp).getMember();
       bean.setType(ExpBean.TYPE_MEMBER);
       bean.setName(m.getUniqueName());
       bean.setArgs(new ExpBean[0]);
-    } else if (exp instanceof mondrian.olap.Level) {
-      mondrian.olap.Level lev = (mondrian.olap.Level) exp;
+    } else if (exp instanceof LevelExpr) {
+      mondrian.olap.Level lev = ((LevelExpr) exp).getLevel();
       bean.setType(ExpBean.TYPE_LEVEL);
       bean.setName(lev.getUniqueName());
       bean.setArgs(new ExpBean[0]);
-    } else if (exp instanceof mondrian.olap.Hierarchy) {
-      mondrian.olap.Hierarchy hier = (mondrian.olap.Hierarchy) exp;
+    } else if (exp instanceof HierarchyExpr) {
+      mondrian.olap.Hierarchy hier = ((HierarchyExpr) exp).getHierarchy();
       bean.setType(ExpBean.TYPE_HIER);
       bean.setName(hier.getUniqueName());
       bean.setArgs(new ExpBean[0]);
-    } else if (exp instanceof mondrian.olap.Dimension) {
-      mondrian.olap.Dimension dim = (mondrian.olap.Dimension) exp;
+    } else if (exp instanceof DimensionExpr) {
+      mondrian.olap.Dimension dim = ((DimensionExpr) exp).getDimension();
       bean.setType(ExpBean.TYPE_DIM);
       bean.setName(dim.getUniqueName());
       bean.setArgs(new ExpBean[0]);
@@ -1330,7 +1338,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   public String getDynLocale() {
       return this.dynLocale;
   }
-  
+
   /**
    * Setter for property dynLocale.
    * @param dynLocale New value of property dynLocale.
