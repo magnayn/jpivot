@@ -1231,11 +1231,11 @@ public class XMLA_SOAP implements OlapDiscoverer {
         if (dstr == null) {
           throw new OlapException("No DataSourceDescription from Discover Datasource");
         }
-        dataSource = "Provider=" + pstr + ";Data Source=" + dstr;
+        dataSource = "Provider=" + pstr + ";DataSource=" + dstr;
     } else {
-        dataSource = (String) resMap.get("DataSourceInfo");
+        dataSource = (String) resMap.get("DataSourceName");
         if (dataSource == null) {
-          throw new OlapException("No DataSourceInfo from Discover Datasource");
+          throw new OlapException("No DataSourceName from Discover Datasource");
         }
     }
     logger.debug("Discover Datasource set: " + dataSource);
