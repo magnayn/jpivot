@@ -113,7 +113,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 	final String CHART_SERVLET_KEY = "chartServlet";
     boolean baseDisplayURLSet = false;
     String webControllerURL = "";
-    
+
 	String filename = null;
 	// chart properties
 	final int DEFAULT_CHART_WIDTH = 500;
@@ -189,11 +189,11 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
         	this.webControllerURL = controllerURL;
         }
 	}
-    
+
     public ChartComponent(String id, Component parent, String ref, RequestContext context) {
         this(id, parent, ref, null, null, context);
     }
-    
+
 	/**
 	 * called once by the creating tag
 	 */
@@ -513,9 +513,10 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 					CategoryLabelPositions oldp = catPlot.getDomainAxis().getCategoryLabelPositions();
 					CategoryLabelPositions newp = new CategoryLabelPositions(
 						oldp.getLabelPosition(RectangleEdge.TOP),
-						new CategoryLabelPosition(
-							RectangleAnchor.TOP, TextBlockAnchor.TOP_RIGHT,
-							TextAnchor.TOP_RIGHT, 0.0D, CategoryLabelWidthType.RANGE, (new Float(angle)).floatValue()),
+                        new CategoryLabelPosition(
+                              RectangleAnchor.TOP, TextBlockAnchor.TOP_RIGHT,
+                              TextAnchor.TOP_RIGHT, angle,
+                              CategoryLabelWidthType.RANGE, 0.0f),
 						oldp.getLabelPosition(RectangleEdge.LEFT),
 						oldp.getLabelPosition(RectangleEdge.RIGHT)
 					);
@@ -609,11 +610,11 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
                                                 break;
                                      }
 					TextTitle slicer = new TextTitle(buildSlicer(),
-											slicerFont, 
-											Color.BLACK, 
+											slicerFont,
+											Color.BLACK,
 											slicerRectPos,
-											slicerHorizAlignment, 
-											VerticalAlignment.CENTER, 
+											slicerHorizAlignment,
+											VerticalAlignment.CENTER,
 											new RectangleInsets(0,0,0,0));
 
 
@@ -640,7 +641,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 		DocumentBuilder parser = XmlUtils.getParser();
 		// get an image map for the chart, wrap it in xchart tags
 		String xchart = "<xchart>" + writeImageMap(filename, info, false) + "</xchart>";
-/*		
+/*
 		if (logger.isDebugEnabled()) {
 			logger.debug("Chart XML");
 			logger.debug(xchart);
