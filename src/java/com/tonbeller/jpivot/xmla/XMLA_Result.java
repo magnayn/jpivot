@@ -83,7 +83,13 @@ public class XMLA_Result extends ResultBase implements QueryResultHandler {
    * @see com.tonbeller.bii.olap.model.QueryResultHandler#handleHierInfo
    */
   public void handleHierInfo(String hierName, int axisOrdinal, int number) {
-    XMLA_Hierarchy hier = ((XMLA_Model) model).lookupHierByUName("[" + hierName + "]");
+    XMLA_Hierarchy hier;
+    if(hierName.indexOf("[") > -1 && hierName.indexOf("]") > -1){
+			hier = ((XMLA_Model) model).lookupHierByUName( hierName );
+    }else{
+      hier = ((XMLA_Model) model).lookupHierByUName("[" + hierName + "]" );
+    }
+
     axis.addHier(hier);
   }
 
