@@ -44,6 +44,8 @@ import mondrian.olap.Syntax;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.spi.CatalogLocator;
+import mondrian.spi.impl.ServletContextCatalogLocator;
 import mondrian.mdx.DimensionExpr;
 import mondrian.mdx.HierarchyExpr;
 import mondrian.mdx.LevelExpr;
@@ -357,9 +359,10 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       properties.put(RolapConnectionProperties.PoolNeeded, "false");
     }
 
+    CatalogLocator catalogLocator = new ServletContextCatalogLocator(servletContext);
+    
     // use external DataSource if present
-    monConnection = mondrian.olap.DriverManager.getConnection(properties, servletContext,
-        externalDataSource, false);
+    monConnection = mondrian.olap.DriverManager.getConnection(properties, catalogLocator, false);
 
     //monConnection = mondrian.olap.DriverManager.getConnection(connectString,
     // null, false);

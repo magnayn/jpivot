@@ -46,7 +46,7 @@
 
   <!-- the following are included in lib/ directory (no need to override) -->
   <property name="mondrian.version"     value="pilot"/>
-  <property name="mondrian.home"        value="${repository.home}/mondrian-2.0/${mondrian.version}"/>
+  <property name="mondrian.home"        value="${repository.home}/mondrian-HEAD"/>
   <property name="jstl.home"            value="${repository.home}/jakarta-taglibs-standard-1.0.6"/>
 
   <property name="digester.home"        value="${repository.home}/commons-digester-1.5"/>
@@ -225,6 +225,7 @@
         <include name="javacup.jar"/>
         <include name="mondrian.dtd"/>
         <include name="mondrian.jar"/>
+        <include name="commons-math-1.0.jar"/>
       </fileset>
 
       <fileset dir="${junit.home}">
