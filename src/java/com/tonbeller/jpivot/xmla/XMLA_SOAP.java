@@ -1233,7 +1233,18 @@ public class XMLA_SOAP implements OlapDiscoverer {
         }
         dataSource = "Provider=" + pstr + ";DataSource=" + dstr;
     } else {
-        dataSource = (String) resMap.get("DataSourceName");
+        logger.debug("DataSourceName: " + String.valueOf(resMap.get("DataSourceName")));
+        logger.debug("DataSourceInfo: " + String.valueOf(resMap.get("DataSourceInfo")));
+
+        // sql2000 (type1 - unsure which versions): DataSourceName=Local Analysis Server, DataSourceInfo=Provider=MSOLAP... 
+        // sql2000 (others): DataSourceName=Local Analysis Server, DataSourceInfo=Local Analysis Server
+        // sql2005 (some versions): DataSourceName=instancename, DataSourceInfo=NULL
+        dataSource = (String) resMap.get("DataSourceInfo");
+
+        if (dataSource == null || dataSource.length() < 1) {
+            dataSource = (String) resMap.get("DataSourceName");
+        }
+
         if (dataSource == null) {
           throw new OlapException("No DataSourceName from Discover Datasource");
         }
