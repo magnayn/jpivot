@@ -507,7 +507,9 @@ public class MondrianQuaxUti implements QuaxUti {
    */
   public Object funCallArg(Object oFun, int index) {
     FunCall f = (FunCall) oFun;
-    return f.getArg(index);
+    final Exp arg = f.getArg(index);
+    final OlapElement element = fromExp(arg);
+    return element == null ? (Object) arg : element;
   }
 
   /**
@@ -760,21 +762,39 @@ public class MondrianQuaxUti implements QuaxUti {
     return model.lookupLevel(monParentLevel.getUniqueName());
   }
 
-    public Exp toExp(Object o) {
-      if (o instanceof OlapElement) {
-        if (o instanceof mondrian.olap.Member) {
-          return new MemberExpr((mondrian.olap.Member) o);
-        } else if (o instanceof mondrian.olap.Level) {
-          return new LevelExpr((mondrian.olap.Level) o);
-        } else if (o instanceof mondrian.olap.Hierarchy) {
-          return new HierarchyExpr((mondrian.olap.Hierarchy) o);
-        } else {
-          return new DimensionExpr((mondrian.olap.Dimension) o);
-        }
+  public Exp toExp(Object o) {
+    if (o instanceof OlapElement) {
+      if (o instanceof mondrian.olap.Member) {
+        return new MemberExpr((mondrian.olap.Member) o);
+      } else if (o instanceof mondrian.olap.Level) {
+        return new LevelExpr((mondrian.olap.Level) o);
+      } else if (o instanceof mondrian.olap.Hierarchy) {
+        return new HierarchyExpr((mondrian.olap.Hierarchy) o);
       } else {
-        return (Exp) o;
+        return new DimensionExpr((mondrian.olap.Dimension) o);
       }
+    } else {
+      return (Exp) o;
     }
+  }
+
+  private OlapElement fromExp(Exp e) {
+    if (e instanceof MemberExpr) {
+      MemberExpr memberExpr = (MemberExpr) e;
+      return memberExpr.getMember();
+    } else if (e instanceof LevelExpr) {
+      LevelExpr levelExpr = (LevelExpr) e;
+      return levelExpr.getLevel();
+    } else if (e instanceof HierarchyExpr) {
+      HierarchyExpr hierarchyExpr = (HierarchyExpr) e;
+      return hierarchyExpr.getHierarchy();
+    } else if (e instanceof DimensionExpr) {
+      DimensionExpr dimensionExpr = (DimensionExpr) e;
+      return dimensionExpr.getDimension();
+    } else {
+      return null;
+    }
+  }
 
     /**
    * @param oExp
