@@ -45,8 +45,8 @@
   -->
 
   <!-- the following are included in lib/ directory (no need to override) -->
-  <property name="mondrian.version"     value="pilot"/>
-  <property name="mondrian.home"        value="${repository.home}/mondrian-HEAD"/>
+  <property name="mondrian.version"     value="2.1"/>
+  <property name="mondrian.home"        value="${repository.home}/mondrian-2.1"/>
   <property name="jstl.home"            value="${repository.home}/jakarta-taglibs-standard-1.0.6"/>
 
   <property name="digester.home"        value="${repository.home}/commons-digester-1.5"/>
@@ -55,6 +55,7 @@
   <property name="logging.home"         value="${repository.home}/commons-logging-1.0.4"/>
   <property name="pool.home"            value="${repository.home}/commons-pool-1.2"/>
   <property name="dbcp.home"            value="${repository.home}/commons-dbcp-1.2.1"/>
+  <property name="math.home"            value="${repository.home}/commons-math-1.0"/>
 
   <property name="regexp.home"          value="${repository.home}/jakarta-regexp-1.2"/>
   <property name="junit.home"           value="${repository.home}/junit-3.8.1"/>
@@ -202,6 +203,10 @@
       </fileset>
 
       <fileset dir="${dbcp.home}">
+        <include name="*.jar"/>
+      </fileset>
+
+      <fileset dir="${math.home}">
         <include name="*.jar"/>
       </fileset>
 
