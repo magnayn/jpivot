@@ -358,8 +358,12 @@ public class MondrianUtil {
       resolveFunCallMembers((FunCall) f.getArg(1), memberList, scr);
     } else if (isCallTo(f, "{}")) {
       for (int i = 0; i < f.getArgs().length; i++) {
-        if (!memberList.contains(f.getArg(i)))
-          memberList.add(f.getArg(i));
+        final Exp arg = f.getArg(i);
+        if (arg instanceof MemberExpr) {
+          Member member = ((MemberExpr) arg).getMember();
+          if (!memberList.contains(member))
+            memberList.add(member);
+        }
       }
     } else {
       canHandle = false;
