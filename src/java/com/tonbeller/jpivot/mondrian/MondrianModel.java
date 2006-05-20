@@ -84,6 +84,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    * provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=file:///c:/dev/mondrian/demo/FoodMart.xml
    */
   private String connectString = null;
+  private Util.PropertyList connectProperties = null;
 
   /*
    * sample values sun.jdbc.odbc.JdbcOdbcDriver com.mysql.jdbc.Driver
@@ -276,6 +277,22 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   }
 
   /**
+   * set the Mondrian Connection Properties
+   * as an alternative to setConnectString
+   *
+   * @param properties
+   */
+  public void setConnectProperties(Util.PropertyList properties) {
+    connectProperties = properties;
+    result = null;
+    queryAdapter = null;
+    monConnection = null;
+    if (logger.isInfoEnabled())
+      logger.info("connectProperties=" + connectProperties);
+  }
+
+
+  /**
    * set the JDBC Driver
    *
    * @param jdbcDriver
@@ -312,7 +329,6 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    */
   public void initialize() throws OlapException {
     logger.info(this);
-
     boolean logInfo = logger.isInfoEnabled();
 
     // load the jdbc Driver
@@ -326,13 +342,18 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       }
     }
 
-    Util.PropertyList properties = Util.parseConnectString(connectString);
+    Util.PropertyList properties = getConnectProperties();
+    if (properties == null) {
+	properties = Util.parseConnectString(connectString);
+    }
 
     // get the Catalog from connect string
     String catString = properties.get("Catalog");
     URI uri = null;
     try {
-      uri = new URI(catString);
+		if (catString != null) {
+		    uri = new URI(catString);
+		}
     } catch (URISyntaxException e) {
       //throw new IllegalArgumentException("Illegal Schema Url " + catString );
       // ignore;
@@ -364,15 +385,13 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     // use external DataSource if present
     monConnection = mondrian.olap.DriverManager.getConnection(properties, catalogLocator, false);
 
-    //monConnection = mondrian.olap.DriverManager.getConnection(connectString,
-    // null, false);
     if (monConnection == null) {
-      String err = "Could not create Mondrian connection:" + connectString;
+      String err = "Could not create Mondrian connection:" + properties;
       logger.error(err);
       throw new OlapException(err);
     }
     if (logInfo)
-      logger.info("MondrianModel: opening connection " + connectString);
+      logger.info("MondrianModel: opening connection " + properties);
 
     // do we have a special locale setting?
     //  if yes, promote it to the connection
@@ -808,6 +827,15 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    */
   protected String getConnectString() {
     return connectString;
+  }
+
+  /**
+   * Get connectProperties
+   *
+   * @return connectProperties.
+   */
+  protected Util.PropertyList getConnectProperties() {
+    return connectProperties;
   }
 
   /**
@@ -1351,3 +1379,5 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   }
 
 } // End MondrianModel
+
+

@@ -54,8 +54,7 @@ public class MondrianDrillThrough extends ExtensionSupport implements DrillThrou
     }
     MondrianDrillThroughTableModel dtm = new MondrianDrillThroughTableModel();
     dtm.setSql(sql);
-    String connectString = getConnection().getConnectString();
-    PropertyList connectInfo = mondrian.olap.Util.parseConnectString(connectString);
+    PropertyList connectInfo = ((MondrianModel) getModel()).getConnectProperties();
     String jdbcUrl = connectInfo.get(RolapConnectionProperties.Jdbc);
     String jdbcUser = connectInfo.get(RolapConnectionProperties.JdbcUser);
     String jdbcPassword = connectInfo.get(RolapConnectionProperties.JdbcPassword);
@@ -65,15 +64,6 @@ public class MondrianDrillThrough extends ExtensionSupport implements DrillThrou
     dtm.setJdbcPassword(jdbcPassword);
     dtm.setDataSourceName(dataSourceName);
     return dtm;
-  }
-
-  /**
-   * gets the mondrian connection
-   * @return
-   */
-  public mondrian.olap.Connection getConnection() {
-    MondrianModel model = (MondrianModel) getModel();
-    return model.getConnection();
   }
 
   public boolean isExtendedContext() {
