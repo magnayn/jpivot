@@ -230,7 +230,6 @@
         <include name="javacup.jar"/>
         <include name="mondrian.dtd"/>
         <include name="mondrian.jar"/>
-        <include name="commons-math-1.0.jar"/>
       </fileset>
 
       <fileset dir="${junit.home}">
