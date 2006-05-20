@@ -43,7 +43,7 @@
 <%-- include query and title, so this jsp may be used with different queries --%>
 <wcf:include id="include01" httpParam="query" prefix="/WEB-INF/queries/" suffix=".jsp"/>
 <c:if test="${query01 == null}">
-  <jsp:forward page="/index.jsp"/>
+  <jsp:forward page="."/>
 </c:if>
 
 <%-- define table, navigator and forms --%>
@@ -131,7 +131,7 @@ Slicer:
 <wcf:render ref="chart01" xslUri="/WEB-INF/jpivot/chart/chart.xsl" xslCache="true"/>
 
 <p>
-<a href="index.jsp">back to index</a>
+<a href=".">back to index</a>
 
 </form>
 
