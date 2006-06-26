@@ -303,6 +303,10 @@ public class MondrianUtil {
           mondrian.olap.Member m = (mondrian.olap.Member) ref;
           if (!memberList.contains(m))
             memberList.add(m);
+        } else if (ref instanceof MemberExpr) {
+          mondrian.olap.Member m = ((MemberExpr) ref).getMember();
+          if (!memberList.contains(m))
+            memberList.add(m);
         } else {
           // must be FunCall
           FunCall f = (FunCall) ref;
