@@ -343,8 +343,12 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     }
 
     Util.PropertyList properties = getConnectProperties();
+    
+    boolean updatedProperties = false;
+    
     if (properties == null) {
-	properties = Util.parseConnectString(connectString);
+    	properties = Util.parseConnectString(connectString);
+    	updatedProperties = true;
     }
 
     // get the Catalog from connect string
@@ -368,18 +372,28 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
         catString = catString + "?sessionId=" + sessionId;
       }
       properties.put(RolapConnectionProperties.Catalog, catString);
+  	  updatedProperties = true;
     }
 
-    if (dynresolver != null && dynresolver.length() > 0)
+    if (dynresolver != null && dynresolver.length() > 0) {
       properties.put(RolapConnectionProperties.DynamicSchemaProcessor, dynresolver);
-    if (dynLocale!=null)
+  	  updatedProperties = true;
+    }
+    if (dynLocale!=null) {
       properties.put(RolapConnectionProperties.Locale, dynLocale);
+  	  updatedProperties = true;
+    }
 
     // if we do *not* want connection pooling, we must explicitly tell Mondrian
     if (!connectionPooling) {
       properties.put(RolapConnectionProperties.PoolNeeded, "false");
+  	  updatedProperties = true;
     }
 
+    if (updatedProperties) {
+    	setConnectProperties(properties);
+    }
+    
     CatalogLocator catalogLocator = new ServletContextCatalogLocator(servletContext);
     
     // use external DataSource if present
