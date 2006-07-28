@@ -1028,7 +1028,8 @@ public class MondrianQuaxUti implements QuaxUti {
    */
   public boolean equalMember(Object oExp, Member member) {
     mondrian.olap.Member m = ((MondrianMember) member).getMonMember();
-    return (m.equals(oExp));
+    mondrian.olap.Member oMon = toMember(oExp);
+    return (m.equals(oMon));
   }
 
   /**
