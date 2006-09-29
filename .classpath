@@ -10,7 +10,7 @@
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jstl.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/junit.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/log4j-1.2.8.jar"/>
-	<classpathentry sourcepath="C:/dev/sourceforge/jpivot_repository/mondrian-2.0/pilot/mondrian-src.jar" kind="lib" path="build/web/WEB-INF/lib/mondrian.jar"/>
+	<classpathentry sourcepath="build/src/mondrian-src.jar" kind="lib" path="build/web/WEB-INF/lib/mondrian.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/saxpath.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/standard.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jsf-api.jar"/>

@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.tonbeller.jpivot.navigator.member.MemberSelectionModel;
-import com.tonbeller.jpivot.olap.model.Dimension;
+import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Member;
 import com.tonbeller.jpivot.olap.model.OlapException;
 import com.tonbeller.jpivot.olap.model.OlapUtils;
@@ -39,12 +39,17 @@ class SlicerCategory extends AbstractCategory {
   public SlicerCategory(HierarchyNavigator navi, String name, String icon) throws OlapException {
     super(navi, name, icon);
 
-    Set slicerDims = OlapUtils.getSlicerDimensions(navi.getOlapModel());
-    for (Iterator it = slicerDims.iterator(); it.hasNext();) {
-      Dimension dim = (Dimension) it.next();
-      HierarchyItem hi = new HierarchyItem(this, dim.getHierarchies()[0]);
+    /* Take active hierarchies instead of active 
+     dimensions, to remember the slicer on a hierarchy that is 
+     not the default (first)
+     */
+    Set slicerHiers = OlapUtils.getSlicerHierarchies(navi.getOlapModel());
+    for (Iterator it = slicerHiers.iterator(); it.hasNext();) {
+      Hierarchy hier = (Hierarchy) it.next();
+      HierarchyItem hi = new HierarchyItem(this, hier);
       items.add(hi);
     }
+
     Collections.sort(items);
   }
 

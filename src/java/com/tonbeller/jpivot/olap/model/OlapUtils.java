@@ -101,7 +101,7 @@ public class OlapUtils {
     }
     return list;
   }
-  
+
   public static Cell[][] transposeCellMatrix(Cell[][] oldCells) {
     int rows = oldCells.length;
     int cols = oldCells[0].length;
@@ -235,5 +235,59 @@ public class OlapUtils {
     return levels[levels.length - 1];
   }
 
+  /**
+   * Return a list of active dimensions on the slicer 
+   */
+  public static Set getActiveSlicerDimensions(OlapModel model) throws OlapException {
+    Set active = new HashSet();
+    Axis slicer = model.getResult().getSlicer();
+    Hierarchy[] hiers = slicer.getHierarchies();
+    for (int j = 0; j < hiers.length; j++)
+      active.add(hiers[j].getDimension());
+    return active;
+  }
+
+  /**
+   * Return a list of active dimensions on the slicer 
+   */
+  public static Set getActiveSlicerHierarchies(OlapModel model) throws OlapException {
+    Set active = new HashSet();
+    Axis slicer = model.getResult().getSlicer();
+    Hierarchy[] hiers = slicer.getHierarchies();
+    for (int j = 0; j < hiers.length; j++)
+      active.add(hiers[j]);
+    return active;
+  }
+
+  /**
+   * return the hierarchies that are on the slicer axis 
+   (all that are not visible)
+   */
+  public static Set getSlicerHierarchies(OlapModel model) throws OlapException {
+    Set visible = getVisibleDimensions(model);
+    Set active_dims = getActiveSlicerDimensions(model);
+    Set active_hiers = getActiveSlicerHierarchies(model);
+
+    Set slicer = new HashSet();
+    Dimension[] dims = model.getDimensions();
+    for (int i = 0; i < dims.length; i++) {
+      if (!visible.contains(dims[i])) {
+        if (!active_dims.contains(dims[i])) {
+          slicer.add(dims[i].getHierarchies()[0]);
+        } else {
+          for (Iterator it = active_hiers.iterator(); it.hasNext();) {
+            Hierarchy hier = (Hierarchy) it.next();
+            Dimension dim = hier.getDimension();
+            if (dim.equals(dims[i])) {
+              slicer.add(hier);
+              break;
+            }
+          }
+        }
+
+      }
+    }
+    return slicer;
+  }
 
 }

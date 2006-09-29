@@ -15,9 +15,10 @@ package com.tonbeller.jpivot.mondrian;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import mondrian.olap.Category;
+import mondrian.olap.type.TypeUtil;
+
+import org.apache.log4j.Logger;
 
 import com.tonbeller.jpivot.core.ExtensionSupport;
 import com.tonbeller.jpivot.olap.model.DoubleExpr;
@@ -49,7 +50,7 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
     mondrian.olap.Parameter[] monParams = monQuery.getParameters();
     for (int i = 0; i < monParams.length; i++) {
       mondrian.olap.Parameter monParam = monParams[i];
-      int pType = monParam.getCategory();
+      int pType = TypeUtil.typeToCategory(monParam.getType());
       String monParaName = monParam.getName();
       if (paramName.equals(monParaName)) {
 
@@ -113,7 +114,7 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
     mondrian.olap.Parameter[] monParams = monQuery.getParameters();
     for (int i = 0; i < monParams.length; i++) {
       mondrian.olap.Parameter monParam = monParams[i];
-      int pType = monParam.getCategory();
+      int pType = TypeUtil.typeToCategory(monParam.getType());
       String monParaName = monParam.getName();
       Object value = monParam.getValue();
       switch (pType) {

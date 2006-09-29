@@ -1307,7 +1307,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     } else if (exp instanceof mondrian.olap.Literal) {
       mondrian.olap.Literal lit = (mondrian.olap.Literal) exp;
       Object val = lit.getValue();
-      if (lit.type == Category.Numeric) {
+      if (lit.getCategory() == Category.Numeric) {
         if (val instanceof Integer)
           bean.setType(ExpBean.TYPE_INTEGER_LITERAL);
         else
