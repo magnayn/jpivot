@@ -69,10 +69,6 @@
   <servlet>
     <servlet-name>MondrianXmlaServlet</servlet-name>
     <servlet-class>mondrian.xmla.impl.DefaultXmlaServlet</servlet-class>
-	<init-param>
-	  <param-name>DataSourcesConfig</param-name>
-	  <param-value>datasources.xml</param-value>
-	</init-param>
   </servlet>
 
   <servlet-mapping>
@@ -101,13 +97,13 @@
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>
 
-  <!-- 
+  <!--
   <error-page>
     <exception-type>java.lang.Exception</exception-type>
     <location>/error.jsp</location>
   </error-page>
   -->
-  
+
   <taglib>
     <taglib-uri>http://www.tonbeller.com/wcf</taglib-uri>
     <taglib-location>/WEB-INF/wcf/wcf-tags.tld</taglib-location>
