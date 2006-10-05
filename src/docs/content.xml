@@ -164,6 +164,12 @@ via XML and XSLT.
 
 
  <page title="News" id="news">
+   <h2>New in version 1.6</h2>
+   <ul>
+     <li>Contains new Mondrian version (10/05/2006)</li>
+     <li>Custom PDF Font Support (provided by Ati)</li>
+     <li>Several bugfixes, see <a href="changelog.html">changelog</a> for details</li>
+   </ul>
    <h2>New in version 1.5</h2>
    <ul>
      <li>Full support for Websphere and BEA</li>
@@ -412,6 +418,7 @@ This is useful, when the result ist sorted in <em>break hierarchy</em> mode.
 
   </page>
   <link href="http://cvs.sourceforge.net/viewcvs.py/*checkout*/jpivot/jpivot/src/docs/roadmap.html" title="Roadmap"/>
+  <link href="pdf-fonts" title="FOP Fonts Howto"/>
 
   <link href="changelog.html" title="Changelog"/>
 

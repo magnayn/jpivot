@@ -19,6 +19,9 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.io.File;
+
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -32,6 +35,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.fop.apps.Driver;
 import org.apache.fop.apps.FOPException;
+import org.apache.fop.configuration.Configuration;
+import org.apache.fop.apps.Options;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -48,6 +53,7 @@ import com.tonbeller.wcf.utils.XmlUtils;
  */
 
 public class PrintServlet extends HttpServlet {
+  private static Logger logger = Logger.getLogger(PrintServlet.class);
   private static final int XML = 0;
   private static final int PDF = 1;
   String basePath;
@@ -57,6 +63,21 @@ public class PrintServlet extends HttpServlet {
    */
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
+    try {
+      // set base FOP FONT directory.  The font config  stuff will be looked for here
+      Configuration.put("fontBaseDir", config.getServletContext().getRealPath("/WEB-INF/jpivot/print/"));
+      // get the physical path for the config file
+      String fopConfigPath = config.getServletContext().getRealPath("/WEB-INF/jpivot/print/userconfig.xml");
+      // load the user proerties, contining the CustomFont font.
+      new Options(new File(fopConfigPath));
+
+    } catch (FOPException e) {
+      e.printStackTrace();
+      logger.info("FOP user config file not loaded");
+    } catch (Exception e) {
+      e.printStackTrace();
+      logger.info("FOP user config file not loaded");
+    }
   }
 
   /** Destroys the servlet.
@@ -114,8 +135,7 @@ public class PrintServlet extends HttpServlet {
             PrintComponent printConfig = (PrintComponent) context.getModelReference(printRef);
             if (printConfig != null) {
               if (printConfig.isSetTableWidth()) {
-                parameters.put(printConfig.PRINT_TABLE_WIDTH, new Double(printConfig
-                    .getTableWidth()));
+                parameters.put(printConfig.PRINT_TABLE_WIDTH, new Double(printConfig.getTableWidth()));
               }
               if (printConfig.getReportTitle().trim().length() != 0) {
                 parameters.put(printConfig.PRINT_TITLE, printConfig.getReportTitle().trim());
@@ -123,13 +143,10 @@ public class PrintServlet extends HttpServlet {
               parameters.put(printConfig.PRINT_PAGE_ORIENTATION, printConfig.getPageOrientation());
               parameters.put(printConfig.PRINT_PAPER_TYPE, printConfig.getPaperType());
               if (printConfig.getPaperType().equals("custom")) {
-                parameters
-                    .put(printConfig.PRINT_PAGE_WIDTH, new Double(printConfig.getPageWidth()));
-                parameters.put(printConfig.PRINT_PAGE_HEIGHT, new Double(printConfig
-                    .getPageHeight()));
+                parameters.put(printConfig.PRINT_PAGE_WIDTH, new Double(printConfig.getPageWidth()));
+                parameters.put(printConfig.PRINT_PAGE_HEIGHT, new Double(printConfig.getPageHeight()));
               }
-              parameters.put(printConfig.PRINT_CHART_PAGEBREAK, new Boolean(printConfig
-                  .isChartPageBreak()));
+              parameters.put(printConfig.PRINT_CHART_PAGEBREAK, new Boolean(printConfig.isChartPageBreak()));
 
             }
 
@@ -186,15 +203,13 @@ public class PrintServlet extends HttpServlet {
               // if this is PDF, then need to generate PDF from the FO xml
               System.out.println("Creating PDF!");
               try {
-                ByteArrayInputStream bain = new ByteArrayInputStream(sw.toString()
-                    .getBytes("UTF-8"));
+                ByteArrayInputStream bain = new ByteArrayInputStream(sw.toString().getBytes("UTF-8"));
                 ByteArrayOutputStream baout = new ByteArrayOutputStream(16384);
                 convertFO2PDF(bain, baout);
                 final byte[] content = baout.toByteArray();
                 response.setContentLength(content.length);
                 outStream.write(content);
-                RendererParameters
-                    .removeParameter(context.getRequest(), "mode", "print", "request");
+                RendererParameters.removeParameter(context.getRequest(), "mode", "print", "request");
                 //convertXML2PDF(document.toString(), xslUri, outStream);
               } catch (Exception e) {
                 e.printStackTrace();
@@ -215,8 +230,7 @@ public class PrintServlet extends HttpServlet {
   /**
    * converts FO xml into PDF using the FOP processor
    */
-  public void convertFO2PDF(ByteArrayInputStream bain, ByteArrayOutputStream baout)
-      throws IOException, FOPException {
+  public void convertFO2PDF(ByteArrayInputStream bain, ByteArrayOutputStream baout) throws IOException, FOPException {
 
     System.out.println("Construct driver");
     Driver driver = new Driver();
@@ -243,8 +257,7 @@ public class PrintServlet extends HttpServlet {
    * @param request servlet request
    * @param response servlet response
    */
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doPost(request, response);
   }
 
@@ -252,8 +265,7 @@ public class PrintServlet extends HttpServlet {
    * @param request servlet request
    * @param response servlet response
    */
-  protected void doPost(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     RequestContext context = RequestContextFactoryFinder.createContext(request, response, true);
     try {
       processRequest(context);
