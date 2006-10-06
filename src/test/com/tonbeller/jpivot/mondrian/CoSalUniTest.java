@@ -73,18 +73,18 @@ public class CoSalUniTest extends TestCase {
     if (renderFile != null)
       ResultBase.renderHtml(result, model.getCurrentMdx(),  renderFile + renderNum++ + ".html");
 
-    assertPosition(result, 4, new String[] { "20319", "All Store Types", "Store Sales"});
+    assertPosition(result, 7, new String[] { "20319", "All Store Types", "Store Sales"});
 
     // drill down All Store Types below 20319.0
     axes = result.getAxes();
     positions = axes[0].getPositions();
-    Position pos4 = (Position) positions.get(4); // "20319.0", "All Store Types"
-    mdep.expand(pos4, pos4.getMembers()[1]); // drilldown All Store Size    
+    Position pos7 = (Position) positions.get(7); // "20319.0", "All Store Types"
+    mdep.expand(pos7, pos7.getMembers()[1]); // drilldown All Store Size    
     result = model.getResult();
     if (renderFile != null)
       ResultBase.renderHtml(result, model.getCurrentMdx(),  renderFile + renderNum++ + ".html");
 
-    assertPosition(result, 21, new String[] { "20319", "Supermarket", "Store Cost"});
+    assertPosition(result, 24, new String[] { "20319", "Supermarket", "Store Cost"});
 
     // save bookmark and reload
     Object state = model.getBookmarkState(Bookmarkable.EXTENSIONAL);
@@ -101,7 +101,7 @@ public class CoSalUniTest extends TestCase {
     if (renderFile != null)
       ResultBase.renderHtml(result, model.getCurrentMdx(),  renderFile + renderNum++ + ".html");
 
-    assertPosition(result, 21, new String[] { "20319", "Supermarket", "Store Cost"});
+    assertPosition(result, 24, new String[] { "20319", "Supermarket", "Store Cost"});
 
   }
 

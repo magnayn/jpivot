@@ -1060,7 +1060,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       MondrianPosition mp = (MondrianPosition) it.next();
       MondrianMember member = (MondrianMember) mp.getMembers()[i];
       if (measuresSet.add(member))
-        measuresList.add(member.getMonMember());
+        measuresList.add(new MemberExpr(member.getMonMember()));
     }
     if (measuresList.size() == 1)
       return (Exp) measuresList.get(0);
@@ -1173,7 +1173,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   private Exp[] createExpsFromBeans(ExpBean[] beans) throws OlapException {
     Exp[] exps = new Exp[beans.length];
     for (int i = 0; i < beans.length; i++) {
-      exps[i] = (Exp) createExpFromBean(beans[i]);
+      exps[i] = createExpFromBean(beans[i]);
     }
     return exps;
   }
@@ -1184,11 +1184,12 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    * @return @throws
    *         OlapException
    */
-  protected Object createExpFromBean(ExpBean expBean) throws OlapException {
+  protected Exp createExpFromBean(ExpBean expBean) throws OlapException {
     if (expBean.getType() == ExpBean.TYPE_TOPLEVEL_MEMBERS) {
       SchemaReader scr = getMonConnection().getSchemaReader();
       Exp[] args = createExpsFromBeans(expBean.getArgs());
-      mondrian.olap.Hierarchy h = (mondrian.olap.Hierarchy) args[0];
+      HierarchyExpr he = (HierarchyExpr) args[0];
+      mondrian.olap.Hierarchy h = he.getHierarchy();
       return MondrianUtil.topLevelMembers(h, false, scr);
     }
 
@@ -1198,7 +1199,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
         // probably schema changed, cannot restore state
         throw new OlapException("could not find member " + expBean.getName());
       }
-      return member.getMonMember();
+      return new MemberExpr(member.getMonMember());
     }
 
     if (expBean.getType() == ExpBean.TYPE_FUNCALL) {
@@ -1217,7 +1218,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
         // probably schema changed, cannot restore state
         throw new OlapException("could not find Level " + expBean.getName());
       }
-      return lev.getMonLevel();
+      return new LevelExpr(lev.getMonLevel());
     } else if (expBean.getType() == ExpBean.TYPE_HIER) {
       // Hierarchy
       MondrianHierarchy hier = this.lookupHierarchy(expBean.getName());
@@ -1225,7 +1226,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
         // probably schema changed, cannot restore state
         throw new OlapException("could not find Hierarchy " + expBean.getName());
       }
-      return hier.getMonHierarchy();
+      return new HierarchyExpr(hier.getMonHierarchy());
     } else if (expBean.getType() == ExpBean.TYPE_DIM) {
       // Dimension
       MondrianDimension dim = this.lookupDimension(expBean.getName());
@@ -1233,7 +1234,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
         // probably schema changed, cannot restore state
         throw new OlapException("could not find Dimension " + expBean.getName());
       }
-      return dim.getMonDimension();
+      return new DimensionExpr(dim.getMonDimension());
     } else if (expBean.getType() == ExpBean.TYPE_STRING_LITERAL) {
       // String literal
       String str = (String) expBean.getLiteralValue();

@@ -30,7 +30,7 @@ public class TimeSchemaTest extends TestCase {
   public void testTimeDimNonTimeLev() throws Exception {
 
     String mdxQuery = "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns, "
-        + "Crossjoin([Time].[Quartale].members, Customers].[All Customers].[USA].children) on rows "
+        + "Crossjoin([Time].[Quartale].members, [Customers].[All Customers].[USA].children) on rows "
         + "from Sales";
 
     String renderFile = null; //"c:\\x\\testTimeDimNonTimeLev";
