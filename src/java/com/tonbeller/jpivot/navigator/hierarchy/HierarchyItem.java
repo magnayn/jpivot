@@ -175,6 +175,10 @@ public class HierarchyItem implements Item, RequestListener, Comparable {
    * @param axisSelection The axisSelection to set
    */
   public void setAxisSelection(Collection selection) {
+    if (selection.equals(axisSelection)) {
+       // Nothing has changed, just return
+       return;
+    }
     clear();
     updateHierarchy(selection);
     if (axisSelection == null)

@@ -100,6 +100,8 @@
   <property name="compile.debug"       value="true"/>
   <property name="compile.deprecation" value="false"/>
   <property name="compile.optimize"    value="true"/>
+  <property name="compile.source"      value="1.4"/>
+  <property name="compile.target"      value="1.4"/>
 
 <!-- ==================== Classpath Settings =========================== -->
 
@@ -354,7 +356,9 @@
     <javac destdir="${build.home}/web/WEB-INF/classes"
              debug="${compile.debug}"
        deprecation="${compile.deprecation}"
-          optimize="${compile.optimize}">
+          optimize="${compile.optimize}"
+            source="${compile.source}"
+            target="${compile.target}">
 
        <src path="${src.home}/java"/>
        <classpath refid="compile.classpath"/>
@@ -378,7 +382,9 @@
     <javac destdir="${build.home}/jboss-portlet/web/WEB-INF/classes"
              debug="${compile.debug}"
        deprecation="${compile.deprecation}"
-          optimize="${compile.optimize}">
+          optimize="${compile.optimize}"
+            source="${compile.source}"
+            target="${compile.target}">
 
        <src path="${src.home}/jboss-portlet/java"/>
        <classpath refid="portlet.classpath"/>

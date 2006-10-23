@@ -1173,7 +1173,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   private Exp[] createExpsFromBeans(ExpBean[] beans) throws OlapException {
     Exp[] exps = new Exp[beans.length];
     for (int i = 0; i < beans.length; i++) {
-      exps[i] = createExpFromBean(beans[i]);
+      exps[i] = (Exp) createExpFromBean(beans[i]);
     }
     return exps;
   }
@@ -1184,7 +1184,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    * @return @throws
    *         OlapException
    */
-  protected Exp createExpFromBean(ExpBean expBean) throws OlapException {
+  protected Object createExpFromBean(ExpBean expBean) throws OlapException {
     if (expBean.getType() == ExpBean.TYPE_TOPLEVEL_MEMBERS) {
       SchemaReader scr = getMonConnection().getSchemaReader();
       Exp[] args = createExpsFromBeans(expBean.getArgs());
