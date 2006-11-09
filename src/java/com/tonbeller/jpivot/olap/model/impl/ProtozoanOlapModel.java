@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.tonbeller.bii.olap.SplitQueryTag;
 import com.tonbeller.jpivot.core.ModelChangeListener;
 import com.tonbeller.jpivot.olap.model.OlapException;
 import com.tonbeller.jpivot.olap.model.OlapModel;
@@ -16,22 +15,22 @@ public class ProtozoanOlapModel extends ScalarOlapModel {
     ERROR_CELL.setFormattedValue("splitQuery: Index not found");
     ERROR_CELL.setValue(new Double(Double.NaN));
   }
- 
+
   private OlapModel realModel;
   private int idx;
 
-  private static Logger logger = Logger.getLogger(SplitQueryTag.class);
+  private static Logger logger = Logger.getLogger(ProtozoanOlapModel.class);
 
   public ProtozoanOlapModel(OlapModel om, int idx) {
     super();
     this.realModel = om;
     this.idx = idx;
   }
-  
+
   public void addModelChangeListener(ModelChangeListener l) {
     realModel.addModelChangeListener(l);
   }
-  
+
   public void removeModelChangeListener(ModelChangeListener l) {
     realModel.removeModelChangeListener(l);
   }

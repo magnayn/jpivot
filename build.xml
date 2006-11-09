@@ -43,8 +43,6 @@
   <property name="catalina.home"        value="${repository.home}/jakarta-tomcat-4.1.31"/>
   <property name="xalan.home"           value="${repository.home}/xalan-j_2_7_0"/>
 
-  <property name="mysql.home"           value="${repository.home}/mysql-connector-java-3.1.6"/>
-
   <!-- the following are included in lib/ directory (no need to override) -->
   <property name="mondrian.version"     value="HEAD"/>
   <property name="mondrian.home"        value="${repository.home}/mondrian-${mondrian.version}"/>
@@ -75,16 +73,7 @@
 
 <!-- ==================== File and Directory Names ======================== -->
 
-  <property name="jpivot.version"       value="1.5.0"/>
-
-  <property name="jdbc.driver"          value="com.mysql.jdbc.Driver"/>
-  <property name="jdbc.url"             value="jdbc:mysql://localhost/foodmart"/>
-  <property name="jdbc.user"            value="root"/>
-  <property name="jdbc.password"        value=""/>
-
-  <!-- Test XMLA> -->
-  <property name="xmla.uri"      value="http://SINTANW/XMLA/msxisapi.dll"/>
-  <property name="xmla.catalog"  value="Foodmart 2000"/>
+  <property name="jpivot.version"       value="1.6.0"/>
 
 <!--  ==================== Compilation Control Options ==================== -->
 
@@ -117,8 +106,8 @@
     <path refid="compile.classpath"/>
     <pathelement location="${build.home}/web/WEB-INF/classes"/>
     <pathelement location="${build.home}/junit/classes"/>
-    <fileset dir="${mysql.home}">
-      <include name="mysql*.jar"/>
+    <fileset dir="${jdbc.jardir}">
+      <include name="*.jar"/>
     </fileset>
   </path>
 
