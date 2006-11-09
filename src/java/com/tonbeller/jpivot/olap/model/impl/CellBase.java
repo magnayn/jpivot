@@ -124,6 +124,7 @@ public abstract class CellBase implements Cell {
     } else {
       PropertyImpl pi = new PropertyImpl();
       pi.setName(prop);
+      pi.setLabel(prop);
       pi.setValue(value);
       if (properties == null)
         properties = new ArrayList();

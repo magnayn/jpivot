@@ -12,8 +12,8 @@
  */
 package com.tonbeller.jpivot.navigator.hierarchy;
 
+import com.tonbeller.jpivot.navigator.member.MemberSelectionModel;
 import com.tonbeller.wcf.controller.RequestContext;
-import com.tonbeller.wcf.selection.SelectionModel;
 
 /**
  * called when the user clicks on a HierarchyItem
@@ -21,5 +21,5 @@ import com.tonbeller.wcf.selection.SelectionModel;
  * @author av
  */
 public interface HierarchyItemClickHandler {
-  void itemClicked(RequestContext context, HierarchyItem item, SelectionModel selection, boolean allowChangeOrder);
+  void itemClicked(RequestContext context, HierarchyItem item, MemberSelectionModel selection, boolean allowChangeOrder);
 }

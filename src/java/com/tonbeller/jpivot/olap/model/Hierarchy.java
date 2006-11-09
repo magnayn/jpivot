@@ -30,4 +30,6 @@ public interface Hierarchy extends Expression, Displayable, Visitable, Decorator
    * that does not support levels.
    */
   Level[] getLevels();
+  
+  boolean hasAll();
 }

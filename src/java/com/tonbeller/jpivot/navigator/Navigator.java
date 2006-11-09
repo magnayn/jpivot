@@ -25,6 +25,7 @@ import com.tonbeller.jpivot.navigator.hierarchy.HierarchyItem;
 import com.tonbeller.jpivot.navigator.hierarchy.HierarchyItemClickHandler;
 import com.tonbeller.jpivot.navigator.hierarchy.HierarchyNavigator;
 import com.tonbeller.jpivot.navigator.member.MemberNavigator;
+import com.tonbeller.jpivot.navigator.member.MemberSelectionModel;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.OlapModel;
 import com.tonbeller.jpivot.ui.Available;
@@ -32,7 +33,6 @@ import com.tonbeller.wcf.component.Component;
 import com.tonbeller.wcf.component.ComponentSupport;
 import com.tonbeller.wcf.controller.RequestContext;
 import com.tonbeller.wcf.controller.RequestListener;
-import com.tonbeller.wcf.selection.SelectionModel;
 import com.tonbeller.wcf.tree.NodeSorter;
 
 /**
@@ -102,17 +102,13 @@ public class Navigator extends ComponentSupport implements ModelChangeListener, 
     public void itemClicked(
       RequestContext context,
       HierarchyItem item,
-      SelectionModel selection,
+      MemberSelectionModel selection,
       boolean allowChangeOrder) {
       
       currentItem = item;
       Hierarchy[] hiers = item.getDimension().getHierarchies();
-      memberNav.setHierarchies(hiers, allowChangeOrder);
-      memberNav.setSelectionModel(selection);
-      memberNav.expandSelected(false);
-      Set deleted = memberNav.getDeleteNodeModel().getDeleted();
-      deleted.clear();
-      deleted.addAll(item.getDeleted());
+      memberNav.setHierarchies(hiers, allowChangeOrder, selection, item.getDeleted());
+      
       show(memberNav);
     }
   }

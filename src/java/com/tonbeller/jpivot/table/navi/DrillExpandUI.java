@@ -77,8 +77,8 @@ public abstract class DrillExpandUI extends TableComponentExtensionSupport imple
       super(delegate);
     }
 
-    public Element build(Span span, boolean even) {
-      Element parent = super.build(span, even);
+    public Element build(SBContext sbctx, Span span, boolean even) {
+      Element parent = super.build(sbctx, span, even);
 
       if (!enabled || !renderActions || !available)
         return parent;

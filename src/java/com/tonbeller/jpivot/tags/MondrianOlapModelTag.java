@@ -20,10 +20,9 @@ import javax.servlet.jsp.JspException;
 import org.xml.sax.SAXException;
 
 import com.tonbeller.jpivot.mondrian.MondrianModel;
-import com.tonbeller.jpivot.mondrian.MondrianModelFactory;
-import com.tonbeller.jpivot.mondrian.MondrianModelFactory.Config;
 import com.tonbeller.jpivot.olap.model.OlapException;
 import com.tonbeller.jpivot.olap.model.OlapModel;
+import com.tonbeller.jpivot.tags.MondrianModelFactory.Config;
 import com.tonbeller.tbutils.res.Resources;
 import com.tonbeller.wcf.controller.RequestContext;
 
@@ -69,7 +68,7 @@ public class MondrianOlapModelTag extends OlapModelTag {
     cfg.setDynLocale(dynLocale);
     cfg.setConnectionPooling(connectionPooling);
 
-    allowOverride(cfg);
+    allowOverride(context, cfg);
 
     URL url;
     if (config == null)
@@ -78,31 +77,17 @@ public class MondrianOlapModelTag extends OlapModelTag {
       url = pageContext.getServletContext().getResource(config);
 
     MondrianModel mm = MondrianModelFactory.instance(url, cfg);
-    //mm.setUserName(((HttpServletRequest) pageContext.getRequest()).getRemoteUser());
     OlapModel om = (OlapModel) mm.getTopDecorator();
     om.setLocale(context.getLocale());
     om.setServletContext(context.getSession().getServletContext());
     return om;
   }
 
-  protected void allowOverride(Config cfg) {
-    cfg.setJdbcDriver(allowOverwrite("jdbc.driver", cfg.getJdbcDriver()));
-    cfg.setJdbcUrl(allowOverwrite("jdbc.url", cfg.getJdbcUrl()));
-    cfg.setJdbcUser(allowOverwrite("jdbc.user", cfg.getJdbcUser()));
-    cfg.setJdbcPassword(allowOverwrite("jdbc.password", cfg.getJdbcPassword()));
-    cfg.setDataSource(allowOverwrite("jdbc.datasource", cfg.getDataSource()));
-    cfg.setRole(allowOverwrite("role", cfg.getRole()));
-    cfg.setDynResolver(allowOverwrite("dynResolver", cfg.getDynResolver()));
-    cfg.setDynLocale(allowOverwrite("dynLocale", cfg.getDynLocale()));
-    cfg.setConnectionPooling(allowOverwrite("ConnectionPooling", cfg.getConnectionPooling()));
-  }
-
   /**
-   * Nimmt den Wert aus einem Request Parameter oder System Property - falls vorhanden, sonst
-   * Defaultwert
+   * default implementation delegates to {@link Config#allowOverride(RequestContext)}
    */
-  protected String allowOverwrite(String paramName, String defVal) {
-    return res.getOptionalString(paramName, defVal);
+  protected void allowOverride(RequestContext context, Config cfg) {
+    cfg.allowOverride(context);
   }
 
   protected URL getDefaultConfig() {

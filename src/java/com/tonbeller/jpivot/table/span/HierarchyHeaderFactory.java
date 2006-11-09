@@ -56,7 +56,7 @@ public class HierarchyHeaderFactory extends VisitorSupportStrict implements Span
   }
 
   public void visitProperty(Property v) {
-    header.setObject(new PropertyHeading(v.getName()));
+    header.setObject(new PropertyHeading(v.getLabel()));
   }
 
   public void visitPropertyHeading(PropertyHeading heading) {

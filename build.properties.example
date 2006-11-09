@@ -1,12 +1,19 @@
+# where to find the external libraries
+repository.home=../jpivot_repository
+
+jdbc.driver=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost/foodmart
+jdbc.user=root
+jdbc.password=
 
 # These settings allow the source to build and tests to run
 
 jboss.home=C:/jboss-4.0.2
 
-catalina.home=C:/Source/jakarta-tomcat-5.5.9
-
-manager.username=tomcat
-manager.password=tomcat
+# tomcat manager
+catalina.home=C:/Java/apache-tomcat-5.5.12
+manager.username=manager
+manager.password=manager
 
 xmla.uri=http://localhost:8080/mondrian/xmla
 xmla.catalog=MondrianFoodMart

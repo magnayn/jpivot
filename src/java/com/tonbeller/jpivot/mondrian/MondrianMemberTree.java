@@ -72,9 +72,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     int k = monMembers.length;
     for (int i = 0; i < k; i++) {
       mondrian.olap.Member monMember = monMembers[i];
-      // do not add, if not visible
-      Object visible = monMember.getPropertyValue(mondrian.olap.Property.VISIBLE.name);
-      if (!Boolean.FALSE.equals(visible)) {
+      if (isVisible(monMember)) {
         aMem.add(model.addMember(monMembers[i]));
       }
     }
@@ -90,10 +88,8 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
         // and is it visible?
         // if yes add it
         if (monMem.getHierarchy().equals(monHier)) {
-          Object visible = monMem.getPropertyValue(mondrian.olap.Property.VISIBLE.name);
-          if (Boolean.FALSE.equals(visible)) {
+          if (!isVisible(monMem))
             continue;
-          }
           Member m = model.addMember(monMem);
           if (!aMem.contains(m))
             aMem.add(m);
@@ -147,6 +143,17 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     });
 
     return members;
+  }
+
+  private boolean isVisible(mondrian.olap.Member monMember) {
+    // Name convention: if member starts with "." its hidden
+    if (monMember.getName().startsWith("."))
+      return false;
+    
+    // from schema: if visible-Property is not-null and equals false, 
+    // then its hidden
+    Object visible = monMember.getPropertyValue(mondrian.olap.Property.VISIBLE.name);
+    return !Boolean.FALSE.equals(visible);
   }
 
   /**

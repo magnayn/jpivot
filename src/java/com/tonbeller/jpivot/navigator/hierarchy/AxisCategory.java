@@ -63,7 +63,7 @@ class AxisCategory extends AbstractCategory {
     else
       selection.setMode(SelectionModel.MULTIPLE_SELECTION);
 
-    selection.setSelection(item.getAxisSelection());
+    selection.setOrderedSelection(item.getAxisSelection());
     navi.itemClicked(context, item, selection, true);
   }
 

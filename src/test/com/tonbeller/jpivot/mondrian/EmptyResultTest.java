@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.Result;
 import com.tonbeller.jpivot.olap.query.ResultBase;
+import com.tonbeller.jpivot.tags.MondrianModelFactory;
 
 public class EmptyResultTest extends TestCase {
 

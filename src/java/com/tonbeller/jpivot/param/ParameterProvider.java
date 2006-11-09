@@ -4,7 +4,7 @@
  */
 package com.tonbeller.jpivot.param;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.tonbeller.jpivot.olap.model.Member;
 import com.tonbeller.jpivot.olap.model.OlapModel;
@@ -15,5 +15,5 @@ import com.tonbeller.jpivot.olap.model.OlapModel;
  * @see com.tonbeller.wcf.param.SessionParam
  */
 public interface ParameterProvider {
-  public Collection createSessionParams(OlapModel model, Member member);
+  public List createSessionParams(OlapModel model, Member member) throws Exception;
 }

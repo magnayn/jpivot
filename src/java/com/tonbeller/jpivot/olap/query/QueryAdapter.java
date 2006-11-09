@@ -131,17 +131,12 @@ public abstract class QueryAdapter {
         // unknown function members are collected
         // - always for a "STICKY generate" unknown function
         // - on first result for any other unknown function
-
         int nDimension = quaxes[i].getNDimension();
         for (int j = 0; j < nDimension; j++) {
           // collect members for unknown functions on quax
-          Quax.UnknownFunction unkown = quaxes[i].getUnknownFunction(j);
-          if (unkown != null
-            && (unkown.getMemberList() == null || quaxes[i].getGenerateIndex() == j)) {
-            // set function cannot be handled directly
-            //  collect members of this hierarchy from result
+          if (quaxes[i].isUnknownFunction(j)) {
             List memList = memListForHier(j, positions);
-            unkown.setMemberList(memList);
+            quaxes[i].setHierMemberList(j, memList);
           }
         } // for dimensions of quax
       } // QuaxLoop

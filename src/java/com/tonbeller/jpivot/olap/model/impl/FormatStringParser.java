@@ -102,6 +102,7 @@ public class FormatStringParser {
           PropertyImpl prop = new PropertyImpl();
 
           prop.setName(propName);
+          prop.setLabel(propName);
           prop.setValue(propValue);
 
           properties.add(prop);

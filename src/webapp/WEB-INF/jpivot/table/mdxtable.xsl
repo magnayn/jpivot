@@ -14,7 +14,6 @@
 <!-- Tabelle:  -->
 <xsl:param name="maxHeaderLen" select="20"/>
 
-
 <xsl:template match="mdxtable">
   <xsl:if test="@message">
     <div class="table-message"><xsl:value-of select="@message"/></div>
@@ -132,6 +131,13 @@
 <xsl:template name="render-label">
   <xsl:param name="label"/>
   <xsl:choose>
+
+    <!-- popup menu -->
+    <xsl:when test="popup-menu">
+      <xsl:apply-templates select="popup-menu"/>
+      <xsl:apply-templates select="property"/>
+    </xsl:when>
+
     <!-- clickable member -->
     <xsl:when test="@href">
       <a>
@@ -165,7 +171,6 @@
     </xsl:otherwise>
   </xsl:choose>
 </xsl:template>
-
 
 <xsl:template name="make-href">
   <xsl:param name="href"/>
@@ -217,6 +222,34 @@
 
 <!-- ignore other properties (e.g. "link") -->
 <xsl:template match="property"/>
+
+
+<!-- begin popup menu  -->
+<xsl:template match="popup-menu">
+  <a href="#" onMouseover="cssdropdown.dropit(this, event, '{@id}')">
+    <xsl:value-of select="@label" />
+  </a>
+  <div id="{@id}" class="dropmenudiv">
+    <strong style="padding-left: {@level}em">
+      <xsl:value-of select="@label" />
+    </strong>
+    <xsl:apply-templates />
+  </div>
+</xsl:template>
+
+<xsl:template match="popup-group">
+  <strong style="padding-left: {@level}em">
+    <xsl:value-of select="@label" />
+  </strong>
+  <xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="popup-item">
+  <a href="{@href}" style="padding-left: {@level}em">
+    <xsl:value-of select="@label" />
+  </a>
+</xsl:template>
+<!-- end popup menu  -->
 
 
 <xsl:template match="*|@*|node()">

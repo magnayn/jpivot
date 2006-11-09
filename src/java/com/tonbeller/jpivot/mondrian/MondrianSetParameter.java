@@ -46,7 +46,7 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
    */
   public void setParameter(String paramName, Expression expr) {
     MondrianModel model = (MondrianModel) getModel();
-    mondrian.olap.Query monQuery = ((MondrianQueryAdapter)model.getQueryAdapter()).getMonQuery();
+    mondrian.olap.Query monQuery = ((MondrianQueryAdapter) model.getQueryAdapter()).getMonQuery();
     mondrian.olap.Parameter[] monParams = monQuery.getParameters();
     for (int i = 0; i < monParams.length; i++) {
       mondrian.olap.Parameter monParam = monParams[i];
@@ -57,45 +57,45 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
         // found the parameter with the given name in the query
         switch (pType) {
 
-          case Category.Numeric :
-            if (expr instanceof DoubleExpr) {
-              double d = ((DoubleExpr) expr).getValue();
-              monParam.setValue(new Double(d));
-            } else if (expr instanceof IntegerExpr) {
-              int ii = ((IntegerExpr) expr).getValue();
-              monParam.setValue(new Double(ii));
-            } else {
-              // wrong parameter type
-              String str = "wrong Numeric parameter type " + paramName + expr.getClass().toString();
-              logger.error(str);
-              throw new java.lang.IllegalArgumentException(str);
-            }
-            break;
+        case Category.Numeric:
+          if (expr instanceof DoubleExpr) {
+            double d = ((DoubleExpr) expr).getValue();
+            monParam.setValue(new Double(d));
+          } else if (expr instanceof IntegerExpr) {
+            int ii = ((IntegerExpr) expr).getValue();
+            monParam.setValue(new Double(ii));
+          } else {
+            // wrong parameter type
+            String str = "wrong Numeric parameter type " + paramName + expr.getClass().toString();
+            logger.error(str);
+            throw new java.lang.IllegalArgumentException(str);
+          }
+          break;
 
-          case Category.String :
-            if (expr instanceof StringExpr) {
-              String s = ((StringExpr) expr).getValue();
-              monParam.setValue(s);
-            } else {
-              // wrong parameter type
-              String str = "wrong String parameter type " + paramName + expr.getClass().toString();
-              logger.error(str);
-              throw new java.lang.IllegalArgumentException(str);
-            }
+        case Category.String:
+          if (expr instanceof StringExpr) {
+            String s = ((StringExpr) expr).getValue();
+            monParam.setValue(s);
+          } else {
+            // wrong parameter type
+            String str = "wrong String parameter type " + paramName + expr.getClass().toString();
+            logger.error(str);
+            throw new java.lang.IllegalArgumentException(str);
+          }
 
-            break;
+          break;
 
-          case Category.Member :
-            if (expr instanceof MondrianMember) {
-              MondrianMember m = (MondrianMember) expr;
-              monParam.setValue(m.getMonMember());
-            } else {
-              // wrong parameter type
-              String str = "wrong Member parameter type " + paramName + expr.getClass().toString();
-              logger.error(str);
-              throw new java.lang.IllegalArgumentException(str);
-            }
-            break;
+        case Category.Member:
+          if (expr instanceof MondrianMember) {
+            MondrianMember m = (MondrianMember) expr;
+            monParam.setValue(m.getMonMember());
+          } else {
+            // wrong parameter type
+            String str = "wrong Member parameter type " + paramName + expr.getClass().toString();
+            logger.error(str);
+            throw new java.lang.IllegalArgumentException(str);
+          }
+          break;
         }
         model.fireModelChanged();
         return;
@@ -104,13 +104,14 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
   }
 
   /**
+   * FIXME - this crashes if the parameter contains an expression like "LastChild" or "DefaultMember".
    * @return Map containing parameter names (= keys) and strings to display value (= value)
    * @see com.tonbeller.jpivot.olap.navi.SetParameter#getDisplayValues()
    */
   public Map getDisplayValues() {
     Map map = new Hashtable();
     MondrianModel model = (MondrianModel) getModel();
-    mondrian.olap.Query monQuery = ((MondrianQueryAdapter)model.getQueryAdapter()).getMonQuery();
+    mondrian.olap.Query monQuery = ((MondrianQueryAdapter) model.getQueryAdapter()).getMonQuery();
     mondrian.olap.Parameter[] monParams = monQuery.getParameters();
     for (int i = 0; i < monParams.length; i++) {
       mondrian.olap.Parameter monParam = monParams[i];
@@ -118,19 +119,29 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
       String monParaName = monParam.getName();
       Object value = monParam.getValue();
       switch (pType) {
-        case Category.Numeric :
-          map.put(monParaName, value.toString());
-          break;
-        case Category.String :
-          map.put(monParaName, value);
-          break;
-        case Category.Member :
-          map.put(monParaName, ((mondrian.olap.Member) value).getCaption());
-          break;
+      case Category.Numeric:
+        map.put(monParaName, value.toString());
+        break;
+      case Category.String:
+        map.put(monParaName, value);
+        break;
+      case Category.Member:
+        map.put(monParaName, ((mondrian.olap.Member) value).getCaption());
+        break;
       }
     }
 
     return map;
   }
 
+  public String[] getParameterNames() {
+    MondrianModel model = (MondrianModel) getModel();
+    mondrian.olap.Query monQuery = ((MondrianQueryAdapter)model.getQueryAdapter()).getMonQuery();
+    mondrian.olap.Parameter[] monParams = monQuery.getParameters();
+    String[] names = new String[monParams.length];
+    for (int i = 0; i < monParams.length; i++) {
+      names[i] = monParams[i].getName();
+    }
+    return names;
+  }
 } // MondrianSetParameter

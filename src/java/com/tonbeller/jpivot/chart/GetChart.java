@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -35,16 +36,16 @@ public class GetChart extends HttpServlet {
     /** Initializes the servlet.
      */
     final static String fileNotFound="/WEB-INF/jpivot/img_not_found.gif";
-    
-    public void init(ServletConfig config) throws ServletException {        
-        super.init(config);             
+
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
     }
     /** Destroys the servlet.
      */
     public void destroy() {
-        
+
     }
-    
+
     /** Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
      * @param response servlet response
@@ -70,7 +71,7 @@ public class GetChart extends HttpServlet {
         }
          //  Serve it up
         sendTempFile(file, response);
-       
+
         return;
 
     }
@@ -80,7 +81,7 @@ public class GetChart extends HttpServlet {
         String mimeType = null;
         String filename = file.getName();
         if (filename.length() > 5) {
-            if (filename.substring(filename.length() - 5, filename.length()).equals(".jpeg") || 
+            if (filename.substring(filename.length() - 5, filename.length()).equals(".jpeg") ||
                 filename.substring(filename.length() - 5, filename.length()).equals(".jpg")) {
                 mimeType = "image/jpeg";
             }
@@ -116,9 +117,7 @@ public class GetChart extends HttpServlet {
                 response.setHeader("Content-Type", mimeType);
             }
             response.setHeader("Content-Length", String.valueOf(file.length()));
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
-            response.setHeader("Last-Modified", sdf.format(new Date(file.lastModified())));
-
+            response.setDateHeader("Last-Modified", file.lastModified());
             BufferedOutputStream bos = new BufferedOutputStream(response.getOutputStream());
             byte[] input = new byte[1024];
             boolean eof = false;
@@ -169,7 +168,7 @@ public class GetChart extends HttpServlet {
 
         return r;
     }
-   
+
     /** Handles the HTTP <code>GET</code> method.
      * @param request servlet request
      * @param response servlet response
@@ -178,7 +177,7 @@ public class GetChart extends HttpServlet {
     throws ServletException, IOException {
         processRequest(request, response);
     }
-    
+
     /** Handles the HTTP <code>POST</code> method.
      * @param request servlet request
      * @param response servlet response
@@ -187,11 +186,11 @@ public class GetChart extends HttpServlet {
     throws ServletException, IOException {
         processRequest(request, response);
     }
-    
+
     /** Returns a short description of the servlet.
      */
     public String getServletInfo() {
         return "Short description";
     }
-    
+
 }

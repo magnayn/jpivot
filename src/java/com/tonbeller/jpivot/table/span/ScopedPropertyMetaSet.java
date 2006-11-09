@@ -60,6 +60,9 @@ public class ScopedPropertyMetaSet {
       map.remove(mpm.getName());
       list.remove(mpm);
     }
+    MemberPropertyMeta lookup(String name) {
+      return (MemberPropertyMeta) map.get(name);
+    }
     boolean contains(String name) {
       return map.containsKey(name);
     }
@@ -157,6 +160,13 @@ public class ScopedPropertyMetaSet {
     return scopeList.contains(name);
   }
 
+  MemberPropertyMeta lookup(String scope, String name) {
+    ScopeList scopeList = (ScopeList) scopeMap.get(scope);
+    if (scopeList == null)
+      return null;
+    return scopeList.lookup(name);
+  }
+  
   /**
    * creates a new List that contains all the MemberPropertyMetas that are contained in <code>metas</code>
    * and are contained in this set (intersection). The order is not changed.
@@ -167,7 +177,8 @@ public class ScopedPropertyMetaSet {
     List list = new ArrayList();
     for (Iterator it = metas.iterator(); it.hasNext();) {
       MemberPropertyMeta mpm = (MemberPropertyMeta) it.next();
-      if (this.contains(mpm))
+      mpm = lookup(mpm.getScope(), mpm.getName());
+      if (mpm != null)
         list.add(mpm);
     }
     return list;

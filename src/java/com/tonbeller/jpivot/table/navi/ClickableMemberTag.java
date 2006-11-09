@@ -17,9 +17,12 @@ import javax.servlet.jsp.tagext.TagSupport;
 
 import org.apache.log4j.Logger;
 
-import com.tonbeller.jpivot.param.DefaultParamProvider;
+import com.tonbeller.jpivot.param.MemberParamProvider;
 import com.tonbeller.jpivot.param.ParameterProvider;
+import com.tonbeller.jpivot.param.PropertyParamProvider;
+import com.tonbeller.jpivot.param.PropertyPrefixParamProvider;
 import com.tonbeller.jpivot.table.AxisBuilder;
+import com.tonbeller.jpivot.table.ClickableMember;
 import com.tonbeller.jpivot.table.SpanBuilder;
 import com.tonbeller.jpivot.table.TableComponent;
 import com.tonbeller.jpivot.table.TableComponentTag;
@@ -34,6 +37,7 @@ import com.tonbeller.jpivot.tags.OlapModelTag;
 public class ClickableMemberTag extends TagSupport {
   String urlPattern;
   String uniqueName;
+  String menuLabel;
 
   String sessionParam;
   String propertyName;
@@ -56,27 +60,36 @@ public class ClickableMemberTag extends TagSupport {
       createStaticClickable(tct);
       return SKIP_BODY;
     }
-    
-    OlapModelTag omt = (OlapModelTag)findAncestorWithClass(this, OlapModelTag.class);
+
+    OlapModelTag omt = (OlapModelTag) findAncestorWithClass(this, OlapModelTag.class);
     if (omt != null) {
       createDynamicClickable(omt);
       return SKIP_BODY;
     }
-    
+
     throw new JspException("ClickableMemberTag must be nested in a table or query tag");
   }
 
   private void createDynamicClickable(OlapModelTag omt) {
     ParameterProvider provider = createProvider();
-    DynamicClickableMember dcm = new DynamicClickableMember(uniqueName, urlPattern, page, provider);
-    omt.addClickable(dcm);
+    ClickableMember clickable = createClickable(provider);
+    omt.addClickable(clickable);
   }
 
   private void createStaticClickable(TableComponentTag tct) throws JspException {
     TableComponent tc = (TableComponent) tct.getComponent();
     ParameterProvider provider = createProvider();
-    decorate(tc.getRowAxisBuilder(), provider);
-    decorate(tc.getColumnAxisBuilder(), provider);
+    decorate(tc.getRowAxisBuilder(), createClickable(provider));
+    decorate(tc.getColumnAxisBuilder(), createClickable(provider));
+  }
+
+  private ClickableMember createClickable(ParameterProvider provider) {
+    if (provider != null) {
+      DynamicClickableMember dcm = new DynamicClickableMember(uniqueName, menuLabel, provider, page);
+      dcm.setUrlPattern(urlPattern); // support legacy
+      return dcm;
+    }
+    return new UrlClickableMember(uniqueName, menuLabel, urlPattern);
   }
 
   private ParameterProvider createProvider() {
@@ -84,11 +97,11 @@ public class ClickableMemberTag extends TagSupport {
 
     if (sessionParam != null) {
       if (propertyName != null)
-        provider = DefaultParamProvider.createPropertyInstance(sessionParam, propertyName);
+        provider = new PropertyParamProvider(sessionParam, propertyName);
       else
-        provider = DefaultParamProvider.createMemberInstance(sessionParam);
+        provider = new MemberParamProvider(sessionParam);
     } else if (propertyPrefix != null) {
-      provider = DefaultParamProvider.createPropertyPrefixInstance(propertyPrefix);
+      provider = new PropertyPrefixParamProvider(propertyPrefix);
     } else if (providerClass != null) {
       try {
         provider = (ParameterProvider) Class.forName(providerClass).newInstance();
@@ -103,9 +116,9 @@ public class ClickableMemberTag extends TagSupport {
     return provider;
   }
 
-  private void decorate(AxisBuilder axisBuilder, ParameterProvider provider) {
+  private void decorate(AxisBuilder axisBuilder, ClickableMember clickable) {
     SpanBuilder decoree = axisBuilder.getSpanBuilder();
-    SpanBuilder decorator = new StaticClickableMember(decoree, uniqueName, urlPattern, page, provider);
+    SpanBuilder decorator = new StaticClickableMember(decoree, clickable);
     axisBuilder.setSpanBuilder(decorator);
   }
 
@@ -136,4 +149,9 @@ public class ClickableMemberTag extends TagSupport {
   public void setPage(String page) {
     this.page = page;
   }
+
+  public void setMenuLabel(String menuLabel) {
+    this.menuLabel = menuLabel;
+  }
+
 }

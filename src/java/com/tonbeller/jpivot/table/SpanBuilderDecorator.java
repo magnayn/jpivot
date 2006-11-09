@@ -14,6 +14,7 @@ package com.tonbeller.jpivot.table;
 
 import org.w3c.dom.Element;
 
+import com.tonbeller.jpivot.table.SpanBuilder.SBContext;
 import com.tonbeller.jpivot.table.span.Span;
 
 /**
@@ -29,8 +30,8 @@ public abstract class SpanBuilderDecorator extends PartBuilderDecorator implemen
     super(delegate);
   }
 
-  public Element build(Span span, boolean even) {
-    return ((SpanBuilder)delegate).build(span, even);
+  public Element build(SBContext sbctx, Span span, boolean even) {
+    return ((SpanBuilder)delegate).build(sbctx, span, even);
   }
 
 }

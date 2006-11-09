@@ -29,6 +29,8 @@
 
   <property file="build.properties"/>
   <property file="${user.home}/build.properties"/>
+  <!-- do not run the xml/a tests -->
+  <property name="tests.xmla.skip" value="true"/>
 
   <property name="build.home"           value="${basedir}/build"/>
   <property name="dist.home"            value="${basedir}/dist"/>
@@ -41,9 +43,7 @@
   <property name="catalina.home"        value="${repository.home}/jakarta-tomcat-4.1.31"/>
   <property name="xalan.home"           value="${repository.home}/xalan-j_2_7_0"/>
 
-  <!-- Use MySQL for testing with Mondrian
   <property name="mysql.home"           value="${repository.home}/mysql-connector-java-3.1.6"/>
-  -->
 
   <!-- the following are included in lib/ directory (no need to override) -->
   <property name="mondrian.version"     value="HEAD"/>
@@ -77,22 +77,13 @@
 
   <property name="jpivot.version"       value="1.5.0"/>
 
-  <!-- Use MySQL for testing -->
-  <!--
   <property name="jdbc.driver"          value="com.mysql.jdbc.Driver"/>
   <property name="jdbc.url"             value="jdbc:mysql://localhost/foodmart"/>
   <property name="jdbc.user"            value="root"/>
   <property name="jdbc.password"        value=""/>
-  -->
-
-  <!-- use msaccess for testing -->
-  <property name="jdbc.driver"          value="sun.jdbc.odbc.JdbcOdbcDriver"/>
-  <property name="jdbc.url"             value="jdbc:odbc:MondrianFoodMart"/>
-  <property name="jdbc.user"            value=""/>
-  <property name="jdbc.password"        value=""/>
 
   <!-- Test XMLA> -->
-  <property name="xmla.uri"      value="http://TBNTSRV3/XML4A/msxisapi.dll"/>
+  <property name="xmla.uri"      value="http://SINTANW/XMLA/msxisapi.dll"/>
   <property name="xmla.catalog"  value="Foodmart 2000"/>
 
 <!--  ==================== Compilation Control Options ==================== -->
@@ -126,11 +117,9 @@
     <path refid="compile.classpath"/>
     <pathelement location="${build.home}/web/WEB-INF/classes"/>
     <pathelement location="${build.home}/junit/classes"/>
-    <!-- use mysql for testing
     <fileset dir="${mysql.home}">
       <include name="mysql*.jar"/>
     </fileset>
-     -->
   </path>
 
   <!-- classpath for portal build -->
@@ -585,66 +574,72 @@
 
   <target name="tests" description="JUnit Tests" depends="compile,runtests,checktests"/>
 
-  <target name="runtests" description="JUnit Tests">
-    <mkdir dir="${build.home}/docs/junit"/>
-    <mkdir dir="${build.home}/junit/logs"/>
-    <mkdir dir="${build.home}/junit/classes"/>
+  <target name="runtests" description="JUnit Tests" depends="testcompile,testmondrian,testxmla,reports"/>
 
-    <!-- compile test classes -->
-    <javac destdir="${build.home}/junit/classes">
-      <src path="${src.home}/test"/>
-      <classpath refid="junit.classpath"/>
-    </javac>
-    <copy  todir="${build.home}/junit/classes">
-      <fileset dir="${src.home}/test">
-        <exclude name="**/*.java"/>
-        <exclude name="**/package.html"/>
-        <exclude name="**/doc-files/**"/>
-      </fileset>
-    </copy>
+  <target name="testcompile" description="Compile for JUnit Tests">
+		<mkdir dir="${build.home}/docs/junit"/>
+		<mkdir dir="${build.home}/junit/logs"/>
+		<mkdir dir="${build.home}/junit/classes"/>
+		<!-- compile test classes -->
+		<javac destdir="${build.home}/junit/classes">
+			<src path="${src.home}/test"/>
+			<classpath refid="junit.classpath"/>
+		</javac>
+		<copy  todir="${build.home}/junit/classes">
+			<fileset dir="${src.home}/test">
+				<exclude name="**/*.java"/>
+				<exclude name="**/package.html"/>
+				<exclude name="**/doc-files/**"/>
+			</fileset>
+		</copy>
+	</target>
 
-    <!-- run unit tests (Mondrian)-->
-    <junit printsummary="yes" fork="yes" failureProperty="junit.failed">
-      <jvmarg value="-Djdbc.driver=${jdbc.driver}"/>
-      <jvmarg value="-Djdbc.url=${jdbc.url}"/>
-      <jvmarg value="-Djdbc.user=${jdbc.user}"/>
-      <jvmarg value="-Djdbc.password=${jdbc.password}"/>
-      <jvmarg value="-Dtest.dir=${basedir}/tests"/>
-      <jvmarg value="-Dcatalog.uri=file:///${build.home}/web/WEB-INF/queries/FoodMart.xml"/>
-      <!-- must be set in TOMCAT too -->
-      <jvmarg value="-Dcom.tonbeller.environment=test"/>
-      <classpath refid="junit.classpath"/>
-      <formatter type="xml"/>
-      <batchtest todir="${build.home}/junit/logs">
-        <fileset dir="${src.home}/test">
-          <include name="**/*Test.java" />
-          <exclude name="com/tonbeller/jpivot/xmla/*"/>
-        </fileset>
-      </batchtest>
-    </junit>
+	<target name="testmondrian" description="Mondrian JUnit Tests">
+		<!-- run unit tests (Mondrian)-->
+		<junit printsummary="yes" fork="yes" failureProperty="junit.failed">
+			<jvmarg value="-Djdbc.driver=${jdbc.driver}"/>
+			<jvmarg value="-Djdbc.url=${jdbc.url}"/>
+			<jvmarg value="-Djdbc.user=${jdbc.user}"/>
+			<jvmarg value="-Djdbc.password=${jdbc.password}"/>
+			<jvmarg value="-Dtest.dir=${basedir}/tests"/>
+			<jvmarg value="-Dcatalog.uri=file:///${build.home}/web/WEB-INF/queries/FoodMart.xml"/>
+			<!-- must be set in TOMCAT too -->
+			<jvmarg value="-Dcom.tonbeller.environment=test"/>
+			<classpath refid="junit.classpath"/>
+			<formatter type="xml"/>
+			<batchtest todir="${build.home}/junit/logs">
+				<fileset dir="${src.home}/test">
+					<include name="**/*Test.java" />
+					<exclude name="com/tonbeller/jpivot/xmla/*"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
 
-    <!-- run unit tests (XMLA)-->
-    <junit printsummary="yes" fork="yes" failureProperty="junit.failed">
-    <jvmarg value="-Dxmla.uri=${xmla.uri}"/>
-    <jvmarg value="-Dxmla.catalog=${xmla.catalog}"/>
-    <classpath refid="junit.classpath"/>
-    <formatter type="xml"/>
-      <batchtest todir="${build.home}/junit/logs">
-        <fileset dir="${src.home}/test">
-          <include name="com/tonbeller/jpivot/xmla/*Test.java"/>
-        </fileset>
-      </batchtest>
-    </junit>
+	<target name="testxmla" description="XMLA JUnit Tests" unless="tests.xmla.skip">
+		<!-- run unit tests (XMLA)-->
+		<junit printsummary="yes" fork="yes" failureProperty="junit.failed">
+		<jvmarg value="-Dxmla.uri=${xmla.uri}"/>
+		<jvmarg value="-Dxmla.catalog=${xmla.catalog}"/>
+		<classpath refid="junit.classpath"/>
+		<formatter type="xml"/>
+			<batchtest todir="${build.home}/junit/logs">
+				<fileset dir="${src.home}/test">
+					<include name="com/tonbeller/jpivot/xmla/*Test.java"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
 
-    <!-- create reports -->
-    <junitreport todir="${build.home}/docs/junit">
-      <fileset dir="${build.home}/junit/logs">
-        <include name="TEST-*.xml"/>
-      </fileset>
-      <report format="frames" todir="${build.home}/docs/junit"/>
-    </junitreport>
-
-  </target>
+	<target name="reports" description="JUnit Test Reports">
+		<!-- create reports -->
+		<junitreport todir="${build.home}/docs/junit">
+			<fileset dir="${build.home}/junit/logs">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="${build.home}/docs/junit"/>
+		</junitreport>
+	</target>
 
   <target name="checktests" description="Abort build if JUnit Test failed" if="junit.failed">
     <fail message="JUnit Test(s) failed"/>

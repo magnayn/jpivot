@@ -101,5 +101,7 @@ public class MondrianHierarchy implements Hierarchy, MDXElement {
 	public String getUniqueName() {
 		return monHierarchy.getUniqueName();
 	}
-
+  public boolean hasAll() {
+     return monHierarchy.hasAll();
+  }
 }

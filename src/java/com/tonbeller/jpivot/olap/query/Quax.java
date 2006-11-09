@@ -44,14 +44,13 @@ public class Quax {
   //  currently, we can handle the following Funcalls
   //  member.children, member.descendants, level.members
   // other funcalls are "unknown functions"
-  private UnknownFunction[] unknownFunctions;
-
+  private boolean[] containsUF;
+  private List[] ufMemberLists; // if there are unknonwn functions
+  // private UnknownFunction[] unknownFunctions;
   protected TreeNode posTreeRoot = null; // Position tree used in normal mode
 
   private int ordinal; // ordinal of query axis, never changed by swap
-
   private boolean qubonMode = false;
-
   private boolean hierarchizeNeeded = false;
 
   // if there are multiple hiers on this quax,
@@ -62,23 +61,14 @@ public class Quax {
   // Measures.B})
   // will be generated, so that the Measures are excluded from Hierarchize.
   private int nHierExclude = 0;
-
   private int generateMode = 0;
-
   private int generateIndex = -1; // we handle generate for only 1 dimension
-
   private Object expGenerate = null;
-
   private Collection changeListeners = new ArrayList();
-
   private QuaxUti uti;
-
   private Map canExpandMemberMap = new HashMap();
-
   private Map canExpandPosMap = new HashMap();
-
   private Map canCollapseMemberMap = new HashMap();
-
   private Map canCollapsePosMap = new HashMap();
 
   /**
@@ -252,10 +242,9 @@ public class Quax {
       }
     });
 
-    unknownFunctions = new UnknownFunction[nDimension];
-    for (int i = 0; i < nDimension; i++) {
-      unknownFunctions[i] = null;
-    }
+    containsUF = new boolean[nDimension]; // init false
+    ufMemberLists = new List[nDimension];
+
     if (logger.isDebugEnabled())
       logger.debug("after initPositions " + this.toString());
   }
@@ -333,7 +322,9 @@ public class Quax {
           throw new IllegalArgumentException(e.getMessage());
         }
       }
-      unknownFunctions = new UnknownFunction[nDimension];
+
+      containsUF = new boolean[nDimension]; // init false
+      ufMemberLists = new List[nDimension];
       generateIndex = 0;
       generateMode = 0;
     }
@@ -378,10 +369,11 @@ public class Quax {
       }
       current.addChildNode(newNode);
       current = newNode;
-      if (uti.canHandle(newNode.getReference())) {
-        unknownFunctions[i] = null;
-      } else {
-        unknownFunctions[i] = new UnknownFunction(i, newNode.getReference());
+      if (!uti.canHandle(newNode.getReference())) {
+        // indicate that dimension i contains an unknown function,
+        //  which cannot be handled in some cases.
+        // this will cause the member list of this dimension to be stored
+        containsUF[i] = true;
       }
     }
     qubonMode = true;
@@ -898,7 +890,7 @@ public class Quax {
     }
 
     // loop over Position Tree
-    //  can collapse, if we find a descendant of monMember
+    //  can collapse, if we find a descendant of member
     boolean b = findMemberChild(member);
 
     // cache the result
@@ -1528,7 +1520,7 @@ public class Quax {
     int ret = posTreeRoot.walkChildren(new TreeNodeCallback() {
 
       /**
-       * callback find child node of monMember
+       * callback find child node of member
        */
       public int handleTreeNode(TreeNode node) {
         int iDimNode = node.getLevel() - 1;
@@ -2131,7 +2123,8 @@ public class Quax {
       }
       hiers = (Hierarchy[]) hiersList.toArray(new Hierarchy[0]);
       nDimension = hiers.length;
-      unknownFunctions = new UnknownFunction[nDimension];
+      containsUF = new boolean[nDimension]; // init false
+      ufMemberLists = new List[nDimension];
 
       // go through nodes and check for Unknown functions
       //  only one unknown function is possible in one hierarchy
@@ -2142,8 +2135,12 @@ public class Quax {
         public int handleTreeNode(TreeNode node) {
           int iDimNode = node.getLevel() - 1;
           Object oExp = node.getReference();
-          if (!uti.canHandle(oExp))
-            unknownFunctions[iDimNode] = new UnknownFunction(iDimNode, oExp);
+          if (!uti.canHandle(oExp)) {
+            // indicate that dimension i contains an unknown function,
+            //  which cannot be handled in some cases.
+            // this will cause the member list of this dimension to be stored
+            containsUF[iDimNode] = true;
+          }
 
           return TreeNodeCallback.CONTINUE;
         } // handlePositionTreeNode
@@ -2190,25 +2187,6 @@ public class Quax {
   }
 
   /**
-   * @param i -
-   *          index hierarchy
-   * @return unknown function for hierarchy
-   */
-  public UnknownFunction getUnknownFunction(int i) {
-    if (unknownFunctions == null)
-      return null;
-    return unknownFunctions[i];
-  }
-
-  /**
-   * @param i -
-   *          index hierarchy
-   */
-  public void setUnknownFunction(int i, UnknownFunction uf) {
-    unknownFunctions[i] = uf;
-  }
-
-  /**
    * check, whether member is in set defined by funcall
    *
    * @param oExp -
@@ -2221,13 +2199,13 @@ public class Quax {
     try {
       b = uti.isMemberInFunCall(oExp, member);
     } catch (CannotHandleException e) {
-      //  it is an Unkown FunCall
-      UnknownFunction unk = unknownFunctions[hierIndex];
-      if (!unk.getFCall().equals(oExp))
-        throw new IllegalArgumentException("Unknow FunCall Error"); // should
-      // not occur
+      // it is an Unkown FunCall
+      //  assume "true" if the member is in the List for this dimension
+      if (ufMemberLists[hierIndex] == null)
+        throw new IllegalArgumentException("Unknow Function - no member list, dimension="
+            + hierIndex + " function=" + e.getMessage());
 
-      b = unk.getMemberList().contains(member);
+      b = ufMemberLists[hierIndex].contains(member);
     }
     return b;
   }
@@ -2241,13 +2219,13 @@ public class Quax {
     try {
       b = uti.isFunCallNotTopLevel(oExp);
     } catch (CannotHandleException e) {
-      //  it is an Unkown FunCall
-      UnknownFunction unk = unknownFunctions[hierIndex];
-      if (!unk.getFCall().equals(oExp))
-        throw new IllegalArgumentException("Unknow FunCall Error"); // should
-      // not occur
-      List mList = unk.getMemberList();
-      for (Iterator iter = mList.iterator(); iter.hasNext();) {
+      // it is an Unkown FunCall
+      //  assume "true" if the member is in the List for this dimension
+      if (ufMemberLists[hierIndex] == null)
+        throw new IllegalArgumentException("Unknow Function - no member list, dimension="
+            + hierIndex + " function=" + e.getMessage());
+
+      for (Iterator iter = ufMemberLists[hierIndex].iterator(); iter.hasNext();) {
         Member m = (Member) iter.next();
         if (!uti.isMemberOnToplevel(m)) {
           b = true;
@@ -2267,13 +2245,13 @@ public class Quax {
     try {
       b = uti.isChildOfMemberInFunCall(oExp, member);
     } catch (CannotHandleException e) {
-      //  it is an Unkown FunCall
-      UnknownFunction unk = unknownFunctions[hierIndex];
-      if (!unk.getFCall().equals(oExp))
-        throw new IllegalArgumentException("Unknow FunCall Error"); // should
-      // not occur
-      List mList = unk.getMemberList();
-      for (Iterator iter = mList.iterator(); iter.hasNext();) {
+      // it is an Unkown FunCall
+      //  assume "true" if the member List for this dimension contains child of member
+      if (ufMemberLists[hierIndex] == null)
+        throw new IllegalArgumentException("Unknow Function - no member list, dimension="
+            + hierIndex + " function=" + e.getMessage());
+
+      for (Iterator iter = ufMemberLists[hierIndex].iterator(); iter.hasNext();) {
         Member m = (Member) iter.next();
         if (uti.checkParent(member, uti.objForMember(m))) {
           b = true;
@@ -2293,13 +2271,13 @@ public class Quax {
     try {
       b = uti.isDescendantOfMemberInFunCall(oExp, member);
     } catch (CannotHandleException e) {
-      //  it is an Unkown FunCall
-      UnknownFunction unk = unknownFunctions[hierIndex];
-      if (!unk.getFCall().equals(oExp))
-        throw new IllegalArgumentException("Unknow FunCall Error"); // should
-      // not occur
-      List mList = unk.getMemberList();
-      for (Iterator iter = mList.iterator(); iter.hasNext();) {
+      // it is an Unkown FunCall
+      //  assume "true" if the member List for this dimension contains descendant of member
+      if (ufMemberLists[hierIndex] == null)
+        throw new IllegalArgumentException("Unknow Function - no member list, dimension="
+            + hierIndex + " function=" + e.getMessage());
+
+      for (Iterator iter = ufMemberLists[hierIndex].iterator(); iter.hasNext();) {
         Member m = (Member) iter.next();
         if (uti.checkDescendantM(member, m)) {
           b = true;
@@ -2322,12 +2300,13 @@ public class Quax {
       //  assume that it is an "Unkown FunCall" which was resolved by the latest result
       // the "Unknown Functions" are probably not properly resolved
       logger.error("Unkown FunCall " + uti.funCallName(oFun));
-      UnknownFunction unk = unknownFunctions[iHier];
-      if (unk == null || !unk.getFCall().equals(oFun))
-        throw new IllegalArgumentException("Funcall not handled " + uti.funCallName(oFun));
-      List mList = unk.getMemberList();
+
+      if (ufMemberLists[iHier] == null)
+        throw new IllegalArgumentException("Unknow Function - no member list, dimension=" + iHier
+            + " function=" + e.getMessage());
+
       List newList = new ArrayList();
-      for (Iterator iter = mList.iterator(); iter.hasNext();) {
+      for (Iterator iter = ufMemberLists[iHier].iterator(); iter.hasNext();) {
         Member m = (Member) iter.next();
         if (!uti.checkDescendantM(member, m)) {
           newList.add(uti.objForMember(m));
@@ -2404,12 +2383,12 @@ public class Quax {
       //  assume that it is an "Unkown FunCall" which was resolved by the latest result
       // the "Unknown Functions" are probably not properly resolved
       logger.error("Unkown FunCall " + uti.funCallName(oFun));
-      UnknownFunction unk = unknownFunctions[iHier];
-      if (unk == null || !unk.getFCall().equals(oFun))
-        throw new IllegalArgumentException("Funcall not handled " + uti.funCallName(oFun));
-      List mList = unk.getMemberList();
+      if (ufMemberLists[iHier] == null)
+        throw new IllegalArgumentException("Unknow Function - no member list, dimension=" + iHier
+            + " function=" + e.getMessage());
+
       List newList = new ArrayList();
-      for (Iterator iter = mList.iterator(); iter.hasNext();) {
+      for (Iterator iter = ufMemberLists[iHier].iterator(); iter.hasNext();) {
         Member m = (Member) iter.next();
         if (!member.equals(m)) {
           newList.add(uti.objForMember(m));
@@ -2597,46 +2576,24 @@ public class Quax {
   }
 
   /**
-   * Funcall put onto an axis, which we cannot "handle" directly NOT: member.children,
-   * member.descendants, level.members
+   * @param iHier index of Hierarchy
+   * @param list  Member List
    */
-  public class UnknownFunction {
-    private Object fCall; // the Funcall
-
-    private int hierIndex;
-
-    private List memberList = null;
-
-    public UnknownFunction(int hierIndex, Object fCall) {
-      this.hierIndex = hierIndex;
-      this.fCall = fCall;
-    }
-
-    /**
-     * @return
-     */
-    public Object getFCall() {
-      return fCall;
-    }
-
-    /**
-     * @return
-     */
-    public List getMemberList() {
-      return memberList;
-    }
-
-    /**
-     * @param list
-     */
-    public void setMemberList(List list) {
-      memberList = list;
-    }
-
-  } // UnknownFunction
-
+  public void setHierMemberList(int iHier, List list) {
+    ufMemberLists[iHier] = list;  
+  }
+  
   /**
-   * indicate, that a "unknown" Funcall was not handled
+   * 
+   * @param iHier index of Hierarchy
+   * @return true, if the Hierarchy has an unknown function
+   */
+  public boolean isUnknownFunction( int iHier) {
+    return containsUF[iHier];
+  }
+  
+   /**
+   * indicate, that an "unknown" Funcall was not handled
    */
   public static class CannotHandleException extends Exception {
 

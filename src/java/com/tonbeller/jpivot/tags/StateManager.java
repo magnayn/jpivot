@@ -50,6 +50,7 @@ public interface StateManager {
      * called when the 
      */
     void hide() throws Exception;
+    
   }
   
   /**
@@ -72,4 +73,10 @@ public interface StateManager {
    * removes + destroys a named state
    */
   public void destroyByName(String name) throws Exception;
+  
+  /**
+   * logger for debug/test
+   */
+  void setLogger(StateLogger logger);
+  StateLogger getLogger();
 }

@@ -141,4 +141,7 @@ public class ModelSupport implements Model {
     return decoratedModel;
   }
 
+  public Model getRootModel() {
+    return this;
+  }
 }

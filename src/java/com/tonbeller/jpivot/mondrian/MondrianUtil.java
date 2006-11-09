@@ -15,7 +15,11 @@ package com.tonbeller.jpivot.mondrian;
 import java.util.ArrayList;
 import java.util.List;
 
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.Category;
+import mondrian.olap.Dimension;
 import mondrian.olap.Exp;
 import mondrian.olap.FunCall;
 import mondrian.olap.HierarchyBase;
@@ -23,9 +27,6 @@ import mondrian.olap.Member;
 import mondrian.olap.Parameter;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
-import mondrian.mdx.LevelExpr;
-import mondrian.mdx.MemberExpr;
-import mondrian.mdx.UnresolvedFunCall;
 
 import com.tonbeller.jpivot.util.TreeNode;
 import com.tonbeller.jpivot.util.TreeNodeCallback;
@@ -374,4 +375,16 @@ public class MondrianUtil {
     }
     return canHandle;
   }
+
+  /**
+   * creates a parameter name for a member
+   */
+  public static String defaultParamName(Member m) {
+    Dimension d = m.getDimension();
+    String s = d.getName();
+    s.replace(' ', '_');
+    // s.replaceAll("[ \\.\"'!§$%&/()=?ßüäöÖÄÜ#-:;,]", "");
+    return s + "_param";
+  }
+  
 } // End MondrianUtil.java

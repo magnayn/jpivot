@@ -58,7 +58,7 @@ public class LevelHeaderFactory extends VisitorSupportStrict implements SpanVisi
   }
 
   public void visitProperty(Property v) {
-    header.setObject(new PropertyHeading(v.getName()));
+    header.setObject(new PropertyHeading(v.getLabel()));
   }
 
   public void visitPropertyHeading(PropertyHeading heading) {

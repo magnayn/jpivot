@@ -101,6 +101,9 @@ public class OlapModelDecorator extends ExtensionSupport implements OlapModel {
     return delegate.getTopDecorator();
   }
 
+  public Model getRootModel() {
+    return delegate.getRootModel();
+  }
   /**
    * decorates the <code>modelToDecorate</code> with this
    */

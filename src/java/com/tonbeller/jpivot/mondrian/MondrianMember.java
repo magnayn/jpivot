@@ -12,6 +12,8 @@
  */
 package com.tonbeller.jpivot.mondrian;
 
+import mondrian.olap.SchemaReader;
+
 import com.tonbeller.jpivot.olap.model.Alignable;
 import com.tonbeller.jpivot.olap.model.Level;
 import com.tonbeller.jpivot.olap.model.Member;
@@ -52,15 +54,19 @@ public class MondrianMember implements Member, MDXMember {
         if (props[i].getType() == mondrian.olap.Property.TYPE_NUMERIC)
           prop.setAlignment(Alignable.Alignment.RIGHT);
         String propName = props[i].getName();
+        prop.setName(propName);
         String caption = props[i].getCaption();
         if (caption != null && !caption.equals(propName)){
           // name and caption are different
           // we want to show caption instead of name
-          prop.setName(caption);
+          prop.setLabel(caption);
           prop.setMondrianName(propName);
-        } else
-          prop.setName(propName);
-        //String propValue = "" + monMember.getPropertyValue(propName);
+          // if the property has a separate Label, then it does not require normalization
+          // since it is to be displayed as-is
+          prop.setNormalizable(false);
+        } else {
+          prop.setLabel(propName);
+        }
         String propValue = monMember.getPropertyFormattedValue(propName);
         prop.setValue(propValue);
         properties[i] = prop;
@@ -77,7 +83,15 @@ public class MondrianMember implements Member, MDXMember {
    * @see com.tonbeller.jpivot.olap.model.Member#getRootDistance()
    */
   public int getRootDistance() {
-    return model.getMonConnection().getSchemaReader().getMemberDepth(monMember);
+      SchemaReader scr = model.getMonConnection().getSchemaReader();
+      mondrian.olap.Member m = monMember;
+      int rootDistance = 0;
+      while (true) {
+          m = scr.getMemberParent(m);
+          if (m == null)
+              return rootDistance;
+          rootDistance += 1;
+      }
   }
 
   /**

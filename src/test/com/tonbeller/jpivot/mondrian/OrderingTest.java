@@ -13,6 +13,7 @@ import com.tonbeller.jpivot.olap.navi.PlaceMembersOnAxes;
 import com.tonbeller.jpivot.olap.navi.SortRank;
 import com.tonbeller.jpivot.olap.query.DrillExpandPositionExt;
 import com.tonbeller.jpivot.olap.query.ResultBase;
+import com.tonbeller.jpivot.tags.MondrianModelFactory;
 
 /**
  * @author hh

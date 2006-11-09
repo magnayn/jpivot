@@ -140,8 +140,8 @@ public class SortRankUI extends TableComponentExtensionSupport implements ModelC
       super(delegate);
     }
 
-    public Element build(Span span, boolean even) {
-      Element parent = super.build(span, even);
+    public Element build(SBContext sbctx, Span span, boolean even) {
+      Element parent = super.build(sbctx, span, even);
 
       // this extension is disabled
       if (!isEnabled() || !renderActions)

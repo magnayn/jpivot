@@ -40,7 +40,8 @@ public class PropertySpanBuilderTest extends TestCase {
       int i = tok.indexOf('=');
       String name = tok.substring(0, i);
       String value = tok.substring(i + 1);
-      Property p = new PropertyImpl(name, value);
+      PropertyImpl p = new PropertyImpl(name, value);
+      p.setLabel(value);
       props.add(p);
     }
     return new MyMember(label, level, props);

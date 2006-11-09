@@ -28,6 +28,7 @@ import com.tonbeller.jpivot.olap.model.OlapModel;
 import com.tonbeller.jpivot.olap.model.OlapModelDecorator;
 import com.tonbeller.jpivot.olap.model.impl.Empty;
 import com.tonbeller.jpivot.tags.StateManager.State;
+import com.tonbeller.tbutils.testenv.Environment;
 
 /**
  * proxy for OlapModel. There is one instance per session, the GUI
@@ -113,16 +114,14 @@ public class OlapModelProxy extends OlapModelDecorator implements HttpSessionBin
 
   StateManager stateManager;
 
-  public OlapModelProxy() {
-    this(true);
-  }
-
-  public OlapModelProxy(boolean stackMode) {
+  private OlapModelProxy(boolean stackMode) {
     super(Empty.EMPTY_MODEL);
     if (stackMode)
       stateManager = new StackStateManager();
     else
       stateManager = new PageStateManager();
+    if (Environment.isTest())
+      stateManager.setLogger(new TestStateLogger());
   }
 
   public static OlapModelProxy instance(String id, HttpSession session) {
@@ -250,4 +249,10 @@ public class OlapModelProxy extends OlapModelDecorator implements HttpSessionBin
     throw new RuntimeException("must not be called");
   }
 
+  /**
+   * for Tests only
+   */
+  public StateManager getStateManager() {
+    return stateManager;
+  }
 }

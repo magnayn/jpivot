@@ -64,58 +64,38 @@ public class MondrianPlaceMembers extends MondrianPlaceHierarchies implements Pl
 
     // find the Quax for this hier
     Quax quax = adapter.findQuax(hier.getDimension());
-
     if (quax == null)
       return Collections.EMPTY_LIST; // should not occur
 
     int iDim = quax.dimIdx(hier.getDimension());
 
-    // use query axis
-    //  problem: if NON EMPTY is on, then a member, which is excluded by Non Empty
-    //   will be visible, although not occuring in the result. OK?
-    List monMemberList =
-      MondrianUtil.collectMembers(
-        quax.getPosTreeRoot(),
-        iDim,
-        model.getConnection().getSchemaReader());
+    // use result
+    //  problem: if NON EMPTY is on the axis then a member, which is excluded by Non Empty,
+    //   will not be visible.
+    // It would be possible to add it (again) to the axis, which must be avoided
 
-    if (monMemberList == null) {
-      // could not handle, use result
-      //  problem: if NON EMPTY is on the axis then a member, which is excluded by Non Empty,
-      //   will not be visible.
-      // It would be possible to add it (again) to the axis, which must be avoided
+    Result res = null;
+    memberList = new ArrayList();
+    try {
+      res = model.getResult();
+    } catch (OlapException e) {
+      e.printStackTrace();
+      logger.error("findVisibleMembers: unexpected failure of getResult", e);
+      return Collections.EMPTY_LIST;
+    }
 
-      Result res = null;
-      memberList = new ArrayList();
-      try {
-        res = model.getResult();
-      } catch (OlapException e) {
-        e.printStackTrace();
-        logger.error("findVisibleMembers: unexpected failure of getResult");
-        return Collections.EMPTY_LIST;
-      }
-
-      // locate the appropriate result axis
-      int iAx = quax.getOrdinal();
-      if (adapter.isSwapAxes())
-        iAx = (iAx + 1) % 2;
-      Axis axis = res.getAxes()[iAx];
-      List positions = axis.getPositions();
-      for (Iterator iter = positions.iterator(); iter.hasNext();) {
-        Position pos = (Position) iter.next();
-        Member[] members = pos.getMembers();
-        MondrianMember mem = (MondrianMember) members[iDim];
-        if (mem != null && !memberList.contains(mem))
-          memberList.add(mem);
-      }
-
-    } else {
-      memberList = new ArrayList();
-      for (Iterator iter = monMemberList.iterator(); iter.hasNext();) {
-        mondrian.olap.Member monMember = (mondrian.olap.Member) iter.next();
-        MondrianMember m = (MondrianMember) model.lookupMemberByUName(monMember.getUniqueName());
-        memberList.add(m);
-      }
+    // locate the appropriate result axis
+    int iAx = quax.getOrdinal();
+    if (adapter.isSwapAxes())
+      iAx = (iAx + 1) % 2;
+    Axis axis = res.getAxes()[iAx];
+    List positions = axis.getPositions();
+    for (Iterator iter = positions.iterator(); iter.hasNext();) {
+      Position pos = (Position) iter.next();
+      Member[] members = pos.getMembers();
+      MondrianMember mem = (MondrianMember) members[iDim];
+      if (mem != null && !memberList.contains(mem))
+        memberList.add(mem);
     }
 
     return memberList;

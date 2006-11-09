@@ -26,6 +26,7 @@ public class HierarchyImpl implements Hierarchy {
   Dimension dimension;
   Level[] levels;
   String label;
+  boolean hasAll;
 
   /**
    * Returns the dimension.
@@ -84,4 +85,11 @@ public class HierarchyImpl implements Hierarchy {
     this.label = label;
   }
 
+  public boolean hasAll() {
+    return hasAll;
+  }
+
+  public void setHasAll(boolean hasAll) {
+    this.hasAll = hasAll;
+  }
 }

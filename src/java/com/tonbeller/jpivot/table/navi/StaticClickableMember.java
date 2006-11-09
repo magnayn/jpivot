@@ -4,8 +4,7 @@ import javax.servlet.http.HttpSession;
 
 import org.w3c.dom.Element;
 
-import com.tonbeller.jpivot.olap.model.OlapModel;
-import com.tonbeller.jpivot.param.ParameterProvider;
+import com.tonbeller.jpivot.table.ClickableMember;
 import com.tonbeller.jpivot.table.SpanBuilder;
 import com.tonbeller.jpivot.table.SpanBuilderDecorator;
 import com.tonbeller.jpivot.table.TableComponent;
@@ -21,23 +20,12 @@ import com.tonbeller.wcf.controller.RequestContext;
  * @since 15.12.2004
  */
 public class StaticClickableMember extends SpanBuilderDecorator {
-  class MyClickableMember extends ClickableMemberSupport {
-    public MyClickableMember(String uniqueName, String urlPattern, String page,
-        ParameterProvider parameterProvider) {
-      super(uniqueName, urlPattern, page, parameterProvider);
-    }
 
-    protected OlapModel getOlapModel() {
-      return table.getOlapModel();
-    }
-  };
+  ClickableMember clickable;
 
-  MyClickableMember clickable;
-
-  public StaticClickableMember(SpanBuilder delegate, String uniqueName, String urlPattern,
-      String page, ParameterProvider parameterProvider) {
+  public StaticClickableMember(SpanBuilder delegate, ClickableMember clickable) {
     super(delegate);
-    clickable = new MyClickableMember(uniqueName, urlPattern, page, parameterProvider);
+    this.clickable = clickable;
   }
 
   public void initialize(RequestContext context, TableComponent table) throws Exception {
@@ -62,9 +50,9 @@ public class StaticClickableMember extends SpanBuilderDecorator {
     super.stopBuild();
   }
 
-  public Element build(Span span, boolean even) {
-    Element elem = super.build(span, even);
-    clickable.decorate(elem, span.getObject());
+  public Element build(SBContext sbctx, Span span, boolean even) {
+    Element elem = super.build(sbctx, span, even);
+    clickable.decorate(sbctx, span.getObject());
     return elem;
   }
   

@@ -10,7 +10,7 @@
  *
  * 
  */
-package com.tonbeller.jpivot.mondrian;
+package com.tonbeller.jpivot.tags;
 
 import java.io.IOException;
 import java.net.URL;
@@ -24,6 +24,10 @@ import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import com.tonbeller.jpivot.core.ModelFactory;
+import com.tonbeller.jpivot.mondrian.MondrianModel;
+import com.tonbeller.tbutils.res.Resources;
+import com.tonbeller.wcf.controller.RequestContext;
+import com.tonbeller.wcf.expr.ExprUtils;
 
 /**
  * creates a MondrianModel from config.xml
@@ -37,11 +41,11 @@ public class MondrianModelFactory {
 
   static String makeConnectString(Config cfg) {
 
-    // for an external datasource, we do not need JdbcUrl *and* data source 
-    /*
-    if ((cfg.getJdbcUrl() == null) == (cfg.getDataSource() == null))
-      throw new IllegalArgumentException("exactly one of jdbcUrl or dataSource must be specified");
-    */
+    // for an external datasource, we do not need JdbcUrl *and* data source
+
+    // if ((cfg.getJdbcUrl() == null) == (cfg.getDataSource() == null))
+    // throw new IllegalArgumentException("exactly one of jdbcUrl or dataSource must be specified");
+
     // provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=file:///c:/dev/mondrian/demo/FoodMart.xml
     StringBuffer sb = new StringBuffer("provider=Mondrian");
     if (cfg.getJdbcUrl() != null) {
@@ -77,9 +81,9 @@ public class MondrianModelFactory {
       testDataSource(cfg.getDataSource());
     }
     sb.append(";Catalog=").append(cfg.getSchemaUrl());
-    
+
     if (cfg.getDynLocale() != null)
-       sb.append(";Locale=").append(cfg.getDynLocale());
+      sb.append(";Locale=").append(cfg.getDynLocale());
 
     // debug
     if (cfg.getRole() != null) {
@@ -110,14 +114,13 @@ public class MondrianModelFactory {
     }
   }
 
-
   public static MondrianModel instance() throws SAXException, IOException {
-    URL url = MondrianModelFactory.class.getResource("config.xml");
+    URL url = MondrianModel.class.getResource("config.xml");
     return (MondrianModel) ModelFactory.instance(url);
   }
 
   public static MondrianModel instance(Config cfg) throws SAXException, IOException {
-    URL url = MondrianModelFactory.class.getResource("config.xml");
+    URL url = MondrianModel.class.getResource("config.xml");
     return instance(url, cfg);
   }
 
@@ -151,10 +154,124 @@ public class MondrianModelFactory {
     String dynResolver;
     // Locale requested
     String dynLocale;
-    
+
     String connectionPooling;
     // external DataSource to be used by Mondrian
     DataSource externalDataSource = null;
+
+    /**
+     * allows to override the current JDBC settings. 
+     * <p>
+     * All properties are allowed
+     * to contain ${some.name} that refer to other properties except the
+     * dataSource attribute where ${bean.property} is interpreted as bean EL that
+     * references session beans.
+     * <p>
+     * If a dataSource name is given, it is looked up as bean EL. If the result 
+     * is a DataSource, its used (e.g. the session contains a DataSource). If not,
+     * its interpreted as JNDI name.
+     * <p>
+     * If no dataSource name is given, values for jdbcDriver etc are needed. If these
+     * values are present, they are taken. Otherwise, they are looked up in the resources
+     * with the keys "jdbc.driver", "jdbc.url", "jdbc.user" and "jdbc.password".
+     */
+    public void allowOverride(RequestContext context) {
+      Resources res = context.getResources();
+
+      // get default values
+      setRole(getDefault(res, "mondrian.role", getRole()));
+      setDynResolver(getDefault(res, "mondrian.dynResolver", getDynResolver()));
+      setDynLocale(getDefault(res, "mondrian.dynLocale", getDynLocale()));
+
+      // if the data source is configured, use it
+      if (externalDataSource != null) {
+        logger.info("using external data source");
+        return;
+      }
+
+      // support $-variables
+      setJdbcDriver(replace(res, getJdbcDriver()));
+      setJdbcUrl(replace(res, getJdbcUrl()));
+      setJdbcUser(replace(res, getJdbcUser()));
+      setJdbcPassword(replace(res, getJdbcPassword()));
+      setConnectionPooling(replace(res, getConnectionPooling()));
+      setDataSource(replace(res, getDataSource()));
+
+      // if a data source name was given, use it
+      if (!empty(dataSource)) {
+        logger.info("using data source " + dataSource);
+        findDataSource(context);
+        return;
+      }
+      
+      // if a jdbc driver was given, use it
+      if (!empty(jdbcDriver)) {
+        logger.info("using driver manager " + jdbcUrl);
+        return;
+      }
+      
+      // try default data source
+      setDataSource(getDefault(res, "jdbc.datasource", getDataSource()));
+      if (!empty(dataSource)) {
+        logger.info("using default data source " + dataSource);
+        findDataSource(context);
+        return;
+      }
+
+      // try default jdbc drivermanager
+      logger.info("using default driver manager " + jdbcUrl);
+      setJdbcDriver(getDefault(res, "jdbc.driver", getJdbcDriver()));
+      setJdbcUrl(getDefault(res, "jdbc.url", getJdbcUrl()));
+      setJdbcUser(getDefault(res, "jdbc.user", getJdbcUser()));
+      setJdbcPassword(getDefault(res, "jdbc.password", getJdbcPassword()));
+      setConnectionPooling(getDefault(res, "jdbc.connectionPooling", getConnectionPooling()));
+    }
+
+    /**
+     * tries to find a DataSource as a bean EL in the current request or session. If not
+     * found, <code>dataSource</code> is interpreted as JNDI data source.
+     */
+    private void findDataSource(RequestContext context) {
+      Object obj;
+      if (ExprUtils.isExpression(dataSource)) {
+        // try "${bean.dataSource}"
+        obj = context.getModelReference(dataSource);
+      } else {
+        // try "beanName"
+        obj = context.getSession().getAttribute(dataSource);
+      }
+      if (obj instanceof DataSource) {
+        logger.info("using app dataSource " + dataSource);
+        this.dataSource = null;
+        this.externalDataSource = (DataSource) obj;
+      }
+      // otherwise use it as jndi name
+    }
+
+    /**
+     * falls <code>val == null</code>, wird der default aus den resources geladen.
+     * $-Variablen werden ersetzt.
+     */
+    private String getDefault(Resources res, String key, String val) {
+      // if given, dont change
+      val = replace(res, val);
+      if (val != null)
+        return val;
+      return res.getOptionalString(key, null);
+    }
+    
+    /**
+     * returns null for empty strings
+     */
+    private String replace(Resources res, String val) {
+      if (empty(val))
+        return null;
+      return res.replace(val);
+    }
+
+    private boolean empty(String s) {
+      return s == null || s.trim().length() == 0;
+    }
 
     /**
      * Returns the jdbcDriver.
@@ -305,29 +422,29 @@ public class MondrianModelFactory {
     public void setExternalDataSource(DataSource externalDataSource) {
       this.externalDataSource = externalDataSource;
     }
-    
+
     /**
-    * Getter for property dynLocale.
-    * @return Value of property dynLocale.
-    */
+     * Getter for property dynLocale.
+     * @return Value of property dynLocale.
+     */
     public String getDynLocale() {
-        return this.dynLocale;
+      return this.dynLocale;
     }
-    
+
     /**
-    * Setter for property dynLocale.
-    * @param dynLocale New value of property dynLocale.
-    */
+     * Setter for property dynLocale.
+     * @param dynLocale New value of property dynLocale.
+     */
     public void setDynLocale(String dynLocale) {
-        this.dynLocale = dynLocale;
+      this.dynLocale = dynLocale;
     }
-    
+
     public String toString() {
       return "Config[" + "jdbcUrl=" + jdbcUrl + ", jdbcDriver=" + jdbcDriver + ", jdbcUser="
           + jdbcUser + ", jdbcPassword=" + jdbcPassword + ", dataSource=" + dataSource
           + ", schemaUrl=" + schemaUrl + ", mdxQuery=" + mdxQuery + ", role=" + role
           + ", dynResolver=" + dynResolver + ", connectionPooling=" + connectionPooling
-          + ", externalDataSource=" + externalDataSource + ", dynLocale="+dynLocale+"]";      
+          + ", externalDataSource=" + externalDataSource + ", dynLocale=" + dynLocale + "]";
     }
   }
 }

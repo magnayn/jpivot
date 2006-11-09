@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 import com.tonbeller.jpivot.olap.model.Position;
 import com.tonbeller.jpivot.olap.model.Result;
 import com.tonbeller.jpivot.olap.query.ResultBase;
+import com.tonbeller.jpivot.tags.MondrianModelFactory;
 
 /**
  * Time dimension compatibility Test for "old" Schema files

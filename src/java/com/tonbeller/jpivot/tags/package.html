@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Jpivot Tags</title>
+</head>
+<body>
+
+Tags for and implementation of a Query Stack.
+<p />
+
+The {@link PageStateManager} allows to have multiple queries alive and switch between them. All queries
+use the same session attribute name, e.g. "query01" - so they can be viewed with the same jsp.
+<p />
+
+Example: the user starts with query A, then he displays one of the B queries. After that, she can
+go back and see the query A in the state as it was when B was started. 
+Also when returning from B back to A, what happens to B depends on the "stackMode":
+<ul>
+<li>in page mode, the query B is not touched, so it would be possible to redisplay its in the
+same state as when the user left B.</li>
+<li>in stack mode, the query B is destroyed and resources are freed.</li>
+</ul>
+
+<p />
+<img src="doc-files/querystack.png" />
+
+</body>
+</html>

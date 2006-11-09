@@ -125,7 +125,6 @@ public class PropertyUtils {
       return properties;
     Map map = new HashMap();
     List result = new ArrayList();
-    StringBuffer qualifiedName = new StringBuffer();
     for (int i = 0; i < properties.length; i++) {
       Property src = properties[i];
       PropertyImpl parent = null;
@@ -140,6 +139,7 @@ public class PropertyUtils {
         if (child == null) {
           child = new PropertyImpl();
           child.setName(token);
+          child.setLabel(token);
           child.setValue("");
           map.put(name, child);
           if (parent == null)
@@ -150,6 +150,7 @@ public class PropertyUtils {
         parent = child;
       }
       parent.setValue(src.getValue());
+      parent.setLabel(src.getLabel());
       parent.setAlignment(src.getAlignment());
     }
     return (Property[]) result.toArray(new Property[result.size()]);
@@ -159,12 +160,11 @@ public class PropertyUtils {
     if (properties == null || properties.length < 2)
       return false;
     for (int i = 0; i < properties.length; i++) {
-      if (properties[i].getName().indexOf(delimiter) > 0) {
-          // if the property has a separate Label, then it does not require normalization
-          // since it is to be displayed as-is
-          if (!properties[i].getName().equals(properties[i].getLabel()))
-            return true;
-      }
+      Property p = properties[i];
+      if (!p.isNormalizable())
+        continue;
+      if (p.getName().indexOf(delimiter) > 0) 
+        return true;
     }
     return false;
   }

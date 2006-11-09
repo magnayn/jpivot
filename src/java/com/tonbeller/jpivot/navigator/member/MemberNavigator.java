@@ -12,11 +12,13 @@
  */
 package com.tonbeller.jpivot.navigator.member;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -40,10 +42,13 @@ import com.tonbeller.wcf.controller.RequestContext;
 import com.tonbeller.wcf.controller.RequestListener;
 import com.tonbeller.wcf.scroller.Scroller;
 import com.tonbeller.wcf.selection.SelectionModel;
+import com.tonbeller.wcf.tree.CachingTreeModelDecorator;
+import com.tonbeller.wcf.tree.DecoratedTreeModel;
 import com.tonbeller.wcf.tree.DefaultDeleteNodeModel;
 import com.tonbeller.wcf.tree.DefaultLabelProvider;
 import com.tonbeller.wcf.tree.DefaultNodeRenderer;
 import com.tonbeller.wcf.tree.DeleteNodeModel;
+import com.tonbeller.wcf.tree.EnumBoundedTreeModelDecorator;
 import com.tonbeller.wcf.tree.GroupingTreeModelDecorator;
 import com.tonbeller.wcf.tree.LabelProvider;
 import com.tonbeller.wcf.tree.MutableTreeModelDecorator;
@@ -60,6 +65,11 @@ import com.tonbeller.wcf.utils.DomUtils;
  */
 public class MemberNavigator extends TreeComponent implements ModelChangeListener, Available {
 
+  public static final String MEMBER_NAVIGATOR_LAZY_FETCH_CHILDREN = "MemberNavigator.lazyFetchChildren";
+  public static final String MEMBER_NAVIGATOR_EXPAND_SELECTED = "MemberNavigator.expandSelected";
+  public static final String MEMBER_NAVIGATOR_INITIAL_GROUPING = "MemberNavigator.initialGrouping";
+  public static final String MEMBER_NAVIGATOR_GROUPING_MEMBER_COUNT = "MemberNavigator.groupingMemberCount";
+  
   private OlapModel olapModel;
   private String title;
   private RequestListener okHandler;
@@ -72,10 +82,13 @@ public class MemberNavigator extends TreeComponent implements ModelChangeListene
   private String enableGroupingButtonId;
   private String disableGroupingButtonId;
   // contains a Tree (value) for a HierarchyArray (key)
-  private Map trees = new HashMap();
+  private Map models = new HashMap();
   private Resources resources;
 
   private int groupingMemberCount = 12;
+  private boolean initialGrouping = true;
+  private boolean expandSelected = true;
+  private boolean lazyFetchChildren = false;
 
   /**
    * defines equals/hashCode for an array of hierarchies. Two arrays are equal if and only if all
@@ -164,24 +177,6 @@ public class MemberNavigator extends TreeComponent implements ModelChangeListene
     }
   }
 
-  static class Tree {
-    TreeModelAdapter adapter;
-    MutableTreeModelDecorator model;
-
-    public Tree(TreeModelAdapter adapter, MutableTreeModelDecorator model) {
-      this.adapter = adapter;
-      this.model = model;
-    }
-
-    public TreeModelAdapter getAdapter() {
-      return adapter;
-    }
-
-    public MutableTreeModelDecorator getModel() {
-      return model;
-    }
-  }
-
   class MutableMemberTreeModelDecorator extends MutableTreeModelDecorator {
     public MutableMemberTreeModelDecorator(TreeModel decoree) {
       super(decoree);
@@ -254,7 +249,7 @@ public class MemberNavigator extends TreeComponent implements ModelChangeListene
     olapModel = newOlapModel;
     if (olapModel != null)
       olapModel.addModelChangeListener(this);
-    trees.clear();
+    models.clear();
   }
 
   /**
@@ -277,7 +272,16 @@ public class MemberNavigator extends TreeComponent implements ModelChangeListene
     disp.addRequestListener(okButtonId, null, okHandler);
     disp.addRequestListener(cancelButtonId, null, cancelHandler);
     resources = context.getResources(MemberNavigator.class);
-    groupingMemberCount = resources.getInteger("MemberNavigator.groupingMemberCount");
+    
+    groupingMemberCount = resources.getOptionalInteger(MEMBER_NAVIGATOR_GROUPING_MEMBER_COUNT, groupingMemberCount);
+    initialGrouping = resources.getOptionalBoolean(MEMBER_NAVIGATOR_INITIAL_GROUPING, initialGrouping);
+    expandSelected = resources.getOptionalBoolean(MEMBER_NAVIGATOR_EXPAND_SELECTED, expandSelected);
+    lazyFetchChildren = resources.getOptionalBoolean(MEMBER_NAVIGATOR_LAZY_FETCH_CHILDREN, lazyFetchChildren);
+    
+    // test environment?
+    String s = context.getRequest().getParameter(MEMBER_NAVIGATOR_LAZY_FETCH_CHILDREN);
+    if (s != null)
+      lazyFetchChildren = Boolean.valueOf(s).booleanValue();
   }
 
   public Element render(RequestContext context, Document factory) throws Exception {
@@ -352,40 +356,63 @@ public class MemberNavigator extends TreeComponent implements ModelChangeListene
     if (!isAvailable())
       return;
     HierarchyArray hierarchyArray = new HierarchyArray(hierarchies);
-    Tree tree = (Tree) trees.get(hierarchyArray);
-    if (tree == null) {
+    TreeModel model = (TreeModel) models.get(hierarchyArray);
+    if (model == null) {
+      // build the decorator chain
       Locale locale = resources.getLocale();
-      MemberTree mtree = (MemberTree) olapModel.getExtension(MemberTree.ID);
-      TreeModelAdapter tma = new TreeModelAdapter(hierarchies, mtree, locale);
-      tma.setOverflowListener(overflowListener);
+      MemberTree memberTree = (MemberTree) olapModel.getExtension(MemberTree.ID);
+      TreeModelAdapter modelAdapter = new TreeModelAdapter(hierarchies, memberTree, locale);
+      modelAdapter.setOverflowListener(overflowListener);
 
       // the singleRecord level can not be opened because it contains
       // too many children
       for (int i = 0; i < hierarchies.length; i++) {
         if (OlapUtils.isSingleRecord(hierarchies[i])) {
           Level[] levels = hierarchies[i].getLevels();
-          tma.setNoChildrenLevel(levels[0]);
+          modelAdapter.setNoChildrenLevel(levels[0]);
         }
       }
 
-      // insert artificial groups for Non-Measures hierarchies
-      int count = groupingMemberCount;
-      if (hierarchies.length > 0 && hierarchies[0].getDimension().isMeasure())
-        count = 0;
-      GroupingTreeModelDecorator gtd = new GroupingTreeModelDecorator(labelProvider, tma, count);
-      MutableTreeModelDecorator mtd = new MutableMemberTreeModelDecorator(gtd);
+      model = new CachingTreeModelDecorator(modelAdapter);
+      if (lazyFetchChildren)
+        model = new EnumBoundedTreeModelDecorator(model);
+
+      // insert virtual groups for Non-Measures hierarchies
+      if (hierarchies.length > 0 && !hierarchies[0].getDimension().isMeasure()) {
+        model = new GroupingTreeModelDecorator(labelProvider, model, initialGrouping ? groupingMemberCount : 0);
+      }
+
+      // let the user change node position
+      model = new MutableMemberTreeModelDecorator(model);
 
       // create and store the tree
-      tree = new Tree(tma, mtd);
-      trees.put(hierarchyArray, tree);
+      models.put(hierarchyArray, model);
     }
-    MutableTreeModelDecorator mtd = tree.getModel();
-    mtd.setEnableChangeOrder(allowChangeOrder);
-    super.setModel(mtd);
-    super.setChangeOrderModel(mtd);
+
+    super.setModel(model);
+    MutableTreeModelDecorator mutableModel = (MutableTreeModelDecorator) findModel(MutableTreeModelDecorator.class);
+    if (mutableModel != null) {
+      mutableModel.setEnableChangeOrder(allowChangeOrder);
+      super.setChangeOrderModel(mutableModel);
+    }
     this.title = hierarchyArray.getLabel();
   }
 
+  public void setHierarchies(Hierarchy[] hiers, boolean allowChangeOrder, MemberSelectionModel selection, Collection deleted) {
+    setHierarchies(hiers, allowChangeOrder);
+    if (lazyFetchChildren) {
+      EnumBoundedTreeModelDecorator boundedModel = (EnumBoundedTreeModelDecorator) findModel(EnumBoundedTreeModelDecorator.class);
+      boundedModel.setVisible(selection.getOrderedSelection());
+      super.setBounding(boundedModel);
+    }
+    setSelectionModel(selection);
+    if (expandSelected)
+      expandSelected(false);
+    Set set = getDeleteNodeModel().getDeleted();
+    set.clear();
+    set.addAll(deleted);
+  }
+  
   /**
    * sets the hierarchy of members to choose from. Sets a default title.
    */
@@ -404,9 +431,9 @@ public class MemberNavigator extends TreeComponent implements ModelChangeListene
   }
 
   public void modelChanged(ModelChangeEvent e) {
-    for (Iterator it = trees.values().iterator(); it.hasNext();) {
-      Tree tree = (Tree) it.next();
-      TreeModelAdapter tma = tree.getAdapter();
+    for (Iterator it = models.values().iterator(); it.hasNext();) {
+      TreeModel model = (TreeModel) it.next();
+      TreeModelAdapter tma = (TreeModelAdapter) findModel(model, TreeModelAdapter.class);
       tma.modelChanged();
     }
   }
@@ -414,7 +441,7 @@ public class MemberNavigator extends TreeComponent implements ModelChangeListene
   public void structureChanged(ModelChangeEvent e) {
     // clear all references
     logger.info("cleaning up");
-    trees.clear();
+    models.clear();
     super.setModel(null);
     super.getSelectionModel().clear();
   }
@@ -450,17 +477,32 @@ public class MemberNavigator extends TreeComponent implements ModelChangeListene
   }
 
   public boolean isGrouping() {
-    return getGroupingTreeModelDecorator().getLimit() > 0;
+    GroupingTreeModelDecorator groupingTreeModel = (GroupingTreeModelDecorator) findModel(GroupingTreeModelDecorator.class);
+    if (groupingTreeModel != null)
+      return groupingTreeModel.getLimit() > 0;
+    return false;
   }
 
   public void setGrouping(boolean b) {
-    GroupingTreeModelDecorator gtd = getGroupingTreeModelDecorator();
-    gtd.setLimit(b ? groupingMemberCount : 0);
+    GroupingTreeModelDecorator groupingTreeModel = (GroupingTreeModelDecorator) findModel(GroupingTreeModelDecorator.class);
+    if (groupingTreeModel != null)
+      groupingTreeModel.setLimit(b ? groupingMemberCount : 0);
   }
 
-  private GroupingTreeModelDecorator getGroupingTreeModelDecorator() {
-    MutableTreeModelDecorator mtd = (MutableTreeModelDecorator) getModel();
-    return (GroupingTreeModelDecorator) mtd.getDecoree();
+  private TreeModel findModel(Class clazz) {
+    return findModel(getModel(), clazz);
+  }
+
+  private TreeModel findModel(TreeModel tm, Class clazz) {
+    while (true) {
+      if (tm == null)
+        return null;
+      if (clazz.isAssignableFrom(tm.getClass()))
+        return tm;
+      if (!(tm instanceof DecoratedTreeModel))
+        return null;
+      tm = ((DecoratedTreeModel) tm).getDecoree();
+    }
   }
 
   /**
@@ -470,11 +512,28 @@ public class MemberNavigator extends TreeComponent implements ModelChangeListene
   public boolean isAvailable() {
     return olapModel.getExtension(MemberTree.ID) != null;
   }
-  
+
   public void setVisible(boolean b) {
-    if  (!isAvailable())
+    if (!isAvailable())
       b = false;
     super.setVisible(b);
   }
+
+  public boolean isExpandSelected() {
+    return expandSelected;
+  }
+
+  public void setExpandSelected(boolean expandSelected) {
+    this.expandSelected = expandSelected;
+  }
+
+  public boolean isLazyFetchChildren() {
+    return lazyFetchChildren;
+  }
+
+  public void setLazyFetchChildren(boolean lazyFetchChildren) {
+    this.lazyFetchChildren = lazyFetchChildren;
+  }
+
 
 }

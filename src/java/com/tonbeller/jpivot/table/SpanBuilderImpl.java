@@ -31,7 +31,6 @@ import com.tonbeller.jpivot.table.span.PropertyHeading;
 import com.tonbeller.jpivot.table.span.PropertyUtils;
 import com.tonbeller.jpivot.table.span.Span;
 import com.tonbeller.jpivot.table.span.SpanVisitor;
-import com.tonbeller.wcf.controller.RequestContext;
 
 /**
  * renders a row or column heading. Creates a DOM Element from a Member, Hierarchy,
@@ -42,7 +41,6 @@ import com.tonbeller.wcf.controller.RequestContext;
 public class SpanBuilderImpl extends PartBuilderSupport implements SpanBuilder {
   String memberName;
   String headingName;
-  RenderSwitch renderSwitch = new RenderSwitch();
   private static final Logger logger = Logger.getLogger(SpanBuilderImpl.class);
 
   /**
@@ -59,17 +57,26 @@ public class SpanBuilderImpl extends PartBuilderSupport implements SpanBuilder {
 
     private static final String CAPTION = "caption";
     Element elem;
+    private SBContext sbctx;
+
+    public RenderSwitch(SBContext sbctx) {
+      this.sbctx = sbctx;
+    }
 
     void renderHeading(Displayable d) {
       elem = table.elem(headingName);
       Element caption = table.append(CAPTION, elem);
-      caption.setAttribute(CAPTION, d.getLabel());
+      String label = d.getLabel();
+      caption.setAttribute(CAPTION, label);
+      sbctx.setCaption(caption, label);
     }
 
-    void renderMember(Displayable d) {
+    private void renderMember(Displayable d, String label) {
       elem = table.elem(memberName);
       Element caption = table.append(CAPTION, elem);
-      caption.setAttribute(CAPTION, d.getLabel());
+      //String label = d.getLabel();
+      caption.setAttribute(CAPTION, label);
+      sbctx.setCaption(caption, label);
 
       if (d instanceof PropertyHolder) {
         Property[] props = ((PropertyHolder) d).getProperties();
@@ -101,15 +108,15 @@ public class SpanBuilderImpl extends PartBuilderSupport implements SpanBuilder {
     }
 
     public void visitMember(Member v) {
-      renderMember(v);
+      renderMember(v, v.getLabel());
     }
 
     public void visitProperty(Property v) {
-      renderMember(v);
+      renderMember(v, v.getValue());
     }
 
     public void visitEmptyMember(EmptyMember v) {
-      renderMember(v);
+      renderMember(v, v.getLabel());
     }
 
     public Element getElem() {
@@ -121,29 +128,21 @@ public class SpanBuilderImpl extends PartBuilderSupport implements SpanBuilder {
     }
   }
 
-  public void startBuild(RequestContext context) {
-    super.startBuild(context);
-    logger.info("start build");
-  }
-
-  public void stopBuild() {
-    // avoid memory leak
-    renderSwitch.setElem(null);
-    logger.info("stop build");
-    super.stopBuild();
-  }
-
   /**
    * renders a row- or column heading
    */
-  public Element build(Span span, boolean even) {
+  public Element build(SBContext sbctx, Span span, boolean even) {
     if (logger.isDebugEnabled())
       logger.debug("build " + span);
+    
+    RenderSwitch renderSwitch = new RenderSwitch(sbctx);
+    
     Visitable v = span.getObject();
+    
     v.accept(renderSwitch);
     Element elem = renderSwitch.getElem();
     for (Iterator it = table.clickableIterator(); it.hasNext();)
-      ((ClickableMember) it.next()).decorate(elem, span.getObject());
+      ((ClickableMember) it.next()).decorate(sbctx, span.getObject());
     return elem;
   }
 

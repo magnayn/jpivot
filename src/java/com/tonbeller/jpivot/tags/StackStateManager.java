@@ -3,8 +3,6 @@ package com.tonbeller.jpivot.tags;
 import java.util.Iterator;
 import java.util.Stack;
 
-import org.apache.log4j.Logger;
-
 /**
  * A Stack of states (name/value pairs). For every state name, there is only one value.
  * States with different names are stacked, every name is on the stack only once. Example:
@@ -30,7 +28,7 @@ import org.apache.log4j.Logger;
  */
 public class StackStateManager implements StateManager {
   Stack stack = new Stack();
-  Logger logger = Logger.getLogger(StackStateManager.class);
+  StateLogger logger = new Log4jStateLogger();
 
   private boolean stackContainsName(String name) {
     for (Iterator it = stack.iterator(); it.hasNext();) {
@@ -43,14 +41,18 @@ public class StackStateManager implements StateManager {
 
   private void hideCurrent() throws Exception {
     State s = getCurrent();
-    if (s != null)
+    if (s != null) {
+      logger.hide(s);
       s.hide();
+    }
   }
 
   private void showCurrent() throws Exception {
     State s = getCurrent();
-    if (s != null)
+    if (s != null) {
+      logger.show(s);
       s.show();
+    }
   }
 
   private State getCurrent() {
@@ -67,8 +69,10 @@ public class StackStateManager implements StateManager {
     hideCurrent();
     while (stackContainsName(s.getName())) {
       State t = (State) stack.pop();
+      logger.destroy(s);
       t.destroy();
     }
+    logger.initialize(s);
     s.initialize();
     stack.push(s);
     showCurrent();
@@ -94,6 +98,7 @@ public class StackStateManager implements StateManager {
     hideCurrent();
     while (!name.equals(s.getName())) {
       State t = (State) stack.pop();
+      logger.destroy(t);
       t.destroy();
       s = (State) stack.peek();
     }
@@ -104,6 +109,7 @@ public class StackStateManager implements StateManager {
     hideCurrent();
     while (!stack.isEmpty()) {
       State s = (State) stack.pop();
+      logger.destroy(s);
       s.destroy();
     }
   }
@@ -117,9 +123,18 @@ public class StackStateManager implements StateManager {
     hideCurrent();
     while (stackContainsName(name)) {
       State t = (State) stack.pop();
+      logger.destroy(t);
       t.destroy();
     }
     showCurrent();
   }
-  
+
+  public StateLogger getLogger() {
+    return logger;
+  }
+
+  public void setLogger(StateLogger logger) {
+    this.logger = logger;
+  }
+
 }

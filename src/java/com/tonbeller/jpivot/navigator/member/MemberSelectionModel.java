@@ -12,6 +12,8 @@
  */
 package com.tonbeller.jpivot.navigator.member;
 
+import java.util.List;
+
 import com.tonbeller.jpivot.olap.model.Member;
 import com.tonbeller.wcf.selection.DefaultSelectionModel;
 
@@ -22,6 +24,8 @@ import com.tonbeller.wcf.selection.DefaultSelectionModel;
  * @author av
  */
 public class MemberSelectionModel extends DefaultSelectionModel {
+  
+  List orderedSelection;
 
   /**
    * Constructor for MemberSelectionModel.
@@ -43,6 +47,15 @@ public class MemberSelectionModel extends DefaultSelectionModel {
    */
   public boolean isSelectable(Object item) {
     return super.isSelectable(item) && item instanceof Member;
+  }
+  
+  public void setOrderedSelection(List list) {
+    super.setSelection(list);
+    this.orderedSelection = list;
+  }
+
+  public List getOrderedSelection() {
+    return orderedSelection;
   }
 
 }

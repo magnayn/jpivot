@@ -33,8 +33,14 @@ public interface SetParameter extends Extension {
   void setParameter(String paramName, Expression expr);
 
   /** 
-   * for scripting
+   * for scripting.
    * @return Map containing parameter names (= keys) and strings to display value (= value) 
    */
   public Map getDisplayValues();
+  
+  /**
+   * return the names of all defined parameters in this query
+   * @return the names of all defined parameters in this query
+   */
+  public String[] getParameterNames();
 }

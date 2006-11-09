@@ -14,6 +14,7 @@ package com.tonbeller.jpivot.test.olap;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.tonbeller.jpivot.olap.model.Displayable;
 import com.tonbeller.jpivot.olap.model.Expression;
@@ -34,6 +35,11 @@ public class TestSetParameter extends TestExtensionSupport implements SetParamet
   /** for scripting */
   public Map getDisplayValues() {
     return params;
+  }
+  
+  public String[] getParameterNames() {
+    Set keys = params.keySet();
+    return (String[]) keys.toArray(new String[keys.size()]);
   }
 
 }

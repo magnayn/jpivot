@@ -28,6 +28,12 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.ParameterExpr;
+import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.Category;
 import mondrian.olap.Cube;
 import mondrian.olap.Exp;
@@ -35,23 +41,20 @@ import mondrian.olap.Formula;
 import mondrian.olap.FunCall;
 import mondrian.olap.Literal;
 import mondrian.olap.MondrianException;
-import mondrian.olap.OlapElement;
+import mondrian.olap.Parameter;
+import mondrian.olap.ParameterImpl;
 import mondrian.olap.Query;
 import mondrian.olap.QueryAxis;
 import mondrian.olap.Role;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
 import mondrian.olap.Util;
+import mondrian.olap.type.NumericType;
+import mondrian.olap.type.Type;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.ServletContextCatalogLocator;
-import mondrian.mdx.DimensionExpr;
-import mondrian.mdx.HierarchyExpr;
-import mondrian.mdx.LevelExpr;
-import mondrian.mdx.MemberExpr;
-import mondrian.mdx.UnresolvedFunCall;
-
 
 import org.apache.log4j.Logger;
 
@@ -1207,6 +1210,18 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       String name = expBean.getName();
       ExpBean[] argBeans = expBean.getArgs();
       Exp[] args = createExpsFromBeans(argBeans);
+      if ("Parameter".equalsIgnoreCase(name)) {
+        String paramId = String.valueOf(((Literal)args[0]).getValue());
+        Exp value = args[2];
+        Type type = value.getType();
+        String descr = "";
+        if (args.length == 4)
+          descr = (String)((Literal)args[3]).getValue();
+        return new ParameterExpr(new ParameterImpl(paramId, value, descr, type));
+      } else if ("ParamRef".equalsIgnoreCase(name)) {
+        // FIXME support ParamRef
+        throw new IllegalArgumentException(name);
+      }
       Syntax syntax = MondrianUtil.funCallSyntax(name, argBeans.length);
       return new UnresolvedFunCall(name, syntax, args);
     }
@@ -1255,36 +1270,37 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   protected ExpBean createBeanFromExp(Object exp) throws OlapException {
     ExpBean bean = new ExpBean();
 
-    if (exp instanceof OlapElement) {
-      if (exp instanceof mondrian.olap.Member) {
-        mondrian.olap.Member m = (mondrian.olap.Member) exp;
-        bean.setType(ExpBean.TYPE_MEMBER);
-        bean.setName(m.getUniqueName());
-        bean.setArgs(new ExpBean[0]);
-      } else if (exp instanceof mondrian.olap.Level) {
-        mondrian.olap.Level lev = (mondrian.olap.Level) exp;
-        bean.setType(ExpBean.TYPE_LEVEL);
-        bean.setName(lev.getUniqueName());
-        bean.setArgs(new ExpBean[0]);
-      } else if (exp instanceof mondrian.olap.Hierarchy) {
-        mondrian.olap.Hierarchy hier = (mondrian.olap.Hierarchy) exp;
-        bean.setType(ExpBean.TYPE_HIER);
-        bean.setName(hier.getUniqueName());
-        bean.setArgs(new ExpBean[0]);
-      } else if (exp instanceof mondrian.olap.Dimension) {
-        mondrian.olap.Dimension dim = (mondrian.olap.Dimension) exp;
-        bean.setType(ExpBean.TYPE_DIM);
-        bean.setName(dim.getUniqueName());
-        bean.setArgs(new ExpBean[0]);
-      } else {
-        logger.fatal("cannot create ExpBean type =" + exp.getClass().toString());
-        throw new IllegalArgumentException(exp.getClass().toString());
-      }
+    if (exp instanceof mondrian.olap.Member) {
+      mondrian.olap.Member m = (mondrian.olap.Member) exp;
+      bean.setType(ExpBean.TYPE_MEMBER);
+      bean.setName(m.getUniqueName());
+      bean.setArgs(new ExpBean[0]);
+    } else if (exp instanceof mondrian.olap.Level) {
+      mondrian.olap.Level lev = (mondrian.olap.Level) exp;
+      bean.setType(ExpBean.TYPE_LEVEL);
+      bean.setName(lev.getUniqueName());
+      bean.setArgs(new ExpBean[0]);
+    } else if (exp instanceof mondrian.olap.Hierarchy) {
+      mondrian.olap.Hierarchy hier = (mondrian.olap.Hierarchy) exp;
+      bean.setType(ExpBean.TYPE_HIER);
+      bean.setName(hier.getUniqueName());
+      bean.setArgs(new ExpBean[0]);
+    } else if (exp instanceof mondrian.olap.Dimension) {
+      mondrian.olap.Dimension dim = (mondrian.olap.Dimension) exp;
+      bean.setType(ExpBean.TYPE_DIM);
+      bean.setName(dim.getUniqueName());
+      bean.setArgs(new ExpBean[0]);
     } else if (exp instanceof mondrian.olap.FunCall) {
       FunCall f = (FunCall) exp;
       bean.setType(ExpBean.TYPE_FUNCALL);
       bean.setName(f.getFunName());
       bean.setArgs(createBeansFromExps(f.getArgs()));
+    } else if (exp instanceof ParameterExpr) {
+      Parameter p = ((ParameterExpr)exp).getParameter();
+      bean.setType(ExpBean.TYPE_FUNCALL);
+      bean.setName("Parameter");
+      bean.setArgs(createBeansFromExps(getParamterArgs(p)));
+      // FIXME support ParamRef
     } else if (exp instanceof MemberExpr) {
       mondrian.olap.Member m = ((MemberExpr) exp).getMember();
       bean.setType(ExpBean.TYPE_MEMBER);
@@ -1314,6 +1330,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
         else
           bean.setType(ExpBean.TYPE_DOUBLE_LITERAL);
       } else {
+        // String || Symbol
         bean.setType(ExpBean.TYPE_STRING_LITERAL);
       }
       bean.setLiteralValue(val);
@@ -1324,6 +1341,45 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     }
 
     return bean;
+  }
+
+  /**
+   * The "compiled expressions" crap mess up everything.
+   * <p />
+   * Returns the arguments are needed to create an UnresolvedFunCall
+   * from a Parameter.
+   */
+  private Exp[] getParamterArgs(Parameter p) {
+    Exp expName = Literal.createString(p.getName()); 
+    Exp expValue;
+    Exp expType;
+
+    // unwrap the various wrappers of the parameter value
+    Object objValue = p.getValue();
+    if (objValue == null)
+      objValue = p.getDefaultExp();
+    if (objValue instanceof Literal)
+      objValue = ((Literal)objValue).getValue();
+    else if (objValue instanceof MemberExpr)
+      objValue = ((MemberExpr)objValue).getMember();
+    
+    if (objValue instanceof String) {
+      expValue = Literal.createString((String)objValue);
+      expType  = Literal.createSymbol("STRING");
+    } else if (objValue instanceof Double) {
+      expValue = Literal.create((Double)objValue);
+      expType  = Literal.createSymbol("NUMBER");
+    } else if (objValue instanceof Integer) {
+      expValue = Literal.create((Integer)objValue);
+      expType  = Literal.createSymbol("NUMBER");
+    } else if (objValue instanceof mondrian.olap.Member) {
+      mondrian.olap.Member m = (mondrian.olap.Member)objValue;
+      expValue = new MemberExpr(m);
+      expType = new DimensionExpr(m.getDimension());
+    } else throw new IllegalArgumentException("unknown Param value: " + objValue + ": " + objValue.getClass());
+    
+    Exp expDescr = p.getDescription() != null ? Literal.createString(p.getDescription()):Literal.createString("");
+    return new Exp[]{expName, expType, expValue, expDescr};
   }
 
   private ExpBean[] createBeansFromExps(Object[] exps) throws OlapException {

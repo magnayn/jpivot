@@ -31,6 +31,7 @@ import com.tonbeller.jpivot.olap.query.DrillReplaceExt;
 import com.tonbeller.jpivot.olap.query.ExpBean;
 import com.tonbeller.jpivot.olap.query.PositionNodeBean;
 import com.tonbeller.jpivot.olap.query.ResultBase;
+import com.tonbeller.jpivot.tags.MondrianModelFactory;
 import com.tonbeller.wcf.bookmarks.Bookmarkable;
 
 /**

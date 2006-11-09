@@ -43,13 +43,17 @@ import com.tonbeller.jpivot.olap.navi.MemberTree;
  *   <tr><td>USA</td><td>CA  </td><td>100</td></tr>
  * </table>
  * 
+ * <p>
+ * If the all member is not visible on the axis, its not added as a parent, because
+ * this would not add information. Otherwise its added like other parent members too. 
  * @author av
  */
 
 public class LevelAxisDecorator implements Axis {
   Axis axis;
   MemberTree tree;
-  int[] levelCount; // max(rootDistance) + 1
+  int[] levelCount; 
+  boolean[] skipAllMember;
   int totalLevelCount;
 
   List positions;
@@ -69,10 +73,14 @@ public class LevelAxisDecorator implements Axis {
    * number of levels (maxRootDistance - minRootDistance).
    */
   void computeLevelCount() {
+    Hierarchy[] hiers = axis.getHierarchies();
     int hierarchyCount = axis.getHierarchies().length;
     levelCount = new int[hierarchyCount];
-    for (int i = 0; i < hierarchyCount; i++)
+    skipAllMember = new boolean[hierarchyCount];
+    for (int i = 0; i < hiers.length; i++) {
       levelCount[i] = Integer.MIN_VALUE;
+      skipAllMember[i] = hiers[i].hasAll();
+    }
 
     Iterator it = axis.getPositions().iterator();
     while (it.hasNext()) {
@@ -81,7 +89,15 @@ public class LevelAxisDecorator implements Axis {
       for (int i = 0; i < members.length; i++) {
         int count = members[i].getRootDistance() + 1;
         levelCount[i] = Math.max(levelCount[i], count);
+        if (members[i].isAll())
+          skipAllMember[i] = false;
       }
+    }
+
+    // if the ALL member is not on the axis, we will not add it
+    for (int i = 0; i < hierarchyCount; i++) {
+      if (skipAllMember[i])
+        levelCount[i] -= 1;
     }
 
     // the number of members per position is the sum of all deltas
@@ -99,20 +115,30 @@ public class LevelAxisDecorator implements Axis {
     }
   }
 
-  Position makePosition(Position source) {
+  private Position makePosition(Position source) {
     Member[] members = source.getMembers();
     Member[] result = new Member[totalLevelCount];
     int offset = 0;
     for (int i = 0; i < members.length; i++) {
-      int count = levelCount[i];
-      addParents(result, offset, count, members[i]);
-      offset += count;
+      int totalCount = levelCount[i];
+      int memberCount = members[i].getRootDistance() + 1;
+      if (skipAllMember[i])
+        memberCount -= 1;
+      addParents(result, offset, totalCount, memberCount, members[i]);
+      offset += totalCount;
     }
     return new MyPosition(source, result);
   }
 
-  void addParents(Member[] result, int offset, int totalCount, Member member) {
-    int memberCount = member.getRootDistance() + 1;
+  /**
+   * adds members to result array from right to left, starting at offset
+   * @param result the array to add the members to
+   * @param offset the offset in the array
+   * @param totalCount number of positions to fill in the array
+   * @param memberCount the number of different members to add, rest will be padded
+   * @param member start member
+   */
+  private void addParents(Member[] result, int offset, int totalCount, int memberCount, Member member) {
     int fillCount = totalCount - memberCount;
     // fill from right to left because we want the parents to appear left
     offset = offset + totalCount - 1;

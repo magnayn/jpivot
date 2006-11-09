@@ -15,6 +15,7 @@ import com.tonbeller.jpivot.olap.navi.PlaceHierarchiesOnAxes;
 import com.tonbeller.jpivot.olap.navi.PlaceMembersOnAxes;
 import com.tonbeller.jpivot.olap.query.DrillExpandPositionExt;
 import com.tonbeller.jpivot.olap.query.ResultBase;
+import com.tonbeller.jpivot.tags.MondrianModelFactory;
 
 /**
  * Tests various bug fixes

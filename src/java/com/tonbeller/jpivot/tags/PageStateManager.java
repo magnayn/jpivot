@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 /**
  * @author av
  * @since 15.02.2005
@@ -13,16 +11,20 @@ import org.apache.log4j.Logger;
 public class PageStateManager implements StateManager {
   Map map = new HashMap();
   State current;
-  private static final Logger logger = Logger.getLogger(PageStateManager.class);
+  StateLogger logger = new Log4jStateLogger();
 
   void showCurrent() throws Exception {
-    if (current != null)
+    if (current != null) {
+      logger.show(current);
       current.show();
+    }
   }
   
   void hideCurrent() throws Exception {
-    if (current != null)
+    if (current != null) {
+      logger.hide(current);
       current.hide();
+    }
   }
   
   public void initializeAndShow(State next) throws Exception {
@@ -30,10 +32,13 @@ public class PageStateManager implements StateManager {
     
     // remove state with same name from map
     State prev = (State) map.get(next.getName());
-    if (prev != null)
+    if (prev != null) {
+      logger.destroy(prev);
       prev.destroy();
+    }
 
     map.put(next.getName(), next);
+    logger.initialize(next);
     next.initialize();
     current = next;
     showCurrent();
@@ -63,6 +68,7 @@ public class PageStateManager implements StateManager {
     current = null;
     for (Iterator it = map.values().iterator(); it.hasNext();) {
       State s = (State) it.next();
+      logger.destroy(s);
       s.destroy();
     }
     map.clear();
@@ -81,8 +87,17 @@ public class PageStateManager implements StateManager {
       hideCurrent();
       current = null;
     }
+    logger.destroy(s);
     s.destroy();
     map.remove(name);
+  }
+
+  public StateLogger getLogger() {
+    return logger;
+  }
+
+  public void setLogger(StateLogger logger) {
+    this.logger = logger;
   }
 
 }

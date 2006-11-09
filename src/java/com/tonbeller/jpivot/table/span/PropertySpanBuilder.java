@@ -287,7 +287,7 @@ public class PropertySpanBuilder implements PropertyConfig, ModelChangeListener,
           if (mpm.getScope().equals(scope))
             prop = lookup.getProperty(mpm.getName());
           if (prop == null)
-            prop = emptyProperty(mpm.getName());
+            prop = emptyProperty(mpm.getName(), mpm.getLabel());
           dst[pi][dstHierIndex++] = new Span(span.getAxis(), span.getPosition(), prop);
         }
       }
@@ -302,13 +302,16 @@ public class PropertySpanBuilder implements PropertyConfig, ModelChangeListener,
    * object instance is returned (necessary for 
    * span computation when a single property spans multiple cells of the table axis).
    */
-  Property emptyProperty(String name) {
+  Property emptyProperty(String name, String label) {
     Property p = (Property) emptyPropertyMap.get(name);
-    if (p == null) {
-      p = new PropertyImpl(name, "");
-      emptyPropertyMap.put(name, p);
-    }
-    return p;
+    if (p != null)
+      return p;
+    PropertyImpl pi = new PropertyImpl();
+    pi.setName(name);
+    pi.setLabel(label);
+    pi.setValue("");
+    emptyPropertyMap.put(name, pi);
+    return pi;
   }
 
   /* ----------------------- PropertyConfig methods ------------------------------- */

@@ -226,6 +226,7 @@ public class TestOlapModel extends ModelSupport implements OlapModel {
       default :
         break;
     }
+    p.setLabel(p.getName());
 
     c.setProperties(props);
   }

@@ -22,5 +22,9 @@ import com.tonbeller.jpivot.table.span.Span;
  * @author av
  */
 public interface SpanBuilder extends PartBuilder {
-  Element build(Span span, boolean even);
+  interface SBContext {
+    void setCaption(Element elem, String label);
+    void addClickable(String href, String label);
+  }
+  Element build(SBContext sbctx, Span span, boolean even);
 }

@@ -36,9 +36,14 @@ public abstract class OlapModelTag extends BodyTagSupport {
   
   private List clickables;
   private String queryName;
-  private boolean stackMode;
+  private boolean stackMode = true;
 
   public OlapModelTag() {
+  }
+
+  public void release() {
+    super.release();
+    stackMode = true;
   }
   
   public void addClickable(ClickableMember clickable) {

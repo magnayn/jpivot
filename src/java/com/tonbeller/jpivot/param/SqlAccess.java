@@ -37,7 +37,8 @@ public interface SqlAccess extends Extension {
    * returns null, if the member does not represent a column
    * in the database, for example because its the ALL member
    * or a calculated member.
-   * @paramName the name of the new parameter
+   * @paramName the name of the new parameter. If null, the 
+   * unique name of the members dimension with ".param" appended is used.
    */
   SessionParam createParameter(Member m, String paramName);
 

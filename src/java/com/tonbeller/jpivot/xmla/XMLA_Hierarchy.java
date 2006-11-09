@@ -413,5 +413,7 @@ public class XMLA_Hierarchy implements Hierarchy,Exp,MDXElement {
    public void accept(ExpVisitor visitor) {
      visitor.visitHierarchy(this);
    }
-
+  public boolean hasAll() {
+    return allMember != null;
+  }
 } // End XMLA_Hierarchy

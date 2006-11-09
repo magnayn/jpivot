@@ -24,6 +24,7 @@ import org.w3c.dom.Element;
 
 import com.tonbeller.jpivot.core.ModelChangeEvent;
 import com.tonbeller.jpivot.core.ModelChangeListener;
+import com.tonbeller.jpivot.navigator.member.MemberSelectionModel;
 import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.OlapException;
@@ -42,7 +43,6 @@ import com.tonbeller.wcf.controller.Dispatcher;
 import com.tonbeller.wcf.controller.DispatcherSupport;
 import com.tonbeller.wcf.controller.RequestContext;
 import com.tonbeller.wcf.controller.RequestListener;
-import com.tonbeller.wcf.selection.SelectionModel;
 
 /**
  * Navigation dialog
@@ -235,7 +235,7 @@ public class HierarchyNavigator extends CategoryEditor implements ModelChangeLis
     return editing;
   }
 
-  void itemClicked(RequestContext context, HierarchyItem item, SelectionModel selection,
+  void itemClicked(RequestContext context, HierarchyItem item, MemberSelectionModel selection,
       boolean allowChangeOrder) {
     if (hierarchyItemClickHandler != null)
       hierarchyItemClickHandler.itemClicked(context, item, selection, allowChangeOrder);

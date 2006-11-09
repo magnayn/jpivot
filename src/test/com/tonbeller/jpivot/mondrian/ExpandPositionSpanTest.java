@@ -9,6 +9,7 @@ import com.tonbeller.jpivot.olap.model.Result;
 import com.tonbeller.jpivot.olap.navi.DrillExpandPosition;
 import com.tonbeller.jpivot.olap.query.DrillExpandPositionExt;
 import com.tonbeller.jpivot.olap.query.ResultBase;
+import com.tonbeller.jpivot.tags.MondrianModelFactory;
 
 /**
  * @author hh

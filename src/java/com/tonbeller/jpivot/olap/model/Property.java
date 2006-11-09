@@ -28,4 +28,9 @@ public interface Property extends Visitable, Decorator, Displayable, PropertyHol
    */
   String getValue();
   
+  /**
+   * if true, this property may be a nested property whose path is 
+   * specified by '.' in its name.
+   */
+  boolean isNormalizable();
 }

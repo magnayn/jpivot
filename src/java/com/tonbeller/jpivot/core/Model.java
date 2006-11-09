@@ -62,4 +62,10 @@ public interface Model extends Bookmarkable {
    */
   public Model getTopDecorator();
   
+  /**
+   * Returns the bottom element of the decorator chain. The returned model does not decorate any other model,
+   * its the end of the chain.
+   */
+  public Model getRootModel();
+  
 }

@@ -11,6 +11,7 @@ import com.tonbeller.jpivot.olap.model.Result;
 import com.tonbeller.jpivot.olap.navi.DrillReplace;
 import com.tonbeller.jpivot.olap.query.DrillReplaceExt;
 import com.tonbeller.jpivot.olap.query.ResultBase;
+import com.tonbeller.jpivot.tags.MondrianModelFactory;
 
 /**
  * @author hh

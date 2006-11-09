@@ -64,7 +64,7 @@ class SlicerCategory extends AbstractCategory {
     else
       selection.setMode(SelectionModel.SINGLE_SELECTION);
 
-    selection.setSelection(item.getSlicerSelection());
+    selection.setOrderedSelection(item.getSlicerSelection());
     navi.itemClicked(context, item, selection, false);
   }
 
