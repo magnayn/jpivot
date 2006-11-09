@@ -5,15 +5,15 @@ jdbc.driver=com.mysql.jdbc.Driver
 jdbc.url=jdbc:mysql://localhost/foodmart
 jdbc.user=root
 jdbc.password=
+jdbc.jardir=c:/Java/mysql-connector-java-3.1.12
 
-# These settings allow the source to build and tests to run
-
-jboss.home=C:/jboss-4.0.2
+# needed for xmla tests (currently disabled)
+# xmla.uri=http://SINTANW/XMLA/msxisapi.dll
+# xmla.catalog=Foodmart 2000
 
 # tomcat manager
 catalina.home=C:/Java/apache-tomcat-5.5.12
 manager.username=manager
 manager.password=manager
 
-xmla.uri=http://localhost:8080/mondrian/xmla
-xmla.catalog=MondrianFoodMart
+jboss.home=C:/jboss-4.0.2

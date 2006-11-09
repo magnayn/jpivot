@@ -400,7 +400,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     CatalogLocator catalogLocator = new ServletContextCatalogLocator(servletContext);
     
     // use external DataSource if present
-    monConnection = mondrian.olap.DriverManager.getConnection(properties, catalogLocator, false);
+    monConnection = mondrian.olap.DriverManager.getConnection(properties, catalogLocator, externalDataSource, false);
 
     if (monConnection == null) {
       String err = "Could not create Mondrian connection:" + properties;
