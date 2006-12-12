@@ -242,8 +242,9 @@ public class OlapUtils {
     Set active = new HashSet();
     Axis slicer = model.getResult().getSlicer();
     Hierarchy[] hiers = slicer.getHierarchies();
-    for (int j = 0; j < hiers.length; j++)
-      active.add(hiers[j].getDimension());
+    for (int j = 0; j < hiers.length; j++) {
+            active.add(hiers[j].getDimension());
+    }
     return active;
   }
 
@@ -265,21 +266,44 @@ public class OlapUtils {
    */
   public static Set getSlicerHierarchies(OlapModel model) throws OlapException {
     Set visible = getVisibleDimensions(model);
-    Set active_dims = getActiveSlicerDimensions(model);
-    Set active_hiers = getActiveSlicerHierarchies(model);
+           
+    /* Get dimensions and hierarchies on the slicer */
+    
+    Axis slicer = model.getResult().getSlicer();
+    Set selectedSlicerDims = new HashSet();
+    Set selectedSlicerHiers = new HashSet();
+    
+    List positions = slicer.getPositions();
 
-    Set slicer = new HashSet();
+    for (Iterator iter = positions.iterator(); iter.hasNext();) {
+      Position pos = (Position) iter.next();
+      Member[] posMembers = pos.getMembers();
+      for (int i = 0; i < posMembers.length; i++) {
+          Hierarchy hier = posMembers[i].getLevel().getHierarchy();
+          Dimension dim = hier.getDimension();
+          
+          if (!selectedSlicerHiers.contains(hier))
+              selectedSlicerHiers.add(hier);
+          
+          if (!selectedSlicerDims.contains(dim))
+              selectedSlicerDims.add(dim);          
+      }
+    }
+    /* Return hierarchies that are not on the rows or columns and for the selected
+     * members, return the selected hierarchy
+     */
+    Set slicerHiers = new HashSet();
     Dimension[] dims = model.getDimensions();
     for (int i = 0; i < dims.length; i++) {
       if (!visible.contains(dims[i])) {
-        if (!active_dims.contains(dims[i])) {
-          slicer.add(dims[i].getHierarchies()[0]);
+        if (!selectedSlicerDims.contains(dims[i])) {
+            slicerHiers.add(dims[i].getHierarchies()[0]);
         } else {
-          for (Iterator it = active_hiers.iterator(); it.hasNext();) {
+          for (Iterator it = selectedSlicerHiers.iterator(); it.hasNext();) {
             Hierarchy hier = (Hierarchy) it.next();
             Dimension dim = hier.getDimension();
             if (dim.equals(dims[i])) {
-              slicer.add(hier);
+                slicerHiers.add(hier);
               break;
             }
           }
@@ -287,7 +311,10 @@ public class OlapUtils {
 
       }
     }
-    return slicer;
+    
+    return slicerHiers;
   }
 
 }
+
+ 	  	 

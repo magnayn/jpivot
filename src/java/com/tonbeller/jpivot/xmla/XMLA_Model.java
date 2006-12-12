@@ -220,6 +220,15 @@ public class XMLA_Model extends MdxOlapModel implements OlapModel, QueryAdapter.
 
     return result;
   }
+  
+  /**
+   * get the result variable without any action
+   *
+   * @return current XMLA result, or null
+   */
+  XMLA_Result currentResult() {
+    return result;
+  }
 
   //dsf
   public synchronized Result getDrillResult() throws OlapException {
@@ -1479,3 +1488,5 @@ public class XMLA_Model extends MdxOlapModel implements OlapModel, QueryAdapter.
   }
 
 } // End XMLA_Model
+
+ 	  	 

@@ -13,7 +13,10 @@
 package com.tonbeller.jpivot.xmla;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -26,6 +29,10 @@ import com.tonbeller.jpivot.olap.model.Member;
 import com.tonbeller.jpivot.olap.model.OlapException;
 import com.tonbeller.jpivot.olap.navi.MemberTree;
 import com.tonbeller.jpivot.util.StringUtil;
+import com.tonbeller.jpivot.olap.model.Position;
+import com.tonbeller.jpivot.olap.model.Result;
+import com.tonbeller.jpivot.olap.query.Quax;
+import com.tonbeller.jpivot.olap.model.Axis;
 
 /**
  * Member Tree Implementation vor XMLA
@@ -85,7 +92,10 @@ public class XMLA_MemberTree extends ExtensionSupport implements MemberTree {
       String memberName = f.getUniqeName();
       XMLA_Member calcMem = (XMLA_Member) model.lookupMemberByUName(memberName);
       if (calcMem == null) {
-        calcMem = new XMLA_Member(model, memberName, f.getLastName(), null, true);
+          /* Strip brackets from name */
+          String[] nameParts = StringUtil.splitUniqueName(memberName);                   
+          calcMem = new XMLA_Member(model, memberName, nameParts[1], null, true);
+          //calcMem = new XMLA_Member(model, memberName, f.getLastName(), null, true);
       }
       aCalcMem.add(calcMem);
     }
@@ -99,6 +109,49 @@ public class XMLA_MemberTree extends ExtensionSupport implements MemberTree {
       XMLA_Member calcMem = (XMLA_Member) iter.next();
       members[k++] = calcMem;
     }
+    
+    // order members according to occurrence in query result
+    //  if there is no result available, do not sort
+    Result res = model.currentResult();
+    if (res == null)
+      return members; // not sorted
+
+    // locate the appropriate result axis
+    // find the Quax for this hier
+    XMLA_QueryAdapter adapter = (XMLA_QueryAdapter) model.getQueryAdapter();
+    Quax quax = adapter.findQuax(hier.getDimension());
+    if (quax == null)
+      return members; // should not occur
+    int iDim = quax.dimIdx(hier.getDimension());
+    int iAx = quax.getOrdinal();
+    if (adapter.isSwapAxes())
+      iAx = (iAx + 1) % 2;
+    Axis axis = res.getAxes()[iAx];
+    List positions = axis.getPositions();
+    final List visibleRootMembers = new ArrayList();
+    for (Iterator iter = positions.iterator(); iter.hasNext();) {
+      Position pos = (Position) iter.next();
+      Member[] posMembers = pos.getMembers();
+      XMLA_Member mem = (XMLA_Member) posMembers[iDim];
+      if (!(getParent(mem) == null))
+        continue; // ignore, not root
+      if (!visibleRootMembers.contains(mem))
+        visibleRootMembers.add(mem);
+    }
+
+    Arrays.sort(members, new Comparator() {
+      public int compare(Object arg0, Object arg1) {
+        Member m1 = (Member) arg0;
+        Member m2 = (Member) arg1;
+        int index1 = visibleRootMembers.indexOf(m1);
+        int index2 = visibleRootMembers.indexOf(m2);
+        if (index2 == -1)
+          return -1; // m2 is higher, unvisible to the end
+        if (index1 == -1)
+          return 1; // m1 is higher, unvisible to the end
+        return index1 - index2;
+      }
+    });
 
     return members;
   }
@@ -162,3 +215,5 @@ public class XMLA_MemberTree extends ExtensionSupport implements MemberTree {
   }
 
 } // End XMLA_MemberTree
+
+ 	  	 

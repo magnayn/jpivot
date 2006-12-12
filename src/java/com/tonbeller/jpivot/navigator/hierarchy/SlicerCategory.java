@@ -21,6 +21,7 @@ import java.util.Set;
 
 import com.tonbeller.jpivot.navigator.member.MemberSelectionModel;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
+//import com.tonbeller.jpivot.olap.model.Dimension;
 import com.tonbeller.jpivot.olap.model.Member;
 import com.tonbeller.jpivot.olap.model.OlapException;
 import com.tonbeller.jpivot.olap.model.OlapUtils;
@@ -122,3 +123,5 @@ class SlicerCategory extends AbstractCategory {
   }
 
 }
+
+ 	  	 
