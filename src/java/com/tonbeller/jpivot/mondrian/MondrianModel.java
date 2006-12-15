@@ -374,22 +374,22 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       } else {
         catString = catString + "?sessionId=" + sessionId;
       }
-      properties.put(RolapConnectionProperties.Catalog, catString);
+      properties.put(RolapConnectionProperties.Catalog.name(), catString);
   	  updatedProperties = true;
     }
 
     if (dynresolver != null && dynresolver.length() > 0) {
-      properties.put(RolapConnectionProperties.DynamicSchemaProcessor, dynresolver);
+      properties.put(RolapConnectionProperties.DynamicSchemaProcessor.name(), dynresolver);
   	  updatedProperties = true;
     }
     if (dynLocale!=null) {
-      properties.put(RolapConnectionProperties.Locale, dynLocale);
+      properties.put(RolapConnectionProperties.Locale.name(), dynLocale);
   	  updatedProperties = true;
     }
 
     // if we do *not* want connection pooling, we must explicitly tell Mondrian
     if (!connectionPooling) {
-      properties.put(RolapConnectionProperties.PoolNeeded, "false");
+      properties.put(RolapConnectionProperties.PoolNeeded.name(), "false");
   	  updatedProperties = true;
     }
 

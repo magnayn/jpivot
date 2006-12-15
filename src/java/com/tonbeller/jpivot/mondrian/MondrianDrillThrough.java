@@ -55,10 +55,10 @@ public class MondrianDrillThrough extends ExtensionSupport implements DrillThrou
     MondrianDrillThroughTableModel dtm = new MondrianDrillThroughTableModel();
     dtm.setSql(sql);
     PropertyList connectInfo = ((MondrianModel) getModel()).getConnectProperties();
-    String jdbcUrl = connectInfo.get(RolapConnectionProperties.Jdbc);
-    String jdbcUser = connectInfo.get(RolapConnectionProperties.JdbcUser);
-    String jdbcPassword = connectInfo.get(RolapConnectionProperties.JdbcPassword);
-    String dataSourceName = connectInfo.get(RolapConnectionProperties.DataSource);
+    String jdbcUrl = connectInfo.get(RolapConnectionProperties.Jdbc.name());
+    String jdbcUser = connectInfo.get(RolapConnectionProperties.JdbcUser.name());
+    String jdbcPassword = connectInfo.get(RolapConnectionProperties.JdbcPassword.name());
+    String dataSourceName = connectInfo.get(RolapConnectionProperties.DataSource.name());
     dtm.setJdbcUrl(jdbcUrl);
     dtm.setJdbcUser(jdbcUser);
     dtm.setJdbcPassword(jdbcPassword);

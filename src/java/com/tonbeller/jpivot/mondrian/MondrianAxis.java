@@ -16,6 +16,7 @@ import java.util.List;
 import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Visitor;
+import mondrian.olap.AxisOrdinal;
 
 /**
  * MondrianAxis is an adapter class for the Result Mondrian Axis.
@@ -44,7 +45,8 @@ public class MondrianAxis implements Axis {
       // get hierarchies from mondrian query, rather than from result, which can be empty
 
       MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
-      mondrian.olap.Hierarchy[] monHiers = adapter.getMonQuery().getMdxHierarchiesOnAxis(iOrdinal);
+      mondrian.olap.Hierarchy[] monHiers = adapter.getMonQuery().getMdxHierarchiesOnAxis(
+        AxisOrdinal.forLogicalOrdinal(iOrdinal));
       hierarchies = new MondrianHierarchy[monHiers.length];
       for (int j = 0; j < hierarchies.length; j++) {
         hierarchies[j] = model.lookupHierarchy(monHiers[j].getUniqueName());

@@ -51,7 +51,7 @@ public class MondrianMember implements Member, MDXMember {
       properties = new Property[props.length];
       for (int i = 0; i < props.length; i++) {
         MondrianProp prop = new MondrianProp();
-        if (props[i].getType() == mondrian.olap.Property.TYPE_NUMERIC)
+        if (props[i].getType() == mondrian.olap.Property.Datatype.TYPE_NUMERIC)
           prop.setAlignment(Alignable.Alignment.RIGHT);
         String propName = props[i].getName();
         prop.setName(propName);

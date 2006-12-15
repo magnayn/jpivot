@@ -99,7 +99,7 @@ public class MondrianChangeSlicer extends ExtensionSupport implements ChangeSlic
       }
 
       UnresolvedFunCall f = new UnresolvedFunCall("()", Syntax.Parentheses, monExpr);
-      monQuery.setSlicerAxis(new QueryAxis(false, f, AxisOrdinal.Slicer, QueryAxis.SubtotalVisibility.Undefined));
+      monQuery.setSlicerAxis(new QueryAxis(false, f, AxisOrdinal.SLICER, QueryAxis.SubtotalVisibility.Undefined));
       if (logInfo) {
         StringBuffer sb = new StringBuffer("slicer=(");
         for (int i = 0; i < monExpr.length; i++) {

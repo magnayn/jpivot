@@ -15,11 +15,7 @@ package com.tonbeller.jpivot.mondrian;
 import java.util.Iterator;
 import java.util.List;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunCall;
-import mondrian.olap.Query;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Syntax;
+import mondrian.olap.*;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.UnresolvedFunCall;
 
@@ -60,7 +56,8 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
     nAxes = monQuery.getAxes().length;
     quaxes = new MondrianQuax[nAxes];
     for (int i = 0; i < monQuery.getAxes().length; i++) {
-      mondrian.olap.Hierarchy[] monHiers = monQuery.getMdxHierarchiesOnAxis(i);
+      mondrian.olap.Hierarchy[] monHiers = monQuery.getMdxHierarchiesOnAxis(
+        AxisOrdinal.forLogicalOrdinal(i));
       quaxes[i] = new MondrianQuax(i, monQuery.getAxes()[i], model);
       Hierarchy[] hiers = new Hierarchy[monHiers.length];
       for (int j = 0; j < hiers.length; j++) {
@@ -205,8 +202,8 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
    * - the member is on an axis  and
    * - the member is not yet expanded  and
    * - the member has children
-   * @see com.tonbeller.jpivot.olap.navi.DrillExpand#canExpand(Member)
-   * @param Member to be expanded
+   * @see com.tonbeller.jpivot.olap.navi.DrillExpandMember#canExpand(Member)
+   * @param member to be expanded
    * @return true if the member can be expanded
    */
   public boolean canExpand(Member member) {
@@ -224,7 +221,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
   }
 
   /**
-   * @see com.tonbeller.jpivot.olap.navi.DrillExpand#canExpand(Member)
+   * @see com.tonbeller.jpivot.olap.navi.DrillExpandMember#canExpand(Member)
    * @param position position to be expanded
    * @param Member to be expanded
    * @return true if the member can be expanded
@@ -246,8 +243,8 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
   }
 
   /**
-   * @see com.tonbeller.jpivot.olap.navi.DrillExpand#canExpand(Member)
-   * @param Member to be collapsed
+   * @see com.tonbeller.jpivot.olap.navi.DrillExpandMember#canCollapse(Member)
+   * @param member Member to be collapsed
    * @return true if the member can be collapsed
    */
   public boolean canCollapse(Member member) {
@@ -262,7 +259,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
   }
 
   /**
-   * @see com.tonbeller.jpivot.olap.navi.DrillExpand#canCollapse(Member)
+   * @see com.tonbeller.jpivot.olap.navi.DrillExpandMember#canCollapse(Member)
    * @param position position to be expanded
    * @return true if the position can be collapsed
    */
