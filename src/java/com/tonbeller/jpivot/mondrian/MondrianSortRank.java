@@ -14,7 +14,6 @@ package com.tonbeller.jpivot.mondrian;
 
 import mondrian.olap.Exp;
 import mondrian.olap.Literal;
-import mondrian.olap.SortDirection;
 import mondrian.olap.Syntax;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.UnresolvedFunCall;
@@ -52,8 +51,7 @@ public class MondrianSortRank extends SortRankBase implements SortRank, QuaxChan
         case com.tonbeller.jpivot.olap.navi.SortRank.BASC :
         case com.tonbeller.jpivot.olap.navi.SortRank.BDESC :
           // call sort
-          int monSortMode = sortMode2Mondrian(sortMode);
-          orderAxis(monQuery, monSortMode);
+          orderAxis(monQuery, sortMode);
           break;
         case com.tonbeller.jpivot.olap.navi.SortRank.TOPCOUNT :
           topBottomAxis(monQuery, "TopCount");
@@ -68,31 +66,31 @@ public class MondrianSortRank extends SortRankBase implements SortRank, QuaxChan
   }
 
   /**
-  * convert sort mode to mondrian
-  * @param sortMode mode according to JPivot
-  * @return sort mode according to Mondrian
+  * Convert sort mode ordinal to sort mode name
+  * @param sortMode mode
+  * @return name of sort mode
   */
-  static private int sortMode2Mondrian(int sortMode) {
+  static private String sortModeName(int sortMode) {
     switch (sortMode) {
       case com.tonbeller.jpivot.olap.navi.SortRank.ASC :
-        return mondrian.olap.SortDirection.ASC;
+        return "ASC";
       case com.tonbeller.jpivot.olap.navi.SortRank.DESC :
-        return mondrian.olap.SortDirection.DESC;
+        return "DESC";
       case com.tonbeller.jpivot.olap.navi.SortRank.BASC :
-        return mondrian.olap.SortDirection.BASC;
+        return "BASC";
       case com.tonbeller.jpivot.olap.navi.SortRank.BDESC :
-        return mondrian.olap.SortDirection.BDESC;
+        return "BDESC";
       default :
-        return mondrian.olap.SortDirection.NONE; // should not happen
+        return null;
     }
   }
 
   /**
    * add Order Funcall to QueryAxis
    * @param monQuery
-   * @param monSortMode
+   * @param sortMode
    */
-  private void orderAxis(mondrian.olap.Query monQuery, int monSortMode) {
+  private void orderAxis(mondrian.olap.Query monQuery, int sortMode) {
     // Order(TopCount) is allowed, Order(Order) is not permitted
     //removeTopLevelSort(monQuery, new String[] { "Order" });
     mondrian.olap.QueryAxis monAx = monQuery.getAxes()[quaxToSort.getOrdinal()];
@@ -107,7 +105,7 @@ public class MondrianSortRank extends SortRankBase implements SortRank, QuaxChan
       }
       memToSort = new UnresolvedFunCall("()", Syntax.Parentheses, memberExprs);
     }
-    String sDirection = SortDirection.instance().getName(monSortMode);
+    String sDirection = sortModeName(sortMode);
     UnresolvedFunCall funOrder =
       new UnresolvedFunCall("Order", new Exp[] { setForAx, memToSort, Literal.createSymbol(sDirection)});
     monAx.setSet(funOrder);
