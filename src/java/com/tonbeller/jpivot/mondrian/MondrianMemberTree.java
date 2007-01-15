@@ -69,6 +69,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     SchemaReader scr = q.getSchemaReader(true);
     mondrian.olap.Member[] monMembers = scr.getHierarchyRootMembers(monHier);
     ArrayList aMem = new ArrayList();
+    final List visibleRootMembers = new ArrayList();
     int k = monMembers.length;
     for (int i = 0; i < k; i++) {
       mondrian.olap.Member monMember = monMembers[i];
@@ -95,52 +96,59 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
             aMem.add(m);
         }
       }
-    }
-
-    Member[] members = (Member[]) aMem.toArray(new Member[0]);
+    }    
 
     // order members according to occurrence in query result
     //  if there is no result available, do not sort
     Result res = model.currentResult();
-    if (res == null)
-      return members; // not sorted
-
-    // locate the appropriate result axis
-    // find the Quax for this hier
-    MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
-    Quax quax = adapter.findQuax(hier.getDimension());
-    if (quax == null)
-      return members; // should not occur
-    int iDim = quax.dimIdx(hier.getDimension());
-    int iAx = quax.getOrdinal();
-    if (adapter.isSwapAxes())
-      iAx = (iAx + 1) % 2;
-    Axis axis = res.getAxes()[iAx];
-    List positions = axis.getPositions();
-    final List visibleRootMembers = new ArrayList();
-    for (Iterator iter = positions.iterator(); iter.hasNext();) {
-      Position pos = (Position) iter.next();
-      Member[] posMembers = pos.getMembers();
-      MondrianMember mem = (MondrianMember) posMembers[iDim];
-      if (!(mem.getMonMember().getParentMember() == null))
-        continue; // ignore, not root
-      if (!visibleRootMembers.contains(mem))
-        visibleRootMembers.add(mem);
+    if (res != null) {    
+        // locate the appropriate result axis
+        // find the Quax for this hier
+        MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
+        Quax quax = adapter.findQuax(hier.getDimension());
+        if (quax != null) {
+            int iDim = quax.dimIdx(hier.getDimension());
+            int iAx = quax.getOrdinal();
+            if (adapter.isSwapAxes())
+              iAx = (iAx + 1) % 2;
+            Axis axis = res.getAxes()[iAx];
+            List positions = axis.getPositions();
+            
+            for (Iterator iter = positions.iterator(); iter.hasNext();) {
+              Position pos = (Position) iter.next();
+              Member[] posMembers = pos.getMembers();
+              MondrianMember mem = (MondrianMember) posMembers[iDim];
+              if (!(mem.getMonMember().getParentMember() == null))
+                continue; // ignore, not root
+              if (!visibleRootMembers.contains(mem))
+                visibleRootMembers.add(mem);
+              
+              // Check if the result axis contains invisible members
+              if (!aMem.contains(mem)) {
+                  aMem.add(mem);
+              }                                    
+            }
+        }
     }
+    
+    Member[] members = (Member[]) aMem.toArray(new Member[0]);
 
-    Arrays.sort(members, new Comparator() {
-      public int compare(Object arg0, Object arg1) {
-        Member m1 = (Member) arg0;
-        Member m2 = (Member) arg1;
-        int index1 = visibleRootMembers.indexOf(m1);
-        int index2 = visibleRootMembers.indexOf(m2);
-        if (index2 == -1)
-          return -1; // m2 is higher, unvisible to the end
-        if (index1 == -1)
-          return 1; // m1 is higher, unvisible to the end
-        return index1 - index2;
-      }
-    });
+    // If there is no query result, do not sort
+    if (visibleRootMembers.size() != 0) {
+        Arrays.sort(members, new Comparator() {
+          public int compare(Object arg0, Object arg1) {
+            Member m1 = (Member) arg0;
+            Member m2 = (Member) arg1;
+            int index1 = visibleRootMembers.indexOf(m1);
+            int index2 = visibleRootMembers.indexOf(m2);
+            if (index2 == -1)
+              return -1; // m2 is higher, unvisible to the end
+            if (index1 == -1)
+              return 1; // m1 is higher, unvisible to the end
+            return index1 - index2;
+          }
+        });
+    }
 
     return members;
   }

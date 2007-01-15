@@ -67,6 +67,10 @@ public class XMLA_MemberTree extends ExtensionSupport implements MemberTree {
     if (rootLevel == null)
       return null; // should not occur
 
+    
+    final List visibleRootMembers = new ArrayList();
+    final List invisibleRootMembers = new ArrayList();
+    
     Member[] rootMembers = new Member[0];
     try {
       rootMembers = rootLevel.getMembers();
@@ -99,8 +103,49 @@ public class XMLA_MemberTree extends ExtensionSupport implements MemberTree {
       }
       aCalcMem.add(calcMem);
     }
-
-    Member[] members = new Member[rootMembers.length + aCalcMem.size()];
+    
+    // order members according to occurrence in query result
+    //  if there is no result available, do not sort
+    // If the result contains invisible members, add them to the list
+    Result res = model.currentResult();
+    if (res != null) {       
+        // locate the appropriate result axis
+        // find the Quax for this hier
+        XMLA_QueryAdapter adapter = (XMLA_QueryAdapter) model.getQueryAdapter();
+        Quax quax = adapter.findQuax(hier.getDimension());
+        if (quax != null) {    
+            int iDim = quax.dimIdx(hier.getDimension());
+            int iAx = quax.getOrdinal();
+            if (adapter.isSwapAxes())
+              iAx = (iAx + 1) % 2;
+            Axis axis = res.getAxes()[iAx];
+            List positions = axis.getPositions();
+            
+            for (Iterator iter = positions.iterator(); iter.hasNext();) {
+              Position pos = (Position) iter.next();
+              Member[] posMembers = pos.getMembers();
+              XMLA_Member mem = (XMLA_Member) posMembers[iDim];
+              if (!(getParent(mem) == null))
+                continue; // ignore, not root
+              if (!visibleRootMembers.contains(mem))
+                visibleRootMembers.add(mem);
+              
+              // Check if the result axis contains invisible members
+              boolean containsMember = false;
+              for (int i = 0; i < rootMembers.length; i++) {
+                  if (rootMembers[i].equals(mem)) {
+                      containsMember = true;
+                      break;
+                  }
+              }
+              if (!containsMember && !aCalcMem.contains(mem) && !invisibleRootMembers.contains(mem)) {
+                  invisibleRootMembers.add(mem);
+              }                      
+            }
+        }
+    }
+    
+    Member[] members = new Member[rootMembers.length + aCalcMem.size() + invisibleRootMembers.size()];
     int k = rootMembers.length;
     for (int i = 0; i < k; i++) {
       members[i] = rootMembers[i];
@@ -108,50 +153,28 @@ public class XMLA_MemberTree extends ExtensionSupport implements MemberTree {
     for (Iterator iter = aCalcMem.iterator(); iter.hasNext();) {
       XMLA_Member calcMem = (XMLA_Member) iter.next();
       members[k++] = calcMem;
+    }        
+    for (Iterator iter = invisibleRootMembers.iterator(); iter.hasNext();) {
+        XMLA_Member invisibleMem = (XMLA_Member) iter.next();
+        members[k++] = invisibleMem;
+    }        
+  
+    // If there is no query result, do not sort
+    if (visibleRootMembers.size() != 0) {
+        Arrays.sort(members, new Comparator() {
+          public int compare(Object arg0, Object arg1) {
+            Member m1 = (Member) arg0;
+            Member m2 = (Member) arg1;
+            int index1 = visibleRootMembers.indexOf(m1);
+            int index2 = visibleRootMembers.indexOf(m2);
+            if (index2 == -1)
+              return -1; // m2 is higher, unvisible to the end
+            if (index1 == -1)
+              return 1; // m1 is higher, unvisible to the end
+            return index1 - index2;
+          }
+        });
     }
-    
-    // order members according to occurrence in query result
-    //  if there is no result available, do not sort
-    Result res = model.currentResult();
-    if (res == null)
-      return members; // not sorted
-
-    // locate the appropriate result axis
-    // find the Quax for this hier
-    XMLA_QueryAdapter adapter = (XMLA_QueryAdapter) model.getQueryAdapter();
-    Quax quax = adapter.findQuax(hier.getDimension());
-    if (quax == null)
-      return members; // should not occur
-    int iDim = quax.dimIdx(hier.getDimension());
-    int iAx = quax.getOrdinal();
-    if (adapter.isSwapAxes())
-      iAx = (iAx + 1) % 2;
-    Axis axis = res.getAxes()[iAx];
-    List positions = axis.getPositions();
-    final List visibleRootMembers = new ArrayList();
-    for (Iterator iter = positions.iterator(); iter.hasNext();) {
-      Position pos = (Position) iter.next();
-      Member[] posMembers = pos.getMembers();
-      XMLA_Member mem = (XMLA_Member) posMembers[iDim];
-      if (!(getParent(mem) == null))
-        continue; // ignore, not root
-      if (!visibleRootMembers.contains(mem))
-        visibleRootMembers.add(mem);
-    }
-
-    Arrays.sort(members, new Comparator() {
-      public int compare(Object arg0, Object arg1) {
-        Member m1 = (Member) arg0;
-        Member m2 = (Member) arg1;
-        int index1 = visibleRootMembers.indexOf(m1);
-        int index2 = visibleRootMembers.indexOf(m2);
-        if (index2 == -1)
-          return -1; // m2 is higher, unvisible to the end
-        if (index1 == -1)
-          return 1; // m1 is higher, unvisible to the end
-        return index1 - index2;
-      }
-    });
 
     return members;
   }
