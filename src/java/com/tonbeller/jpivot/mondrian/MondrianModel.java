@@ -127,6 +127,8 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   private ServletContext servletContext = null;
 
   private Object bookMark = null;
+  
+  private String dataSourceChangeListener = null;
 
   public String getID() {
     return ID;
@@ -386,6 +388,10 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       properties.put(RolapConnectionProperties.Locale.name(), dynLocale);
   	  updatedProperties = true;
     }
+    if (dataSourceChangeListener != null && dataSourceChangeListener.length() > 0) {
+        properties.put(RolapConnectionProperties.DataSourceChangeListener.name(), dataSourceChangeListener);
+          updatedProperties = true;
+      }
 
     // if we do *not* want connection pooling, we must explicitly tell Mondrian
     if (!connectionPooling) {
@@ -1447,6 +1453,22 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    */
   public void setDynLocale(String dynLocale) {
       this.dynLocale = dynLocale;
+  }
+  
+  /**
+   * Getter for property dataSourceChangeListener.
+   * @return Value of property dataSourceChangeListener.
+   */
+  public String getDataSourceChangeListener() {
+      return this.dataSourceChangeListener;
+  }
+
+  /**
+   * Setter for property dataSourceChangeListener.
+   * @param dataSourceChangeListener New value of property dataSourceChangeListener.
+   */
+  public void setDataSourceChangeListener(String dataSourceChangeListener) {
+      this.dataSourceChangeListener = dataSourceChangeListener;
   }
 
 } // End MondrianModel

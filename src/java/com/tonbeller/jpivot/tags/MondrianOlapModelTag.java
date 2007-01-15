@@ -42,6 +42,7 @@ public class MondrianOlapModelTag extends OlapModelTag {
   String dynResolver;
   String dynLocale;
   String connectionPooling;
+  String dataSourceChangeListener;
   
   Resources res = Resources.instance();
 
@@ -67,6 +68,7 @@ public class MondrianOlapModelTag extends OlapModelTag {
     cfg.setDynResolver(dynResolver);
     cfg.setDynLocale(dynLocale);
     cfg.setConnectionPooling(connectionPooling);
+    cfg.setDataSourceChangeListener(dataSourceChangeListener);
 
     allowOverride(context, cfg);
 
@@ -271,6 +273,20 @@ public class MondrianOlapModelTag extends OlapModelTag {
   public void setDynLocale(String dynLocale) {
       this.dynLocale = dynLocale;
   }
+
+/**
+ * @return Returns the dataSourceChangeListener.
+ */
+public String getDataSourceChangeListener() {
+    return dataSourceChangeListener;
+}
+
+/**
+ * @param dataSourceChangeListener The dataSourceChangeListener to set.
+ */
+public void setDataSourceChangeListener(String dataSourceChangeListener) {
+    this.dataSourceChangeListener = dataSourceChangeListener;
+}
 
     
 }

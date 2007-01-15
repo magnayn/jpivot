@@ -336,6 +336,11 @@ where ([Time].[1997])
     <attr type="String" rtexpr="true" required="false" name="connectionPooling">
       <descr lang="en">"false" will prevent Mondrian from Connection Pooling</descr>
       <descr lang="de">"false" verhindert Mondrian Connection Pooling</descr>
+   </attr>
+
+    <attr type="String" rtexpr="true" required="false" name="dataSourceChangeListener">
+      <descr lang="en">class to detect changes in datasource</descr>
+      <descr lang="de">Klasse zum änderungen im DataSource zu ermitteln</descr>
     </attr>
 
     <attr type="String" rtexpr="true" required="false" name="queryName">

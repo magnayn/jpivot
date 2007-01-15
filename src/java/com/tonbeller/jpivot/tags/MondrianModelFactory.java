@@ -89,6 +89,9 @@ public class MondrianModelFactory {
     if (cfg.getRole() != null) {
       sb.append(";Role=").append(cfg.getRole());
     }
+    if (cfg.getDataSourceChangeListener() != null) {
+        sb.append(";dataSourceChangeListener=").append(cfg.getDataSourceChangeListener());
+    }
     // sb.append(";Role=California manager");
     return sb.toString();
   }
@@ -134,7 +137,9 @@ public class MondrianModelFactory {
     mm.setConnectString(makeConnectString(cfg));
     mm.setJdbcDriver(cfg.getJdbcDriver());
     mm.setDynresolver(cfg.getDynResolver());
-    mm.setDynLocale(cfg.getDynLocale());
+    mm.setDynLocale(cfg.getDynLocale());    
+    mm.setDataSourceChangeListener( cfg.getDataSourceChangeListener());
+
     if ("false".equalsIgnoreCase(cfg.getConnectionPooling()))
       mm.setConnectionPooling(false);
     mm.setExternalDataSource(cfg.getExternalDataSource());
@@ -158,6 +163,8 @@ public class MondrianModelFactory {
     String connectionPooling;
     // external DataSource to be used by Mondrian
     DataSource externalDataSource = null;
+    
+    String dataSourceChangeListener;
 
     /**
      * allows to override the current JDBC settings. 
@@ -182,6 +189,8 @@ public class MondrianModelFactory {
       setRole(getDefault(res, "mondrian.role", getRole()));
       setDynResolver(getDefault(res, "mondrian.dynResolver", getDynResolver()));
       setDynLocale(getDefault(res, "mondrian.dynLocale", getDynLocale()));
+      
+      setDataSourceChangeListener(getDefault(res, "mondrian.dataSourceChangeListener", getDataSourceChangeListener()));
 
       // if the data source is configured, use it
       if (externalDataSource != null) {
@@ -444,7 +453,23 @@ public class MondrianModelFactory {
           + jdbcUser + ", jdbcPassword=" + jdbcPassword + ", dataSource=" + dataSource
           + ", schemaUrl=" + schemaUrl + ", mdxQuery=" + mdxQuery + ", role=" + role
           + ", dynResolver=" + dynResolver + ", connectionPooling=" + connectionPooling
-          + ", externalDataSource=" + externalDataSource + ", dynLocale=" + dynLocale + "]";
+          + ", externalDataSource=" + externalDataSource + ", dynLocale=" + dynLocale + ", dataSourceChangeListener=" + dataSourceChangeListener + "]";
+    }
+    /**
+     * Getter for property dataSourceChangeListener.
+     * @return Value of property dataSourceChangeListener.
+     */
+
+    public String getDataSourceChangeListener() {
+        return dataSourceChangeListener;
+    }
+    /**
+     * Setter for property dataSourceChangeListener.
+     * @param dataSourceChangeListener New value of property dataSourceChangeListener.
+     */
+
+    public void setDataSourceChangeListener(String dataSourceChangeListener) {
+        this.dataSourceChangeListener = dataSourceChangeListener;
     }
   }
 }
