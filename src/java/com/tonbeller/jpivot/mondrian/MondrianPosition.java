@@ -12,6 +12,9 @@
  */
 package com.tonbeller.jpivot.mondrian;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import com.tonbeller.jpivot.olap.query.PositionBase;
 
 /**
@@ -35,20 +38,23 @@ public class MondrianPosition extends PositionBase {
     this.model = model;
     this.iAxis = iAxis;
     // extract the members
-    mondrian.olap.Member[] monMembers = monPosition.getMembers();
-    members = new MondrianMember[monMembers.length];
-    for (int j = 0; j < monMembers.length; j++) {
-      members[j] = model.lookupMemberByUName(monMembers[j].getUniqueName());
+    List l = new ArrayList();
+    Iterator mit = monPosition.iterator();
+    while (mit.hasNext()) {
+      mondrian.olap.Member monMember = (mondrian.olap.Member) mit.next();
+      l.add(model.lookupMemberByUName(monMember.getUniqueName()));
     }
+    members = (MondrianMember[]) l.toArray(new MondrianMember[l.size()]);
   }
 
   /**
    * get the Mondrian Members for this Axis Position
    * @return Array of Mondrian members
-   */
   mondrian.olap.Member[] getMonMembers() {
+  this is not used anywhere
     return monPosition.getMembers();
   }
+   */
 
   /**
    * Returns the iAxis.

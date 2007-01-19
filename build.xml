@@ -207,6 +207,7 @@
         <include name="eigenbase-properties.jar"/>
         <include name="eigenbase-resgen.jar"/>
         <include name="eigenbase-xom.jar"/>
+        <include name="commons-vfs.jar"/>
         <include name="FoodMart.xml"/>
         <include name="javacup.jar"/>
         <include name="mondrian.dtd"/>

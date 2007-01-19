@@ -58,7 +58,9 @@ public class MondrianOlapModelTag extends OlapModelTag {
 
 
     cfg.setMdxQuery(getBodyContent().getString());
-    cfg.setSchemaUrl(schemaUrl.toExternalForm());
+    // Add the schema URL.  Enclose the value in quotes to permit
+    // schema URLs that include things like ;jsessionid values.
+    cfg.setSchemaUrl("\"" + schemaUrl.toExternalForm() + "\"");
     cfg.setJdbcUrl(jdbcUrl);
     cfg.setJdbcDriver(jdbcDriver);
     cfg.setJdbcUser(jdbcUser);

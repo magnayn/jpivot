@@ -11,12 +11,14 @@
 package com.tonbeller.jpivot.mondrian;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Visitor;
 import mondrian.olap.AxisOrdinal;
+import mondrian.olap.Position;
 
 /**
  * MondrianAxis is an adapter class for the Result Mondrian Axis.
@@ -53,21 +55,30 @@ public class MondrianAxis implements Axis {
       }
     }
 
-    mondrian.olap.Position[] monPositions = monAxis.positions;
-    for (int i = 0; i < monPositions.length; i++) {
-      MondrianPosition position = new MondrianPosition(monPositions[i], iOrdinal, model);
+    List monPositions = monAxis.getPositions();
+    Iterator pit = monPositions.iterator();
+    int i = 0;
+    while (pit.hasNext()) {
+      Position monPosition = (Position) pit.next();
+      MondrianPosition position = new MondrianPosition(monPosition, iOrdinal, model);
       aPositions.add(position);
       if (iOrdinal == -1) {
         // for the slicer,  extract the hierarchies from the members
-        mondrian.olap.Member[] monMembers = monPositions[i].getMembers();
-        if (i == 0) { // first position only, as all positions have same hierarchies
+        
+        if (i == 0) { 
+          // first position only, as all positions have same hierarchies
           // create the hierarchies array
-          hierarchies = new MondrianHierarchy[monMembers.length];
-          for (int j = 0; j < monMembers.length; j++) {
-            hierarchies[j] = model.lookupHierarchy(monMembers[j].getHierarchy().getUniqueName());
+          List l = new ArrayList();
+          Iterator mit = monPosition.iterator();
+          while (mit.hasNext()) {
+            mondrian.olap.Member monMember = (mondrian.olap.Member) mit.next();
+            l.add(model.lookupHierarchy(monMember.getHierarchy().getUniqueName()));
           }
+          hierarchies = (MondrianHierarchy[]) 
+                l.toArray(new MondrianHierarchy[l.size()]);
         }
       }
+      i++;
     }
 
   }

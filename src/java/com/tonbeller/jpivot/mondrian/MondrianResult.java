@@ -13,10 +13,14 @@
 package com.tonbeller.jpivot.mondrian;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.impl.FormatStringParser;
 import com.tonbeller.jpivot.olap.query.ResultBase;
+import mondrian.olap.Position;
+import mondrian.olap.Member;
 
 /**
  * Result implementation for Mondrian
@@ -48,24 +52,29 @@ public class MondrianResult extends ResultBase {
     int nCells = 1;
     posize = new int[monAxes.length];
     for (i = 0; i < monAxes.length; i++) {
-      mondrian.olap.Position[] monPositions = monAxes[i].positions;
-      posize[i] = monPositions.length;
-      nCells = nCells * monPositions.length;
-
-      for (j = 0; j < monPositions.length; j++) {
-        mondrian.olap.Member[] monMembers = monPositions[j].getMembers();
-        for (k = 0; k < monMembers.length; k++) {
-          ((MondrianModel) model).addMember(monMembers[k]);
+      List monPositions = monAxes[i].getPositions();
+      int size = 0;
+      Iterator pit = monPositions.iterator();
+      while (pit.hasNext()) {
+        Position position = (Position) pit.next();
+        Iterator mit = position.iterator();
+        while (mit.hasNext()) {
+          ((MondrianModel) model).addMember((Member) mit.next());
         }
+        size++;
       }
+      posize[i] = size;
+      nCells = nCells * size;
     }
     mondrian.olap.Axis monSlicer = monResult.getSlicerAxis();
-    mondrian.olap.Position[] monPositions = monSlicer.positions;
-    for (j = 0; j < monPositions.length; j++) {
-      mondrian.olap.Member[] monMembers = monPositions[j].getMembers();
-      for (k = 0; k < monMembers.length; k++) {
-        ((MondrianModel) model).addMember(monMembers[k]);
-      }
+    List monPositions = monSlicer.getPositions();
+    Iterator pit = monPositions.iterator();
+    while (pit.hasNext()) {
+      Position position = (Position) pit.next();
+        Iterator mit = position.iterator();
+        while (mit.hasNext()) {
+          ((MondrianModel) model).addMember((Member) mit.next());
+        }
     }
 
     // second step: create the result data
