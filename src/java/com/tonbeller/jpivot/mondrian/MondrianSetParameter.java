@@ -56,7 +56,6 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
 
         // found the parameter with the given name in the query
         switch (pType) {
-
         case Category.Numeric:
           if (expr instanceof DoubleExpr) {
             double d = ((DoubleExpr) expr).getValue();
@@ -96,6 +95,7 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
             throw new java.lang.IllegalArgumentException(str);
           }
           break;
+        default:
         }
         model.fireModelChanged();
         return;
@@ -111,7 +111,8 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
   public Map getDisplayValues() {
     Map map = new Hashtable();
     MondrianModel model = (MondrianModel) getModel();
-    mondrian.olap.Query monQuery = ((MondrianQueryAdapter) model.getQueryAdapter()).getMonQuery();
+    mondrian.olap.Query monQuery = 
+        ((MondrianQueryAdapter) model.getQueryAdapter()).getMonQuery();
     mondrian.olap.Parameter[] monParams = monQuery.getParameters();
     for (int i = 0; i < monParams.length; i++) {
       mondrian.olap.Parameter monParam = monParams[i];
@@ -144,4 +145,17 @@ public class MondrianSetParameter extends ExtensionSupport implements SetParamet
     }
     return names;
   }
+  /** 
+   * Returns true if the query has one or more parameters. This does not
+   * evaluate the parameters. 
+   * 
+   * @return 
+   */
+  public boolean  getHasDisplayValues() {
+    MondrianModel model = (MondrianModel) getModel();
+    mondrian.olap.Query monQuery = ((MondrianQueryAdapter)model.getQueryAdapter()).getMonQuery();
+    mondrian.olap.Parameter[] monParams = monQuery.getParameters();
+    return (monParams.length > 0);
+  }
+
 } // MondrianSetParameter

@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import mondrian.olap.ResultLimitExceeded;
+import mondrian.olap.ResultLimitExceededException;
 import mondrian.olap.SchemaReader;
 
 import org.apache.log4j.Logger;
@@ -53,7 +53,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
   public Member[] getRootMembers(Hierarchy hier) {
     try {
       return internalGetRootMembers(hier);
-    } catch (ResultLimitExceeded e) {
+    } catch (ResultLimitExceededException e) {
       logger.error(null, e);
       throw new TooManyMembersException(e);
     }
@@ -185,7 +185,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
   public Member[] getChildren(Member member) {
     try {
       return internalGetChildren(member);
-    } catch (ResultLimitExceeded e) {
+    } catch (ResultLimitExceededException e) {
       logger.error(null, e);
       throw new TooManyMembersException(e);
     }

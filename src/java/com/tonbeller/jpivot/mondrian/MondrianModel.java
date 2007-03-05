@@ -16,6 +16,7 @@ package com.tonbeller.jpivot.mondrian;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import javax.sql.DataSource;
 import mondrian.mdx.DimensionExpr;
 import mondrian.mdx.HierarchyExpr;
 import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MdxVisitorImpl;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.ParameterExpr;
 import mondrian.mdx.UnresolvedFunCall;
@@ -82,6 +84,8 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
   static Logger logger = Logger.getLogger(MondrianModel.class);
 
+  static final String LOGICAL_MDX_PROP = "com.tonbeller.jpivot.mondrian.logical.mdx";
+
   /*
    * sample value
    * provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=file:///c:/dev/mondrian/demo/FoodMart.xml
@@ -107,6 +111,8 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   private HashMap hLevels = new HashMap();
   private HashMap hMembers = new HashMap();
   private ArrayList aMeasures = new ArrayList();
+
+  private List aLogicalModel = new LinkedList();
 
   private MondrianQueryAdapter queryAdapter = null;
 
@@ -174,11 +180,11 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    */
   public synchronized Result getResult() throws OlapException {
 
-    if (result != null)
+    if (result != null) {
       return result;
+    }
 
     if (!isInitialized) {
-      //logger.fatal(constructError);
       throw new OlapException("Model not initialized");
     }
 
@@ -186,32 +192,52 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
     mondrian.olap.Result monResult = null;
     boolean tryagain = false;
+
     try {
+      String mdx = null;
+      if (Boolean.getBoolean(LOGICAL_MDX_PROP)) {
+        mondrian.olap.Query modiQuery = rewriteMDXQuery(queryAdapter.getMonQuery());
+        queryAdapter.setMonQuery(modiQuery);
+        mdx = queryAdapter.getMonQuery().toString();
+        setCurrentMdx(mdx);
+      }
+      if (logger.isDebugEnabled()) {
+         if (mdx == null) {
+            mdx = queryAdapter.getMonQuery().toString();
+         }
+         logger.debug(mdx);
+      }
+
       long t1 = System.currentTimeMillis();
       monResult = monConnection.execute(queryAdapter.getMonQuery());
-      long t2 = System.currentTimeMillis();
-      if (logger.isInfoEnabled())
+
+      if (logger.isInfoEnabled()) {
+        long t2 = System.currentTimeMillis();
         logger.info("query execution time " + (t2 - t1) + " ms");
+      }
+
     } catch (MondrianException ex) {
       Throwable rootCause = getRootCause(ex);
-      if (rootCause instanceof mondrian.olap.ResultLimitExceeded) {
+      if (rootCause instanceof mondrian.olap.ResultLimitExceededException) {
         // the result limit was exceeded - roll back
         logger.warn("Mondrian result limit exceeded: " + rootCause.getMessage());
         if (bookMark != null) {
           setBookmarkState(bookMark);
           tryagain = true;
         }
-      } else if (rootCause instanceof mondrian.olap.InvalidHierarchy) {
+      } else if (rootCause instanceof mondrian.olap.InvalidHierarchyException) {
         // there was no member for an hierarchy
-        logger.warn("Mondrian Hierarchy with no members: " + rootCause.getMessage());
+        logger.warn("Mondrian Hierarchy with no members: " + 
+                rootCause.getMessage());
         throw new EmptyCubeException(rootCause);
       } else {
         // the cause of the exception is different from "Result Limit Exceeded"
         throw new OlapException(ex);
       }
 
-      if (!tryagain)
+      if (!tryagain) {
         throw new ResultTooLargeException(ex);
+      }
     }
     if (tryagain) {
       // roll back to bookmark occurred
@@ -219,9 +245,12 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       try {
         long t1 = System.currentTimeMillis();
         monResult = monConnection.execute(queryAdapter.getMonQuery());
-        long t2 = System.currentTimeMillis();
-        if (logger.isInfoEnabled())
+
+        if (logger.isInfoEnabled()) {
+          long t2 = System.currentTimeMillis();
           logger.info("rollback query execution time " + (t2 - t1) + " ms");
+        }
+
       } catch (MondrianException ex) {
         // should not occur
         // throw ResultTooLargeException because this was the original problem
@@ -230,14 +259,16 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       }
     }
     result = new MondrianResult(monResult, this);
-    if (tryagain)
+    if (tryagain) {
       result.setOverflowOccured(true);
+    }
 
     queryAdapter.afterExecute(result);
 
     // set a bookmark, so that we can roll back to that state
-    if (!tryagain)
+    if (!tryagain) {
       bookMark = getBookmarkState(EXTENSIONAL);
+    }
     return result;
   }
 
@@ -352,17 +383,17 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     boolean updatedProperties = false;
     
     if (properties == null) {
-    	properties = Util.parseConnectString(connectString);
-    	updatedProperties = true;
+      properties = Util.parseConnectString(connectString);
+      updatedProperties = true;
     }
 
     // get the Catalog from connect string
     String catString = properties.get("Catalog");
     URI uri = null;
     try {
-		if (catString != null) {
-		    uri = new URI(catString);
-		}
+      if (catString != null) {
+        uri = new URI(catString);
+      }
     } catch (URISyntaxException e) {
       //throw new IllegalArgumentException("Illegal Schema Url " + catString );
       // ignore;
@@ -377,16 +408,16 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
         catString = catString + "?sessionId=" + sessionId;
       }
       properties.put(RolapConnectionProperties.Catalog.name(), catString);
-  	  updatedProperties = true;
+      updatedProperties = true;
     }
 
     if (dynresolver != null && dynresolver.length() > 0) {
       properties.put(RolapConnectionProperties.DynamicSchemaProcessor.name(), dynresolver);
-  	  updatedProperties = true;
+      updatedProperties = true;
     }
     if (dynLocale!=null) {
       properties.put(RolapConnectionProperties.Locale.name(), dynLocale);
-  	  updatedProperties = true;
+      updatedProperties = true;
     }
     if (dataSourceChangeListener != null && dataSourceChangeListener.length() > 0) {
         properties.put(RolapConnectionProperties.DataSourceChangeListener.name(), dataSourceChangeListener);
@@ -396,11 +427,11 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     // if we do *not* want connection pooling, we must explicitly tell Mondrian
     if (!connectionPooling) {
       properties.put(RolapConnectionProperties.PoolNeeded.name(), "false");
-  	  updatedProperties = true;
+      updatedProperties = true;
     }
 
     if (updatedProperties) {
-    	setConnectProperties(properties);
+      setConnectProperties(properties);
     }
     
     CatalogLocator catalogLocator = new ServletContextCatalogLocator(servletContext);
@@ -706,9 +737,6 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
         }
       }
     }
-
-    //long l3 = System.currentTimeMillis();
-    //System.out.println("Time for create meta data(ms)=" + (l3-l2));
   }
 
   /**
@@ -1470,6 +1498,328 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   public void setDataSourceChangeListener(String dataSourceChangeListener) {
       this.dataSourceChangeListener = dataSourceChangeListener;
   }
+
+  /**
+   * Rewrites the given MDX query with a generic version
+   * 
+   * @param queryString MDX query text
+   * @return a {@link Result} object
+   */
+    protected mondrian.olap.Query rewriteMDXQuery(mondrian.olap.Query query) {
+        try {
+            QueryVisitor visitor = new QueryVisitor();
+            QueryAxis[] axes = query.getAxes();
+            for (int i = 0; i < axes.length; i++) {
+                axes[i].accept(visitor);
+            }
+
+
+            //
+            //  Cleans up the physical model for the known corner cases.
+            //  Case 1 : If the memberlist size = 1, then we should 
+            //     not replace with logical version
+            //     eg: (Union((Union(Union(Crossjoin({
+            //      [Wholesaler].[All Wholesalers]},{[Product].[All Products].[Alleya]})
+            //     (there are no children).
+            //     In this case we need to retain the product name, even though
+            //     a logical version might have been used in the previous query
+            //
+            //  Case 2: Within the same member list, if members are not 
+            //     at the same level, remove the lowest members
+            //     eg: [Time].[2006].[q12006] and [Time].[Avg Sales] 
+            //       are not same
+            //
+            String originalQuery = query.toString();
+            if (logger.isDebugEnabled()) {
+                logger.debug("rewriteMDXQuery: originalQuery="+originalQuery);
+            }
+            visitor.cleanUpPhysicalModel();
+            removeLogicalNameFromList("[Time]");
+
+            boolean changeHappened = false;
+            Iterator ite = visitor.getPhysicalModel().iterator();
+            while (ite.hasNext()) {
+                List list = (List) ite.next();
+                Iterator memIterator = list.iterator();
+
+                loop: 
+                while (memIterator.hasNext()) {
+                    String memberName = 
+                        ((mondrian.olap.Member)memIterator.next()).toString();
+                    String[] uniqueNameParts = Util.explode(memberName);
+                    String dimension = uniqueNameParts[0]; 
+
+                    Iterator logicalIt = aLogicalModel.iterator();
+                    while (logicalIt.hasNext()) {
+                        String logicalName = (String) logicalIt.next();
+
+                        // First see if the same dimension exists 
+                        // between prev query and this query
+                        // If exists, then verify that they are 
+                        // at the same level
+                        // Eg. [product].[All products] is not at 
+                        // the same level of [product].[All products].
+                        // [abc] whereas [product].[All products].children iss.
+
+                        if (logicalName.startsWith(dimension) &&
+                                isAtSameLevel(memberName, logicalName) ) {
+                            originalQuery = replaceEnumeratedQuery(
+                                             originalQuery,
+                                             memberName,
+                                             logicalName);
+                            changeHappened = true;
+//System.out.println("After replaceEnumeratedQuery originalQuery="+originalQuery);
+                            break loop;
+                        }
+                    }
+                    // Match Not found. 
+                    // That means there is no logical version exists for this 
+                    // dimension
+                    break loop;
+                }
+            }
+
+            mondrian.olap.Query result = query;
+
+            if (changeHappened) {
+                // Should we need to parse again? This is required because we
+                // have rewritten the query we have to parse it again to store
+                // the current logical model so that it can be used next time. 
+                result = getConnection().parseQuery(originalQuery);
+                visitor = new QueryVisitor();
+                axes = result.getAxes();
+                for (int i = 0; i < axes.length; i++) {
+                    axes[i].accept(visitor);
+                }
+            }
+
+            aLogicalModel = visitor.getLogicalModel();
+
+            return result;
+
+        } catch (Exception e) {  // SHOULD NOT HAPPEN
+            logger.warn(" Error in rewriting MDX Query " );
+            e.printStackTrace();
+            aLogicalModel.clear();
+
+            // In case of error, return the JPivot generated query
+            return query; 
+        } finally {
+            // empty
+        }
+    }
+
+
+     /**
+     * Converts a Enumerated MDX with logical one
+     * The enumerated list will always be present with in "{}"
+     *  Find the first occurrence of the given member in the query 
+     *  and replace everything with the logicalName until we find "}"     
+     * @param result
+     * @return String version of mondrian Result object.
+     */
+    public String replaceEnumeratedQuery(final String query,
+                                         final String memberName,
+                                         final String logicalName) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("replaceEnumeratedQuery: Given Query is " +  query);
+        }
+
+        StringBuffer result = new StringBuffer(200);
+
+        int index = query.indexOf(memberName);
+        // first occurance of enum
+        result.append(query.substring(0, index)); 
+        // append with logical  expr
+        result.append(logicalName); 
+
+        index = query.indexOf("}", index);
+        //remaining 
+        result.append(query.substring(index)); 
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("replaceEnumeratedQuery: Resultant Query is " + 
+                result.toString());
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Checks if 2 members are at the same level by comparing the 
+     * no. of "." [dots] present
+     *
+     * @param result
+     * @return String version of mondrian Result object.
+     */
+    public boolean isAtSameLevel(final String memberName, 
+                                 final String logicalName) {
+        final String[] memberUniqueNameParts = Util.explode(memberName);
+        final String[] logicalUniqueNameParts = Util.explode(logicalName);
+        return (memberUniqueNameParts.length == logicalUniqueNameParts.length);
+
+    }
+
+    /**
+     * Visitor which builds a separate lists for logical members and 
+     * physical(enumerated) members
+     */
+    static class QueryVisitor extends MdxVisitorImpl {
+
+        // we need quick remove in method removeLogicalNameFromList()
+        // which is why this is a LinkedList.
+        private LinkedList logicalDimensionList;
+        private List physicalDimensionList;
+        private List enumMemberList;
+
+        private QueryVisitor() {
+            this.logicalDimensionList = new LinkedList();
+            this.physicalDimensionList = new ArrayList();
+            this.enumMemberList = new ArrayList();
+
+        }
+        public Object visit(mondrian.mdx.UnresolvedFunCall call) {
+
+            if (call.getFunName().equalsIgnoreCase("children") ||
+                    call.getFunName().equalsIgnoreCase("members" )) {
+                logicalDimensionList.add(call.toString());
+                enumMemberList = new ArrayList();
+                physicalDimensionList.add(enumMemberList);
+
+            } else if (call.getFunName().equals("{}")) {
+                enumMemberList = new ArrayList();
+                physicalDimensionList.add(enumMemberList);
+            }
+
+            return null;
+        }
+        public Object visit(mondrian.mdx.ResolvedFunCall call) {
+
+            if (call.getFunName().equalsIgnoreCase("children") ||
+                    call.getFunName().equalsIgnoreCase("members" )) {
+
+                logicalDimensionList.add(call.toString());
+                enumMemberList = new ArrayList();
+                physicalDimensionList.add(enumMemberList);
+
+            } else if (call.getFunName().equals("{}")) {
+                enumMemberList = new ArrayList();
+                physicalDimensionList.add(enumMemberList);
+            }
+
+            return null;
+        }
+        public Object visit(mondrian.mdx.MemberExpr memberExpr) {
+            mondrian.olap.Member member = memberExpr.getMember();
+            enumMemberList.add(member);
+
+            return null;
+        }
+        public LinkedList getLogicalModel() {
+            return logicalDimensionList;
+        }
+
+        public List getPhysicalModel() {
+            return physicalDimensionList;
+        }
+
+        /**
+         *  Cleans up the physical model for the known corner cases.
+         *  Case 1 : If the memberlist size = 1, then we should not 
+         *   replace with logical version
+         *      eg: (Union((Union(Union(Crossjoin({
+         *      [Wholesaler].[All Wholesalers]},{[Product].[All Products].[Alleya]})
+         *      In this case we need to retain the product name, even though
+         *      a logical version used in the prev query
+         *
+         *  Case 2: Within the same member list, if members are not 
+         *      at the same level, remove the lowest members
+         *      eg: [Time].[2006].[q12006] and [Time].[Avg Sales] are not same    
+         * @param result
+         * @return String version of mondrian Result object.
+         */
+        public void cleanUpPhysicalModel() {
+            List newList = new ArrayList();
+            // TODO: use iterator
+            for(int i = 0; i < physicalDimensionList.size(); i++) {
+                List aList = (List) physicalDimensionList.get(i);
+                if (aList.size() != 1 && allSameDimension(aList)) {
+                    newList.add(aList);
+                }
+            }
+            physicalDimensionList = newList;
+        }
+
+
+        // debug out
+        public void print(Object msg) {
+            System.out.println(msg);
+        }
+        // debug out
+        public void printLists() {
+           Iterator it = logicalDimensionList.iterator();
+           while(it.hasNext()) {
+              print((String)it.next());
+           }
+           print(" going to print members ");
+           it = physicalDimensionList.iterator();
+           while(it.hasNext()) {
+               List list = (List)it.next();
+               Iterator ite = list.iterator();
+               while (ite.hasNext()) {
+                   print((mondrian.olap.Member)ite.next());
+               }
+               print(" Going to print next member lists");
+           }
+        }
+
+        /** 
+         * As an example, in a member List get the first Member's
+         * hierarchy name and then make sure that all of the rest
+         * are also part of the same hierarchy.
+         * 
+         * @param list 
+         * @return 
+         */
+        private boolean allSameDimension(List list) {
+            if (list.size() == 0) {
+                return false;
+            }
+
+            // Get the hierarchy name
+            String firstMemberName = 
+                ((mondrian.olap.Member) list.get(0)).toString();
+            String[] uniqueNameParts = Util.explode(firstMemberName);
+            //String dimName = firstDim.substring(0, firstDim.indexOf("."));
+            String dimName = uniqueNameParts[0];
+            boolean result = true;
+            Iterator it = list.iterator();
+            while (it.hasNext()) {
+                // see if member starts with the same name
+                String name = ((mondrian.olap.Member) it.next()).toString();
+                if (! name.startsWith(dimName)) {
+                    result = false;
+                    break;
+                }
+            }
+
+            return result;
+        }
+    }
+
+  /**
+   * sets the dirty hierarchy whose logical representation needs to be removed
+   */
+  protected void removeLogicalNameFromList(final String hierName) {
+      for (int i = 0; i < aLogicalModel.size(); i++) {
+          String listName = (String) aLogicalModel.get(i);
+          if (listName.startsWith(hierName)) {
+              aLogicalModel.remove(i);
+              break;
+          }
+      }
+  }
+
 
 } // End MondrianModel
 

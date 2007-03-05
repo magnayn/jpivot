@@ -212,6 +212,7 @@
         <include name="javacup.jar"/>
         <include name="mondrian.dtd"/>
         <include name="mondrian.jar"/>
+        <include name="retroweaver-rt-1.2.4.jar"/>
       </fileset>
 
       <fileset dir="${junit.home}">
