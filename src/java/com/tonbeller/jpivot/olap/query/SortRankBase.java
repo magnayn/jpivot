@@ -177,6 +177,11 @@ public abstract class SortRankBase
     Hierarchy[] hiers = membersToSort.getHierarchies();
     Dimension dim = hiers[0].getDimension();
     quaxToSort = model.getQueryAdapter().findQuax(dim);
+    if (quaxToSort == null) {
+      logger.warn("reject sort, the Quax is null");
+      sorting = false;
+      return;
+    }
 
     if (logInfo) {
       String poString = "";

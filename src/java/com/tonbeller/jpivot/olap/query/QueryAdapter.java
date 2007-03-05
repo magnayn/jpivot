@@ -252,7 +252,7 @@ public abstract class QueryAdapter {
     Quax quax = findQuax(dim);
     if (logger.isInfoEnabled())
       logger.info("expand Member" + poString(null, member));
-    if (!quax.canExpand(member)) {
+    if ((quax == null) || !quax.canExpand(member)) {
       logger.fatal("Expand Member failed for" + ((MDXElement) member).getUniqueName());
       //throw new java.lang.IllegalArgumentException("cannot expand");
       return;
@@ -275,7 +275,7 @@ public abstract class QueryAdapter {
 
     if (logger.isDebugEnabled())
       logger.info("expand Path" + poString(pathMembers, null));
-    if (!quax.canExpand(pathMembers)) {
+    if ((quax == null) || !quax.canExpand(pathMembers)) {
       logger.fatal("Expand failed for" + poString(pathMembers, null));
       throw new java.lang.IllegalArgumentException("cannot expand");
     }
@@ -297,6 +297,10 @@ public abstract class QueryAdapter {
       logger.info("collapse " + ((MDXElement) member).getUniqueName());
     }
     Quax quax = findQuax(dim);
+    if (quax == null) {
+      logger.info("collapse Quax was null " + ((MDXElement) member).getUniqueName());
+      return;
+    }
     quax.collapse(member);
 
     model.fireModelChanged();
@@ -317,6 +321,10 @@ public abstract class QueryAdapter {
     Member member = pathMembers[pathMembers.length - 1];
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
+    if (quax == null) {
+      logger.debug("collapse Quax was null" + poString(pathMembers, null));
+      return;
+    }
 
     quax.collapse(pathMembers);
     model.fireModelChanged();
@@ -338,7 +346,7 @@ public abstract class QueryAdapter {
   public boolean canDrillUp(Hierarchy hier) {
 
     Quax quax = findQuax(hier.getDimension());
-    return quax.canDrillUp(hier);
+    return (quax == null) ? false : quax.canDrillUp(hier);
   }
 
   /**
@@ -351,6 +359,11 @@ public abstract class QueryAdapter {
 
     // switch to Qubon mode, if not yet in
     Quax quax = findQuax(member.getLevel().getHierarchy().getDimension());
+
+    if (quax == null) {
+        logger.info("drillDown Quax was null" + poString(null, member));
+        return;
+    }
 
     // replace dimension iDim by monMember.children
     quax.drillDown(member);
@@ -371,6 +384,10 @@ public abstract class QueryAdapter {
 
     // switch to Qubon mode, if not yet in
     Quax quax = findQuax(hier.getDimension());
+    if (quax == null) {
+        logger.info("drillUp Hierarchy Quax was null" + hier.getLabel());
+        return;
+    }
     quax.drillUp(hier);
 
     model.fireModelChanged();

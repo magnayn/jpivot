@@ -155,7 +155,7 @@ public class XMLA_QueryAdapter extends QueryAdapter implements QuaxChangeListene
             // if the dimension is not on the axis - ignore
             Dimension dim = hier.getDimension();
             Quax q = findQuax(dim);
-            if (!quaxes[i].equals(q))
+            if ((q == null) || !quaxes[i].equals(q))
               continue PropsLoop;
           } else
             continue PropsLoop;
@@ -301,7 +301,7 @@ public class XMLA_QueryAdapter extends QueryAdapter implements QuaxChangeListene
 
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    return quax.canExpand(member);
+    return (quax == null) ? false : quax.canExpand(member);
   }
 
   /**
@@ -323,7 +323,7 @@ public class XMLA_QueryAdapter extends QueryAdapter implements QuaxChangeListene
     Dimension dim = m.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
 
-    return quax.canExpand(pathMembers);
+    return (quax == null) ? false : quax.canExpand(pathMembers);
   }
 
   /**
@@ -361,7 +361,7 @@ public class XMLA_QueryAdapter extends QueryAdapter implements QuaxChangeListene
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
 
-    return quax.canCollapse(member);
+    return (quax == null) ? false : quax.canCollapse(member);
   }
 
   /**
@@ -378,7 +378,7 @@ public class XMLA_QueryAdapter extends QueryAdapter implements QuaxChangeListene
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
 
-    return quax.canCollapse(pathMembers);
+    return (quax == null) ? false : quax.canCollapse(pathMembers);
   }
 
   // ************
@@ -394,7 +394,7 @@ public class XMLA_QueryAdapter extends QueryAdapter implements QuaxChangeListene
       return false;
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    return quax.canDrillDown(member);
+    return (quax == null) ? false : quax.canDrillDown(member);
   }
 
   // *********

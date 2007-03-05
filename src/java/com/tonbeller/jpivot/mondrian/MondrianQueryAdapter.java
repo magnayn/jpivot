@@ -217,7 +217,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
 
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    return quax.canExpand(member);
+    return (quax == null) ? false : quax.canExpand(member);
   }
 
   /**
@@ -239,7 +239,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
 
     Dimension dim = m.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    return quax.canExpand(pathMembers);
+    return (quax == null) ? false : quax.canExpand(pathMembers);
   }
 
   /**
@@ -254,8 +254,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
       return false;
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-
-    return quax.canCollapse(member);
+    return (quax == null) ? false : quax.canCollapse(member);
   }
 
   /**
@@ -271,8 +270,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
       return false;
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-
-    return quax.canCollapse(pathMembers);
+    return (quax == null) ? false : quax.canCollapse(pathMembers);
   }
 
   /**
@@ -288,8 +286,8 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
 
     if (logger.isInfoEnabled())
       logger.info("expand Member" + poString(null, member));
-    if (!quax.canExpand(member)) {
-      logger.fatal("Expand Member failed for" + ((MondrianMember) member).getUniqueName());
+    if ((quax == null) || !quax.canExpand(member)) {
+      logger.fatal("Expand Member failed for " + ((MondrianMember) member).getUniqueName());
       //throw new java.lang.IllegalArgumentException("cannot expand");
       return;
     }
@@ -312,7 +310,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
 
     if (logger.isDebugEnabled())
       logger.info("expand Path" + poString(pathMembers, null));
-    if (!quax.canExpand(pathMembers)) {
+    if ((quax == null) || !quax.canExpand(pathMembers)) {
       logger.fatal("Expand failed for" + poString(pathMembers, null));
       throw new java.lang.IllegalArgumentException("cannot expand");
     }
@@ -334,7 +332,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
       return false;
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    return quax.canDrillDown(member);
+    return (quax == null) ? false : quax.canDrillDown(member);
   }
 
   // *********
