@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.mondrian;
 
@@ -58,7 +58,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
       throw new TooManyMembersException(e);
     }
   }
-  
+
   private Member[] internalGetRootMembers(Hierarchy hier) {
     MondrianModel model = (MondrianModel) getModel();
     mondrian.olap.Hierarchy monHier = ((MondrianHierarchy) hier).getMonHierarchy();
@@ -96,12 +96,12 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
             aMem.add(m);
         }
       }
-    }    
+    }
 
     // order members according to occurrence in query result
     //  if there is no result available, do not sort
     Result res = model.currentResult();
-    if (res != null) {    
+    if (res != null) {
         // locate the appropriate result axis
         // find the Quax for this hier
         MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
@@ -113,7 +113,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
               iAx = (iAx + 1) % 2;
             Axis axis = res.getAxes()[iAx];
             List positions = axis.getPositions();
-            
+
             for (Iterator iter = positions.iterator(); iter.hasNext();) {
               Position pos = (Position) iter.next();
               Member[] posMembers = pos.getMembers();
@@ -122,15 +122,15 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
                 continue; // ignore, not root
               if (!visibleRootMembers.contains(mem))
                 visibleRootMembers.add(mem);
-              
+
               // Check if the result axis contains invisible members
               if (!aMem.contains(mem)) {
                   aMem.add(mem);
-              }                                    
+              }
             }
         }
     }
-    
+
     Member[] members = (Member[]) aMem.toArray(new Member[0]);
 
     // If there is no query result, do not sort
@@ -157,8 +157,8 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     // Name convention: if member starts with "." its hidden
     if (monMember.getName().startsWith("."))
       return false;
-    
-    // from schema: if visible-Property is not-null and equals false, 
+
+    // from schema: if visible-Property is not-null and equals false,
     // then its hidden
     Object visible = monMember.getPropertyValue(mondrian.olap.Property.VISIBLE.name);
     return !Boolean.FALSE.equals(visible);
@@ -192,7 +192,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
   }
 
   private Member[] internalGetChildren(Member member) {
-    
+
     mondrian.olap.Member monMember = ((MondrianMember) member).getMonMember();
     //  unreliable: always null in a parent-child hierarch
     // if (monMember.getLevel().getChildLevel() == null)

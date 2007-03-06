@@ -133,7 +133,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   private ServletContext servletContext = null;
 
   private Object bookMark = null;
-  
+
   private String dataSourceChangeListener = null;
 
   public String getID() {
@@ -379,9 +379,9 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     }
 
     Util.PropertyList properties = getConnectProperties();
-    
+
     boolean updatedProperties = false;
-    
+
     if (properties == null) {
       properties = Util.parseConnectString(connectString);
       updatedProperties = true;
@@ -433,9 +433,9 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     if (updatedProperties) {
       setConnectProperties(properties);
     }
-    
+
     CatalogLocator catalogLocator = new ServletContextCatalogLocator(servletContext);
-    
+
     // use external DataSource if present
     monConnection = mondrian.olap.DriverManager.getConnection(properties, catalogLocator, externalDataSource, false);
 
@@ -458,7 +458,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       ((RolapConnection) monConnection).setLocale(loc);
     }
 
-    mondrian.olap.Query monQuery = null;
+    mondrian.olap.Query monQuery;
     try {
       monQuery = parseMDX();
     } catch (OlapException e) {
@@ -488,11 +488,10 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   /**
    * parse
    *
-   * @return @throws
-   *         OlapException
+   * @return @throws OlapException
    */
   private mondrian.olap.Query parseMDX() throws OlapException {
-    mondrian.olap.Query monQuery = null;
+    mondrian.olap.Query monQuery;
     try {
       monQuery = getConnection().parseQuery(mdxQuery);
     } catch (MondrianException ex) {
@@ -1384,7 +1383,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    * from a Parameter.
    */
   private Exp[] getParamterArgs(Parameter p) {
-    Exp expName = Literal.createString(p.getName()); 
+    Exp expName = Literal.createString(p.getName());
     Exp expValue;
     Exp expType;
 
@@ -1396,7 +1395,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       objValue = ((Literal)objValue).getValue();
     else if (objValue instanceof MemberExpr)
       objValue = ((MemberExpr)objValue).getMember();
-    
+
     if (objValue instanceof String) {
       expValue = Literal.createString((String)objValue);
       expType  = Literal.createSymbol("STRING");
@@ -1411,7 +1410,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       expValue = new MemberExpr(m);
       expType = new DimensionExpr(m.getDimension());
     } else throw new IllegalArgumentException("unknown Param value: " + objValue + ": " + objValue.getClass());
-    
+
     Exp expDescr = p.getDescription() != null ? Literal.createString(p.getDescription()):Literal.createString("");
     return new Exp[]{expName, expType, expValue, expDescr};
   }
@@ -1482,7 +1481,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   public void setDynLocale(String dynLocale) {
       this.dynLocale = dynLocale;
   }
-  
+
   /**
    * Getter for property dataSourceChangeListener.
    * @return Value of property dataSourceChangeListener.
