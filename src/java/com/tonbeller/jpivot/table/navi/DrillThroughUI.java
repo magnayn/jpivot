@@ -8,7 +8,7 @@
  * You must accept the terms of that agreement to use this software.
  * ====================================================================
  *
- * 
+ *
  */
 package com.tonbeller.jpivot.table.navi;
 
@@ -25,19 +25,17 @@ import com.tonbeller.jpivot.table.CellBuilder;
 import com.tonbeller.jpivot.table.CellBuilderDecorator;
 import com.tonbeller.jpivot.table.TableComponent;
 import com.tonbeller.jpivot.table.TableComponentExtensionSupport;
+import com.tonbeller.jpivot.mondrian.MondrianDrillThroughTableModel;
 import com.tonbeller.wcf.component.RendererParameters;
 import com.tonbeller.wcf.controller.Dispatcher;
 import com.tonbeller.wcf.controller.DispatcherSupport;
 import com.tonbeller.wcf.controller.RequestContext;
 import com.tonbeller.wcf.controller.RequestListener;
-import com.tonbeller.wcf.table.EmptyTableModel;
-import com.tonbeller.wcf.table.ITableComponent;
-import com.tonbeller.wcf.table.TableModel;
-import com.tonbeller.wcf.table.TableModelDecorator;
+import com.tonbeller.wcf.table.*;
 import com.tonbeller.wcf.utils.DomUtils;
 
 /**
- * 
+ *
  * @author Robin Bagot
  */
 public class DrillThroughUI extends TableComponentExtensionSupport implements ModelChangeListener {
@@ -46,7 +44,7 @@ public class DrillThroughUI extends TableComponentExtensionSupport implements Mo
   boolean renderActions;
   Dispatcher dispatcher = new DispatcherSupport();
   DrillThrough extension;
-  
+
   TableModelDecorator tableModel = new TableModelDecorator(EmptyTableModel.instance());
 
   public static final String ID = "drillThrough";
@@ -65,7 +63,7 @@ public class DrillThroughUI extends TableComponentExtensionSupport implements Mo
     }
     available = true;
 
-    // extend the controller 
+    // extend the controller
     table.getDispatcher().addRequestListener(null, null, dispatcher);
 
     // add some decorators via table.get/setRenderer
@@ -124,6 +122,12 @@ public class DrillThroughUI extends TableComponentExtensionSupport implements Mo
         TableModel tm = drillThrough(cell);
         tc.setModel(tm);
         tc.setVisible(true);
+        TableColumn[] tableColumns =
+          ((EditableTableComponent) tc).getTableComp().getTableColumns();
+        for (int i = 0; i < tableColumns.length; i++) {
+          TableColumn tableColumn = tableColumns[i];
+          tableColumn.setHidden(false);
+        }
       }
     }
   }
