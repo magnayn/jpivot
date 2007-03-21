@@ -53,10 +53,14 @@ import mondrian.olap.Syntax;
 import mondrian.olap.Util;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
+import mondrian.olap.ResultLimitExceededException;
+import mondrian.olap.MemoryLimitExceededException;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.ServletContextCatalogLocator;
+import mondrian.util.MemoryMonitor;
+import mondrian.util.MemoryMonitorFactory;
 
 import org.apache.log4j.Logger;
 
@@ -115,6 +119,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   private List aLogicalModel = new LinkedList();
 
   private MondrianQueryAdapter queryAdapter = null;
+  private Listener listener = null;
 
   private boolean isInitialized = false;
   private String ID = null;
@@ -138,6 +143,16 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
   public String getID() {
     return ID;
+  }
+
+  
+  /** 
+   *  check for OutOfMemory
+   */
+  final void checkListener() throws MemoryLimitExceededException {
+    if (this.listener != null) {
+      this.listener.check();
+    }
   }
 
   public void setID(String ID) {
@@ -188,87 +203,104 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       throw new OlapException("Model not initialized");
     }
 
-    queryAdapter.onExecute();
-
-    mondrian.olap.Result monResult = null;
-    boolean tryagain = false;
-
+    this.listener = new Listener();
+    MemoryMonitor mm = MemoryMonitorFactory.getMemoryMonitor();
     try {
-      String mdx = null;
-      if (Boolean.getBoolean(LOGICAL_MDX_PROP)) {
-        mondrian.olap.Query modiQuery = rewriteMDXQuery(queryAdapter.getMonQuery());
-        queryAdapter.setMonQuery(modiQuery);
-        mdx = queryAdapter.getMonQuery().toString();
-        setCurrentMdx(mdx);
-      }
-      if (logger.isDebugEnabled()) {
-         if (mdx == null) {
-            mdx = queryAdapter.getMonQuery().toString();
-         }
-         logger.debug(mdx);
-      }
+      mm.addListener(this.listener);
 
-      long t1 = System.currentTimeMillis();
-      monResult = monConnection.execute(queryAdapter.getMonQuery());
+      queryAdapter.onExecute();
 
-      if (logger.isInfoEnabled()) {
-        long t2 = System.currentTimeMillis();
-        logger.info("query execution time " + (t2 - t1) + " ms");
-      }
+      mondrian.olap.Result monResult = null;
+      boolean tryagain = false;
 
-    } catch (MondrianException ex) {
-      Throwable rootCause = getRootCause(ex);
-      if (rootCause instanceof mondrian.olap.ResultLimitExceededException) {
-        // the result limit was exceeded - roll back
-        logger.warn("Mondrian result limit exceeded: " + rootCause.getMessage());
-        if (bookMark != null) {
-          setBookmarkState(bookMark);
-          tryagain = true;
-        }
-      } else if (rootCause instanceof mondrian.olap.InvalidHierarchyException) {
-        // there was no member for an hierarchy
-        logger.warn("Mondrian Hierarchy with no members: " + 
-                rootCause.getMessage());
-        throw new EmptyCubeException(rootCause);
-      } else {
-        // the cause of the exception is different from "Result Limit Exceeded"
-        throw new OlapException(ex);
-      }
-
-      if (!tryagain) {
-        throw new ResultTooLargeException(ex);
-      }
-    }
-    if (tryagain) {
-      // roll back to bookmark occurred
-      // a Result Limit Overflow will not occur here
       try {
+        String mdx = null;
+        if (Boolean.getBoolean(LOGICAL_MDX_PROP)) {
+          mondrian.olap.Query modiQuery = rewriteMDXQuery(queryAdapter.getMonQuery());
+          queryAdapter.setMonQuery(modiQuery);
+          mdx = queryAdapter.getMonQuery().toString();
+          setCurrentMdx(mdx);
+        }
+        if (logger.isDebugEnabled()) {
+           if (mdx == null) {
+              mdx = queryAdapter.getMonQuery().toString();
+           }
+           logger.debug(mdx);
+        }
+        // check for OutOfMemory
+        this.listener.check();
+  
         long t1 = System.currentTimeMillis();
         monResult = monConnection.execute(queryAdapter.getMonQuery());
 
+        // check for OutOfMemory
+        this.listener.check();
+  
         if (logger.isInfoEnabled()) {
           long t2 = System.currentTimeMillis();
-          logger.info("rollback query execution time " + (t2 - t1) + " ms");
+          logger.info("query execution time " + (t2 - t1) + " ms");
         }
-
+  
       } catch (MondrianException ex) {
-        // should not occur
-        // throw ResultTooLargeException because this was the original problem
-        throw new ResultTooLargeException(
-            "Error running previous query (prior to Result Overflow)", ex);
+        Throwable rootCause = getRootCause(ex);
+        if (rootCause instanceof ResultLimitExceededException) {
+          // the result limit was exceeded - roll back
+          logger.warn("Mondrian result limit exceeded: " + rootCause.getMessage());
+          if (bookMark != null) {
+            setBookmarkState(bookMark);
+            tryagain = true;
+          }
+        } else if (rootCause instanceof mondrian.olap.InvalidHierarchyException) {
+          // there was no member for an hierarchy
+          logger.warn("Mondrian Hierarchy with no members: " + 
+                  rootCause.getMessage());
+          throw new EmptyCubeException(rootCause);
+        } else {
+          // the cause of the exception is different from "Result Limit Exceeded"
+          throw new OlapException(ex);
+        }
+  
+        if (!tryagain) {
+          throw new ResultTooLargeException(ex);
+        }
       }
-    }
-    result = new MondrianResult(monResult, this);
-    if (tryagain) {
-      result.setOverflowOccured(true);
+      if (tryagain) {
+        // roll back to bookmark occurred
+        // a Result Limit Overflow will not occur here
+        try {
+          long t1 = System.currentTimeMillis();
+          monResult = monConnection.execute(queryAdapter.getMonQuery());
+          // check for OutOfMemory
+          this.listener.check();
+  
+          if (logger.isInfoEnabled()) {
+            long t2 = System.currentTimeMillis();
+            logger.info("rollback query execution time " + (t2 - t1) + " ms");
+          }
+  
+        } catch (MondrianException ex) {
+          // should not occur
+          // throw ResultTooLargeException because this was the original problem
+          throw new ResultTooLargeException(
+              "Error running previous query (prior to Result Overflow)", ex);
+        }
+      }
+      result = new MondrianResult(monResult, this);
+      if (tryagain) {
+        result.setOverflowOccured(true);
+      }
+  
+      queryAdapter.afterExecute(result);
+  
+      // set a bookmark, so that we can roll back to that state
+      if (!tryagain) {
+        bookMark = getBookmarkState(EXTENSIONAL);
+      }
+    } finally {
+      mm.removeListener(this.listener);
+      this.listener = null;
     }
 
-    queryAdapter.afterExecute(result);
-
-    // set a bookmark, so that we can roll back to that state
-    if (!tryagain) {
-      bookMark = getBookmarkState(EXTENSIONAL);
-    }
     return result;
   }
 
@@ -1817,6 +1849,26 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
               break;
           }
       }
+  }
+  class Listener implements MemoryMonitor.Listener {
+    String oomMsg;
+    Listener() {
+    }
+    public void memoryUsageNotification(long used, long max) {
+      StringBuffer buf = new StringBuffer(200);
+      buf.append("OutOfMemory used=");
+      buf.append(used);
+      buf.append(", max=");
+      buf.append(max);
+      buf.append(" for mdx: ");
+      buf.append(queryAdapter.getMonQuery().toMdx());
+      this.oomMsg = buf.toString();
+    }
+    final void check() throws MemoryLimitExceededException {
+      if (oomMsg != null) {
+        throw new MemoryLimitExceededException(oomMsg);
+      }
+    }
   }
 
 

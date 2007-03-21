@@ -21,6 +21,7 @@ import com.tonbeller.jpivot.olap.model.impl.FormatStringParser;
 import com.tonbeller.jpivot.olap.query.ResultBase;
 import mondrian.olap.Position;
 import mondrian.olap.Member;
+import mondrian.olap.MemoryLimitExceededException;
 
 /**
  * Result implementation for Mondrian
@@ -35,7 +36,8 @@ public class MondrianResult extends ResultBase {
    * Constructor
    * @param model the associated MondrianModel
    */
-  protected MondrianResult(mondrian.olap.Result monResult, MondrianModel model) {
+  protected MondrianResult(mondrian.olap.Result monResult, MondrianModel model)
+        throws MemoryLimitExceededException {
     super(model);
     this.monResult = monResult;
 
@@ -45,13 +47,14 @@ public class MondrianResult extends ResultBase {
   /**
    * initData creates all the wrapper objects
    */
-  private void initData() {
-    int i, j, k;
+  private void initData() throws MemoryLimitExceededException {
+    MondrianModel mmodel = (MondrianModel) model;
+
     mondrian.olap.Axis[] monAxes = monResult.getAxes();
     // first step: walk through axes and add the members to the model
     int nCells = 1;
     posize = new int[monAxes.length];
-    for (i = 0; i < monAxes.length; i++) {
+    for (int i = 0; i < monAxes.length; i++) {
       List monPositions = monAxes[i].getPositions();
       int size = 0;
       Iterator pit = monPositions.iterator();
@@ -59,10 +62,13 @@ public class MondrianResult extends ResultBase {
         Position position = (Position) pit.next();
         Iterator mit = position.iterator();
         while (mit.hasNext()) {
-          ((MondrianModel) model).addMember((Member) mit.next());
+          mmodel.addMember((Member) mit.next());
         }
         size++;
       }
+      // check for OutOfMemory
+      mmodel.checkListener();
+
       posize[i] = size;
       nCells = nCells * size;
     }
@@ -73,27 +79,39 @@ public class MondrianResult extends ResultBase {
       Position position = (Position) pit.next();
         Iterator mit = position.iterator();
         while (mit.hasNext()) {
-          ((MondrianModel) model).addMember((Member) mit.next());
+          mmodel.addMember((Member) mit.next());
         }
+        // check for OutOfMemory
+        mmodel.checkListener();
     }
 
     // second step: create the result data
     axesList = new ArrayList();
-    for (i = 0; i < monAxes.length; i++) {
-      axesList.add(new MondrianAxis(i, monAxes[i], ((MondrianModel) model)));
+    for (int i = 0; i < monAxes.length; i++) {
+      axesList.add(new MondrianAxis(i, monAxes[i], mmodel));
+      // check for OutOfMemory
+      mmodel.checkListener();
     }
-    slicer = new MondrianAxis(-1, monSlicer, ((MondrianModel) model));
+    slicer = new MondrianAxis(-1, monSlicer, mmodel);
 
     int[] iar = new int[monAxes.length];
-    for (i = 0; i < monAxes.length; i++)
+    for (int i = 0; i < monAxes.length; i++) {
       iar[i] = 0;
-    for (i = 0; i < nCells; i++) {
+    }
+    for (int i = 0; i < nCells; i++) {
       mondrian.olap.Cell monCell = monResult.getCell(iar);
-      MondrianCell cell = new MondrianCell(monCell, ((MondrianModel) model));
+      MondrianCell cell = new MondrianCell(monCell, mmodel);
       cell.setFormattedValue(monCell.getFormattedValue(), formatStringParser);
       aCells.add(cell);
-      if (nCells > 1)
-        increment(iar); // not for 0-dimensional case
+      if (nCells > 1) {
+        // not for 0-dimensional case
+        increment(iar); 
+      }
+
+      // check for OutOfMemory every 1000 cells created
+      if (i % 1000 == 0) {
+        mmodel.checkListener();
+      }
     }
 
   }
