@@ -775,7 +775,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    *
    * @return The Mondrian Connection
    */
-  protected mondrian.olap.Connection getConnection() {
+  public mondrian.olap.Connection getConnection() {
     return monConnection;
   }
 
