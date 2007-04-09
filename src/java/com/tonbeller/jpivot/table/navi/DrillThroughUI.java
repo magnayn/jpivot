@@ -122,11 +122,18 @@ public class DrillThroughUI extends TableComponentExtensionSupport implements Mo
         TableModel tm = drillThrough(cell);
         tc.setModel(tm);
         tc.setVisible(true);
-        TableColumn[] tableColumns =
-          ((EditableTableComponent) tc).getTableComp().getTableColumns();
-        for (int i = 0; i < tableColumns.length; i++) {
-          TableColumn tableColumn = tableColumns[i];
-          tableColumn.setHidden(false);
+        TableColumn[] tableColumns = null;
+        if (tc instanceof EditableTableComponent) {
+          tableColumns =
+              ((EditableTableComponent) tc).getTableComp().getTableColumns();
+        } else if (tc instanceof com.tonbeller.wcf.table.TableComponent) {
+          tableColumns = ((com.tonbeller.wcf.table.TableComponent) tc).getTableColumns();
+        }
+        if (tableColumns != null) {
+          for (int i = 0; i < tableColumns.length; i++) {
+            TableColumn tableColumn = tableColumns[i];
+            tableColumn.setHidden(false);
+          }
         }
       }
     }
