@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="src/jboss-portlet/java"/>
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jakarta-regexp-1.2.jar"/>
@@ -10,7 +9,7 @@
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jstl.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/junit.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/log4j-1.2.8.jar"/>
-	<classpathentry sourcepath="build/src/mondrian-src.jar" kind="lib" path="build/web/WEB-INF/lib/mondrian.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/mondrian.jar" sourcepath="build/src/mondrian-src.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/saxpath.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/standard.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jsf-api.jar"/>
@@ -48,5 +47,10 @@
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/jfreechart-1.0.0.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/mail.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/saaj-ri.jar"/>
+	<classpathentry kind="lib" path="C:/Java/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-math-1.0.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-vfs.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/retroweaver-rt-1.2.4.jar"/>
+	<classpathentry kind="lib" path="build/web/WEB-INF/lib/groovy-all-1.0-jsr-03.jar"/>
 	<classpathentry kind="output" path="build/web/WEB-INF/classes"/>
 </classpath>

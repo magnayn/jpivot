@@ -164,6 +164,14 @@ via XML and XSLT.
 
 
  <page title="News" id="news">
+   <h2>New in version 1.7</h2>
+   <ul>
+     <li>Synchronized with Mondrian 2.3.2.8944, fixes a couple of compatibility Problems (Mondrian API changed)</li>
+     <li>Currently requires JDK1.5 because Mondrian 2.3.2 requires it. Probably future versions will run with 1.4 again</li>
+     <li>Groovy Scriptable Datasources - thanks to Luca Barozzi, Engineering Ingegneria Informatica S.p.A.</li>
+     <li>XMLA did not work with Mondrian in 1.6 (thanks to Richard Emberson)</li>
+   </ul>
+
    <h2>New in version 1.6</h2>
    <ul>
      <li>Contains new Mondrian version 2.2.1</li>
@@ -434,6 +442,7 @@ This is useful, when the result ist sorted in <em>break hierarchy</em> mode.
   </page>
   <link href="http://cvs.sourceforge.net/viewcvs.py/*checkout*/jpivot/jpivot/src/docs/roadmap.html" title="Roadmap"/>
   <link href="pdf-fonts" title="FOP Fonts Howto"/>
+  <link href="groovy" title="Groovy Scriptable DS"/>
 
   <link href="wcf/index.html" title="WCF"/>
   <link href="junit/index.html" title="Unit Tests"/>
