@@ -73,6 +73,9 @@ public class XMLA_SOAP implements OlapDiscoverer {
   private String user;
   private String password;
 
+  //PCF : role
+  private String[][] headers;
+  
   interface Rowhandler {
     void handleRow(SOAPElement eRow, SOAPEnvelope envelope);
   }
@@ -517,6 +520,7 @@ public class XMLA_SOAP implements OlapDiscoverer {
 
     discover("MDSCHEMA_MEMBERS", url, rHash, pHash, rh);
     logger.debug("MDSCHEMA_MEMBERS: found " + mems.size());
+
     if (mems.size() == 0) {
         logger.error("No metadata schema members for catalog: " + cat + " and cube: " + cube);
     }
@@ -778,6 +782,12 @@ public class XMLA_SOAP implements OlapDiscoverer {
       MimeHeaders mh = msg.getMimeHeaders();
       mh.setHeader("SOAPAction", "\"urn:schemas-microsoft-com:xml-analysis:Execute\"");
 
+      //PCF : role
+      if (headers != null) {
+    	  for (int i=0; i<headers.length; i++) 
+    	      mh.setHeader(headers[i][0], headers[i][1]);
+      }
+      
       SOAPPart soapPart = msg.getSOAPPart();
       SOAPEnvelope envelope = soapPart.getEnvelope();
       SOAPBody body = envelope.getBody();
@@ -813,6 +823,11 @@ public class XMLA_SOAP implements OlapDiscoverer {
       addParameterList(envelope, eEx, "Properties", "PropertyList", paraList);
       msg.saveChanges();
 
+      if (logger.isDebugEnabled()) {
+          logger.debug("Query to Execute");
+          //reply.getSOAPPart().getContent().
+          logSoapMsg(msg);
+        }
       // run the call
       reply = connection.call(msg, url);
       if (logger.isDebugEnabled()) {
@@ -1042,6 +1057,12 @@ public class XMLA_SOAP implements OlapDiscoverer {
     MimeHeaders mh = msg.getMimeHeaders();
     mh.setHeader("SOAPAction", "\"urn:schemas-microsoft-com:xml-analysis:Execute\"");
 
+    //PCF : role
+    if (headers != null) {
+  	  for (int i=0; i<headers.length; i++) 
+  	      mh.setHeader(headers[i][0], headers[i][1]);
+    }
+
     SOAPPart soapPart = msg.getSOAPPart();
     SOAPEnvelope envelope = soapPart.getEnvelope();
     SOAPBody body = envelope.getBody();
@@ -1055,9 +1076,9 @@ public class XMLA_SOAP implements OlapDiscoverer {
     // <Command>
     // <Statement>select [Measures].members on Columns from Sales</Statement>
     // </Command>
-    Name nCom = envelope.createName("Command");
+    Name nCom = envelope.createName("Command", "", XMLA_URI);
     SOAPElement eCommand = eEx.addChildElement(nCom);
-    Name nSta = envelope.createName("Statement");
+    Name nSta = envelope.createName("Statement", "", XMLA_URI);
     SOAPElement eStatement = eCommand.addChildElement(nSta);
     eStatement.addTextNode(query);
 
@@ -1374,6 +1395,12 @@ public class XMLA_SOAP implements OlapDiscoverer {
       MimeHeaders mh = msg.getMimeHeaders();
       mh.setHeader("SOAPAction", "\"urn:schemas-microsoft-com:xml-analysis:Discover\"");
 
+      //PCF : role
+      if (headers != null) {
+    	  for (int i=0; i<headers.length; i++) 
+    	      mh.setHeader(headers[i][0], headers[i][1]);
+      }
+      
       SOAPPart soapPart = msg.getSOAPPart();
       SOAPEnvelope envelope = soapPart.getEnvelope();
       SOAPBody body = envelope.getBody();
@@ -1692,5 +1719,13 @@ public class XMLA_SOAP implements OlapDiscoverer {
     }
     return eRoot;
   }
+
+public String[][] getHeaders() {
+	return headers;
+}
+
+public void setHeaders(String[][] headers) {
+	this.headers = headers;
+}
   
 } // End XMLA_SOAP
