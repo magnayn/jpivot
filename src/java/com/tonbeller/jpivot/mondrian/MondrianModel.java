@@ -88,7 +88,35 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
   static Logger logger = Logger.getLogger(MondrianModel.class);
 
+  /** 
+   * JPivot by default converts MDX from a logical to a physical representation
+   * of the metadata after an expansion, from "all children" to a list of
+   * the specific children. If one wants to save the query, having the query
+   * represent the current state of the data, the physical state, may mean
+   * that the saved query will not execute at some future date because children
+   * and come and go.
+   */
   static final String LOGICAL_MDX_PROP = "com.tonbeller.jpivot.mondrian.logical.mdx";
+  
+  /** 
+   * The maximum number of cells a given request can return. If more are
+   * returned, a limit exceeded exception is thrown. Mondrian has a property
+   * that limits how many rows of data can be read in, but thats not
+   * sufficient. Consider, fifty thousand rows are read in but when the
+   * axis is "NON EMPTY" only 25 result versus "NON EMPTY" is not set on the
+   * axis and all fifty thousand are returned. One can not rely on the
+   * Mondrian "mondrian.result.limit" property to know what to do. So,
+   * this new property allows JPivot users to set how big tables can be
+   * (limit is rows time columns, total number of cells); this limits the
+   * size of the html page that is generated. 
+   * By default, there is no limit.
+   */
+  static final String CELL_LIMIT_PROP = "com.tonbeller.jpivot.mondrian.cell.limit";
+  
+  /** 
+   * The default value of the cell limit, 0 means that there is no limit. 
+   */
+  static final Integer CELL_LIMIT_DEFAULT = new Integer(0);
 
   /*
    * sample value

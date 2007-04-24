@@ -21,6 +21,8 @@ import com.tonbeller.jpivot.olap.model.impl.FormatStringParser;
 import com.tonbeller.jpivot.olap.query.ResultBase;
 import mondrian.olap.Position;
 import mondrian.olap.Member;
+import mondrian.olap.ResultLimitExceededException;
+import mondrian.olap.ResourceLimitExceededException;
 import mondrian.olap.MemoryLimitExceededException;
 
 /**
@@ -37,7 +39,7 @@ public class MondrianResult extends ResultBase {
    * @param model the associated MondrianModel
    */
   protected MondrianResult(mondrian.olap.Result monResult, MondrianModel model)
-        throws MemoryLimitExceededException {
+        throws ResultLimitExceededException {
     super(model);
     this.monResult = monResult;
 
@@ -47,7 +49,11 @@ public class MondrianResult extends ResultBase {
   /**
    * initData creates all the wrapper objects
    */
-  private void initData() throws MemoryLimitExceededException {
+  private void initData() throws ResultLimitExceededException {
+    final int cellCountLimit = Integer.getInteger(
+                                MondrianModel.CELL_LIMIT_PROP, 
+                                MondrianModel.CELL_LIMIT_DEFAULT).intValue(); 
+
     MondrianModel mmodel = (MondrianModel) model;
 
     mondrian.olap.Axis[] monAxes = monResult.getAxes();
@@ -110,7 +116,20 @@ public class MondrianResult extends ResultBase {
 
       // check for OutOfMemory every 1000 cells created
       if (i % 1000 == 0) {
+
+        // According to Java5 memory monitor are we close to running
+        // out of memory.
         mmodel.checkListener();
+
+        // Have we read in too many cells.
+        if ((cellCountLimit > 0) && (cellCountLimit < aCells.size())) {
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("TooManyCells limit=");
+            buf.append(cellCountLimit);
+            buf.append(" for mdx: ");
+            buf.append(mmodel.getCurrentMdx());
+            throw new ResourceLimitExceededException(buf.toString());
+        }
       }
     }
 
