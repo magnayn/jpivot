@@ -124,10 +124,10 @@ public class MondrianResult extends ResultBase {
         // Have we read in too many cells.
         if ((cellCountLimit > 0) && (cellCountLimit < aCells.size())) {
             StringBuffer buf = new StringBuffer(100);
-            buf.append("TooManyCells limit=");
+            buf.append("Exceeded Cell limit(");
             buf.append(cellCountLimit);
-            buf.append(" for mdx: ");
-            buf.append(mmodel.getCurrentMdx());
+            buf.append(") for mdx: ");
+            buf.append(((MondrianQueryAdapter) mmodel.getQueryAdapter()).getMonQuery().toString());
             throw new ResourceLimitExceededException(buf.toString());
         }
       }
