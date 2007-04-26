@@ -52,7 +52,6 @@ public class ExpGenerator {
    * @return
    */
   public Object genExp() {
-
     Object exp = null;
     List nodes = rootNode.getChildren();
 
@@ -122,7 +121,6 @@ public class ExpGenerator {
    * @return
    */
   private Object genExpForNode(TreeNode node, int untilIndex) {
-
     Object eNode = node.getReference();
     if (node.getLevel() == untilIndex)
       return eNode; // last dimension
@@ -142,7 +140,6 @@ public class ExpGenerator {
     for (Iterator iter = childNodes.iterator(); iter.hasNext();) {
       TreeNode childNode = (TreeNode) iter.next();
       Object childExp = genExpForNode(childNode, untilIndex);
-      Object childSet = bracesAround(childExp);
 
       Object eSet;
       if (!uti.isMember(eNode)) {
@@ -152,12 +149,17 @@ public class ExpGenerator {
         // member
         eSet = uti.createFunCall("{}", new Object[] { eNode }, QuaxUti.FUNTYPE_BRACES);
       }
-      Object cj = uti.createFunCall("CrossJoin", new Object[] { eSet, childSet },
+      if (childExp == null) {
+        exp = eSet;
+      } else {
+        Object childSet = bracesAround(childExp);
+        Object cj = uti.createFunCall("CrossJoin", new Object[] { eSet, childSet },
           QuaxUti.FUNTYPE_FUNCTION);
-      if (exp == null)
-        exp = cj;
-      else {
-        exp = uti.createFunCall("Union", new Object[] { exp, cj }, QuaxUti.FUNTYPE_FUNCTION);
+        if (exp == null)
+          exp = cj;
+        else {
+          exp = uti.createFunCall("Union", new Object[] { exp, cj }, QuaxUti.FUNTYPE_FUNCTION);
+        }
       }
     }
     return exp;
