@@ -111,12 +111,12 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    * size of the html page that is generated. 
    * By default, there is no limit.
    */
-  static final String CELL_LIMIT_PROP = "com.tonbeller.jpivot.mondrian.cell.limit";
+  public static final String CELL_LIMIT_PROP = "com.tonbeller.jpivot.mondrian.cell.limit";
   
   /** 
    * The default value of the cell limit, 0 means that there is no limit. 
    */
-  static final Integer CELL_LIMIT_DEFAULT = new Integer(0);
+  public static final Integer CELL_LIMIT_DEFAULT = new Integer(0);
 
   /*
    * sample value
@@ -135,6 +135,8 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    * the initial MDX query. This is never changed except when the user enters a new MDX query.
    */
   private String mdxQuery;
+
+  private Role role = null;
 
   private String currentMdx;
   private MondrianResult result = null;
@@ -504,6 +506,11 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       logger.error(err);
       throw new OlapException(err);
     }
+
+    if (this.role != null) {
+        monConnection.setRole(this.role);
+    }
+
     if (logInfo)
       logger.info("MondrianModel: opening connection " + properties);
 
@@ -749,6 +756,13 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    */
   public MondrianLevel lookupLevel(String uniqueName) {
     return (MondrianLevel) hLevels.get(uniqueName);
+  }
+
+  public Role getRole() {
+    return role;
+  }
+  public void setRole(Role role) {
+    this.role = role;
   }
 
   /**

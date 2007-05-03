@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.MissingResourceException;
 
 import javax.servlet.http.HttpSession;
 
@@ -287,6 +288,8 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
   private Element buildSlicer() {
     logger.info("buildSlicer");
     Element slicer = elem("slicer");
+    // Was there at least one slicer
+    boolean gotOne = false;
     Iterator pi = getResult().getSlicer().getPositions().iterator();
     while (pi.hasNext()) {
       Position p = (Position) pi.next();
@@ -294,7 +297,20 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
       for (int i = 0; i < members.length; i++) {
         Element e = slicerBuilder.build(members[i]);
         slicer.appendChild(e);
+        gotOne = true;
       }
+    }
+    if (! gotOne) {
+        // No slicer
+        Element empty = elem("empty");
+        String v = null;
+        try {
+            v = resources.getString("table.slicer.empty"); 
+        } catch (MissingResourceException ex) {
+            v = "EMPTY";
+        }
+        empty.setAttribute("value", v);
+        slicer.appendChild(empty);
     }
     return slicer;
   }
@@ -418,13 +434,65 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
 
   private void buildRows2Dim(Element parent) {
     logger.info("enter buildRows2Dim");
-    final int N = rowAxisBuilder.getRowCount();
-    for (int i = 0; i < N; i++) {
-      boolean even = (i % 2 == 0);
-      Element row = append("row", parent);
-      rowAxisBuilder.buildRow(row, i);
-      buildCells(row, even);
+    final int cellCountLimit = Integer.getInteger(
+        com.tonbeller.jpivot.mondrian.MondrianModel.CELL_LIMIT_PROP,
+        com.tonbeller.jpivot.mondrian.MondrianModel.CELL_LIMIT_DEFAULT).intValue();
+
+    final int nosRows = rowAxisBuilder.getRowCount();
+    final int nosColumns = columnAxisBuilder.getColumnCount();
+    if (logger.isDebugEnabled()) {
+        StringBuffer buf = new StringBuffer();
+        buf.append("buildRows2Dim: cellCountLimit=");
+        buf.append(cellCountLimit);
+        buf.append(", nosColumns=");
+        buf.append(nosColumns);
+        buf.append(", nosRows=");
+        buf.append(nosRows);
+        logger.debug(buf.toString());
     }
+    if ((cellCountLimit > 0) && (cellCountLimit < nosColumns*nosRows)) {
+        int nr = (cellCountLimit / nosColumns) + 1;
+        if (logger.isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer();
+            buf.append("buildRows2Dim: number of rows=");
+            buf.append(nr);
+            logger.debug(buf.toString());
+        }
+
+        for (int i = 0; i < nr; i++) {
+          boolean even = (i % 2 == 0);
+          Element row = append("row", parent);
+          rowAxisBuilder.buildRow(row, i);
+          buildCells(row, even);
+        }
+
+        Element row = append("row", parent);
+        rowAxisBuilder.buildRow(row, nr);
+        Element cellElem = elem("cellspan");
+        String v = null;
+        try {
+            v = resources.getString("table.cell.limit", 
+                                   new Integer(cellCountLimit),
+                                   new Integer(nosColumns*nosRows)
+                                   );
+        } catch (MissingResourceException ex) {
+            v = "Too many cells (cell limit:" + cellCountLimit + ")";
+        }
+        cellElem.setAttribute("value", v);
+        cellElem.setAttribute("colspan", Integer.toString(nosColumns));
+        row.appendChild(cellElem);
+
+    } else {
+
+        for (int i = 0; i < nosRows; i++) {
+          boolean even = (i % 2 == 0);
+          Element row = append("row", parent);
+          rowAxisBuilder.buildRow(row, i);
+          buildCells(row, even);
+        }
+
+    }
+
     logger.info("leave buildRows2Dim");
   }
 

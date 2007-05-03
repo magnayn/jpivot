@@ -12,6 +12,7 @@
  */
 package com.tonbeller.jpivot.mondrian;
 
+import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ import mondrian.olap.MemoryLimitExceededException;
  * Result implementation for Mondrian
  */
 public class MondrianResult extends ResultBase {
+  static Logger logger = Logger.getLogger(MondrianResult.class);
 
   private mondrian.olap.Result monResult = null;
   private int[] posize;
@@ -91,6 +93,58 @@ public class MondrianResult extends ResultBase {
         mmodel.checkListener();
     }
 
+    if (logger.isDebugEnabled()) {
+        StringBuffer buf = new StringBuffer();  
+        buf.append("initData: nCells=");
+        buf.append(nCells);
+        logger.debug(buf.toString());
+    }
+
+    // If we are limiting the number of cells, then we do not need to
+    // read them all. Rather, the number read is upto the limit plus
+    // enough to finish the slice. As an example, if there are two
+    // dimisions, rows and columns, then enough cells are read in
+    // so that each row is complete (all columns read) but if the
+    // number read in is greater than the limit, then no further rows
+    // (cells) are read in.
+    if ((cellCountLimit > 0) && (cellCountLimit < nCells)) {
+        // How big is a slice (do not include last axis)
+        int sliceSize = 1;
+        for (int i = 0; i < monAxes.length - 1; i++) {
+            sliceSize *= posize[i];
+        }
+        if (logger.isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer();  
+            buf.append("initData: sliceSize=");
+            buf.append(sliceSize);
+            buf.append(", cellCountLimit=");
+            buf.append(cellCountLimit);
+            logger.debug(buf.toString());
+        }
+        if (sliceSize > cellCountLimit) {
+            // One slice is bigger than can be displayed, Arrg....
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("Can not display a single slice, exceeded cell limit(");
+            buf.append(cellCountLimit);
+            buf.append(") for mdx: ");
+            buf.append(((MondrianQueryAdapter) mmodel.getQueryAdapter()).getMonQuery().toString());
+            throw new ResourceLimitExceededException(buf.toString());
+        }
+
+        // So, how many slices should be read in
+        // There is no reason to read cell in that will not be displayed;
+        // this serves as a memory usage limit.
+        int n = (cellCountLimit/sliceSize) + 1;
+        nCells = n * sliceSize;
+
+        if (logger.isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer();  
+            buf.append("initData: cell limit adjusted nCells=");
+            buf.append(nCells);
+            logger.debug(buf.toString());
+        }
+    }
+
     // second step: create the result data
     axesList = new ArrayList();
     for (int i = 0; i < monAxes.length; i++) {
@@ -120,16 +174,6 @@ public class MondrianResult extends ResultBase {
         // According to Java5 memory monitor are we close to running
         // out of memory.
         mmodel.checkListener();
-
-        // Have we read in too many cells.
-        if ((cellCountLimit > 0) && (cellCountLimit < aCells.size())) {
-            StringBuffer buf = new StringBuffer(100);
-            buf.append("Exceeded Cell limit(");
-            buf.append(cellCountLimit);
-            buf.append(") for mdx: ");
-            buf.append(((MondrianQueryAdapter) mmodel.getQueryAdapter()).getMonQuery().toString());
-            throw new ResourceLimitExceededException(buf.toString());
-        }
       }
     }
 
