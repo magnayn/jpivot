@@ -4,7 +4,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 >
 
-<xsl:output method="html" indent="no" encoding="US-ASCII"/>
+<xsl:output method="html" indent="no" encoding="ISO-8859-1"/>
 <xsl:param name="context"/>
 <xsl:param name="renderId"/>
 <xsl:param name="token"/>
@@ -12,6 +12,7 @@
 
 <xsl:template match="/mdxtable">
   <xsl:apply-templates select="slicer/member"/>
+  <xsl:apply-templates select="slicer/empty"/>
 </xsl:template>
 
 <xsl:template match="member[@href]">
@@ -41,6 +42,10 @@
   <xsl:text>, </xsl:text>
   <xsl:value-of select="@name"/>
   <xsl:text>=</xsl:text>
+  <xsl:value-of select="@value"/>
+</xsl:template>
+
+<xsl:template match="empty">
   <xsl:value-of select="@value"/>
 </xsl:template>
 

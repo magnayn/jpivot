@@ -5,14 +5,15 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 <!-- the id of the table for httpUnit -->
-<xsl:output method="html" indent="no" encoding="US-ASCII"/>
+<xsl:output method="html" indent="no" encoding="ISO-8859-1"/>
 <xsl:param name="context"/>
 <xsl:param name="renderId"/>
 <xsl:param name="token"/>
 <xsl:param name="imgpath" select="'jpivot/table'"/>
 
 <!-- Tabelle:  -->
-<xsl:param name="maxHeaderLen" select="20"/>
+<xsl:param name="maxColHdrLen" select="20"/>
+
 
 <xsl:template match="mdxtable">
   <xsl:if test="@message">
@@ -72,16 +73,14 @@
 
 
 <xsl:template match="row-heading">
-  <th class="row-heading-{@style}" colspan="{@colspan}" rowspan="{@rowspan}">
-    <xsl:call-template name="nowrap"/>
+  <th nowrap="nowrap" class="row-heading-{@style}" colspan="{@colspan}" rowspan="{@rowspan}">
     <xsl:apply-templates/>
   </th>
 </xsl:template>
 
 
 <xsl:template match="heading-heading">
-  <th class="heading-heading" colspan="{@colspan}" rowspan="{@rowspan}">
-    <xsl:call-template name="nowrap"/>
+  <th nowrap="nowrap" class="heading-heading" colspan="{@colspan}" rowspan="{@rowspan}">
     <xsl:apply-templates/>
   </th>
 </xsl:template>
@@ -99,7 +98,7 @@
 
 <!-- navigation: expand / collapse / leaf node -->
 <xsl:template match="drill-expand | drill-collapse">
-  <input type="image" title="{@title}" name="{@id}" src="{$context}/{$imgpath}/{@img}.gif" border="0" width="9" height="9"/>
+  <input type="image" title="{@title}" name="{@id}" src="{$context}/{$imgpath}/{@img}.gif" />
 </xsl:template>
 
 <xsl:template match="drill-other">
@@ -108,11 +107,11 @@
 
 <!-- navigation: sort -->
 <xsl:template match="sort">
-  <input name="{@id}" title="{@title}" type="image" src="{$context}/{$imgpath}/{@mode}.gif" border="0" width="9" height="9"/>
+  <input name="{@id}" title="{@title}" type="image" src="{$context}/{$imgpath}/{@mode}.gif" />
 </xsl:template>
 
 <xsl:template match="drill-through">
-  <input name="{@id}" title="{@title}" type="image" src="{$context}/{$imgpath}/drill-through.gif" border="0" width="9" height="9"/>
+  <input name="{@id}" title="{@title}" type="image" src="{$context}/{$imgpath}/drill-through.gif" />
 </xsl:template>
 
 
@@ -127,17 +126,19 @@
   </td>
 </xsl:template>
 
+<xsl:template match="cellspan">
+  <td colspan="{@colspan}" style="color:red" >
+    <xsl:call-template name="render-label">
+      <xsl:with-param name="label">
+        <xsl:value-of select="@value"/>
+      </xsl:with-param>
+    </xsl:call-template>
+  </td>
+</xsl:template>
 
 <xsl:template name="render-label">
   <xsl:param name="label"/>
   <xsl:choose>
-
-    <!-- popup menu -->
-    <xsl:when test="popup-menu">
-      <xsl:apply-templates select="popup-menu"/>
-      <xsl:apply-templates select="property"/>
-    </xsl:when>
-
     <!-- clickable member -->
     <xsl:when test="@href">
       <a>
@@ -148,15 +149,9 @@
         <xsl:apply-templates select="property"/>
       </a>
     </xsl:when>
-
     <!-- member property -->
     <xsl:when test="property[@name='link']">
-      <!--
-        target="_blank" was removed because it makes no sense: you have no chance to close
-        the new window if the url points to the current context because of the wcf:token
-        mechanism
-      -->
-      <a>
+      <a target="_blank">
         <xsl:call-template name="make-href">
           <xsl:with-param name="href" select="property[@name='link']/@value"/>
         </xsl:call-template>
@@ -171,6 +166,7 @@
     </xsl:otherwise>
   </xsl:choose>
 </xsl:template>
+
 
 <xsl:template name="make-href">
   <xsl:param name="href"/>
@@ -189,7 +185,7 @@
 </xsl:template>
 
 <xsl:template name="nowrap">
-  <xsl:if test="string-length(string(caption/@caption))&lt;$maxHeaderLen">
+  <xsl:if test="string-length(string(caption/@caption))&lt;$maxColHdrLen">
     <xsl:attribute name="nowrap">nowrap</xsl:attribute>
   </xsl:if>
 </xsl:template>
@@ -216,40 +212,12 @@
 
 <xsl:template match="property[@name='cyberfilter']">
   <span style="margin-left: 0.5ex">
-    <img align="middle" src="{$context}/{$imgpath}/filter-{@value}.gif" width="53" height="14"/>
+    <img align="middle" src="{$context}/{$imgpath}/filter-{@value}.gif" width="51" height="12"/>
   </span>
 </xsl:template>
 
 <!-- ignore other properties (e.g. "link") -->
 <xsl:template match="property"/>
-
-
-<!-- begin popup menu  -->
-<xsl:template match="popup-menu">
-  <a href="#" onMouseover="cssdropdown.dropit(this, event, '{@id}')">
-    <xsl:value-of select="@label" />
-  </a>
-  <div id="{@id}" class="dropmenudiv">
-    <strong style="padding-left: {@level}em">
-      <xsl:value-of select="@label" />
-    </strong>
-    <xsl:apply-templates />
-  </div>
-</xsl:template>
-
-<xsl:template match="popup-group">
-  <strong style="padding-left: {@level}em">
-    <xsl:value-of select="@label" />
-  </strong>
-  <xsl:apply-templates />
-</xsl:template>
-
-<xsl:template match="popup-item">
-  <a href="{@href}" style="padding-left: {@level}em">
-    <xsl:value-of select="@label" />
-  </a>
-</xsl:template>
-<!-- end popup menu  -->
 
 
 <xsl:template match="*|@*|node()">
