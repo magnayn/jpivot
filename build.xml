@@ -35,7 +35,7 @@
   <property name="build.home"           value="${basedir}/build"/>
   <property name="dist.home"            value="${basedir}/dist"/>
   <property name="src.home"             value="${basedir}/src"/>
-  <property name="viewcvs"              value="http://cvs.sourceforge.net/viewcvs.py/jpivot"/>
+  <property name="viewcvs"              value="http://jpivot.cvs.sourceforge.net/jpivot"/>
 
   <property name="repository.home"      value="${basedir}/../jpivot_repository"/>
 
