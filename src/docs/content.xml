@@ -10,7 +10,6 @@
 >
 
 <section title="JPivot">
-
   <page title="Home" id="index">
 
     JPivot is a JSP custom tag library that renders an OLAP table and let users
@@ -142,6 +141,8 @@
   </page>
 
 
+  <link href="http://sourceforge.net/projects/jpivot" title="Project Page"/>
+  <link href="changelog.html" title="Changelog"/>
 
 
  <page title="Architecture Overview">
@@ -440,7 +441,6 @@ This is useful, when the result ist sorted in <em>break hierarchy</em> mode.
     </ul>
 
   </page>
-  <link href="http://cvs.sourceforge.net/viewcvs.py/*checkout*/jpivot/jpivot/src/docs/roadmap.html" title="Roadmap"/>
   <link href="pdf-fonts" title="FOP Fonts Howto"/>
   <link href="groovy" title="Groovy Scriptable DS"/>
 
@@ -451,7 +451,6 @@ This is useful, when the result ist sorted in <em>break hierarchy</em> mode.
   <link href="tags/wcf-tags-en.html" title="WCF Tags"/>
   <link href="mondrian-schema/index.html" title="Mondrian Schema Plugin"/>
 
-  <link href="http://sourceforge.net/projects/jpivot" title="Project Page"/>
 </section>
 
 
