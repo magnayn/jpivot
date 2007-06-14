@@ -135,7 +135,26 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
     }
 
     // generate order function if neccessary
-    sortOnExecute();
+    if (sortMan != null) {
+      if (!useQuax) {
+        // if Quax is used, the axis exp's are re-generated every time.
+        // if not -
+        //    adding a sort to the query must not be permanent.
+        //    Therefore, we clone the orig state of the query object and use
+        //    the clone furthermore in order to avoid duplicate "Order" functions.
+        if (cloneQuery == null) {
+          if (sortMan.isSortOnQuery())
+            cloneQuery = monQuery.safeClone();
+        } else {
+          // reset to original state
+          if (sortMan.isSortOnQuery())
+            monQuery = cloneQuery.safeClone();
+          else
+            monQuery = cloneQuery;
+        }
+      }
+      sortMan.addSortToQuery();
+    }
  
     long t1 = System.currentTimeMillis();
     String mdx = monQuery.toString();
