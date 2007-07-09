@@ -62,7 +62,9 @@ public class MondrianPlaceHierarchies extends ExtensionSupport implements PlaceH
     Quax quax = adapter.findQuax(hier.getDimension());
     if (quax == null) {
       // the hierarchy was not found on any axis
-      SchemaReader scr = ((MondrianModel) getModel()).getMonConnection().getSchemaReader();
+
+      SchemaReader scr = model.getSchemaReader();
+
       return MondrianUtil.topLevelMembers(monHier, expandAllMember, scr);
       // return top level members of the hierarchy
     }

@@ -57,7 +57,7 @@ public class MondrianQuaxUti implements QuaxUti {
    */
   MondrianQuaxUti(MondrianModel model) {
     this.model = model;
-    scr = model.getConnection().getSchemaReader();
+    this.scr = model.getSchemaReader();
   }
 
   private static boolean isCallTo(FunCall f, String name) {

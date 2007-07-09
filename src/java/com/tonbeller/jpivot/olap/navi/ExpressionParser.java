@@ -18,6 +18,7 @@ import com.tonbeller.jpivot.olap.model.Expression;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Level;
 import com.tonbeller.jpivot.olap.model.Member;
+import com.tonbeller.jpivot.util.JPivotException;
 
 /**
  * serialisiert expr. Wird zunaechst nur
@@ -28,7 +29,7 @@ import com.tonbeller.jpivot.olap.model.Member;
 public interface ExpressionParser extends Extension {
   public static final String ID = "expressionParser";
 
-  class InvalidSyntaxException extends Exception {
+  class InvalidSyntaxException extends JPivotException {
     public InvalidSyntaxException() {
     }
 

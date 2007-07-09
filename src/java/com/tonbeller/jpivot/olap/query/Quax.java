@@ -30,6 +30,7 @@ import com.tonbeller.jpivot.olap.model.Level;
 import com.tonbeller.jpivot.olap.model.Member;
 import com.tonbeller.jpivot.olap.model.Position;
 import com.tonbeller.jpivot.olap.navi.CalcSet;
+import com.tonbeller.jpivot.util.JPivotException;
 import com.tonbeller.jpivot.util.TreeNode;
 import com.tonbeller.jpivot.util.TreeNodeCallback;
 
@@ -2595,7 +2596,7 @@ public class Quax {
    /**
    * indicate, that an "unknown" Funcall was not handled
    */
-  public static class CannotHandleException extends Exception {
+  public static class CannotHandleException extends JPivotException {
 
     /**
      * Constructor for CannotHandleException.

@@ -12,10 +12,11 @@
  */
 package com.tonbeller.jpivot.olap.model;
 
+import com.tonbeller.jpivot.util.JPivotException;
 /**
  * @author av
  */
-public class OlapException extends Exception {
+public class OlapException extends JPivotException {
 
   /**
    * Constructor for OlapException.

@@ -15,6 +15,7 @@ package com.tonbeller.jpivot.olap.navi;
 import com.tonbeller.jpivot.core.Extension;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Member;
+import com.tonbeller.jpivot.util.JPivotRuntimeException;
 
 /**
  * exposes parent/child relationship between members. 
@@ -28,7 +29,7 @@ public interface MemberTree extends Extension {
   /** 
    * thrown if too many member would be returned
    */
-  public class TooManyMembersException extends RuntimeException {
+  public class TooManyMembersException extends JPivotRuntimeException {
     public TooManyMembersException() {
       super();
     }

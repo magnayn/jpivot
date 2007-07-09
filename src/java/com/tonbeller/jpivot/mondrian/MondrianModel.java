@@ -208,6 +208,21 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
   }
 
+  /** 
+   * Attempts to use the Query object's SchemaReader because this
+   * is based upon the Cube (calculated Memember) and not just
+   * the Connection.
+   * Cube SchemaReader contains calculated members.
+   * Query SchemaReader contains Cube plus defined members
+   * 
+   * @return 
+   */
+  public SchemaReader getSchemaReader() {
+    return (queryAdapter != null)
+        ? queryAdapter.getSchemaReader()
+        : getConnection().getSchemaReader();
+  }
+
   /**
    * Returns the queryAdapter.
    *
@@ -290,6 +305,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
           throw new OlapException(ex);
         }
   
+        // NOTE: This code is never reached.
         if (!tryagain) {
           throw new ResultTooLargeException(ex);
         }
@@ -622,7 +638,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       MondrianHierarchy hierarchy = new MondrianHierarchy(monHierarchy, dimension, this);
       hHierarchies.put(uniqueName, hierarchy);
       // make sure, that all levels are initialized
-      SchemaReader scr = monConnection.getSchemaReader();
+      SchemaReader scr = getSchemaReader();
       mondrian.olap.Level[] monLevels = scr.getHierarchyLevels(monHierarchy);
       for (int i = 0; i < monLevels.length; i++) {
         this.addLevel(monLevels[i], hierarchy);
@@ -717,7 +733,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     MondrianMember m = (MondrianMember) hMembers.get(uniqueName);
     if (m != null)
       return m;
-    final SchemaReader scr = this.getConnection().getSchemaReader();
+    final SchemaReader scr = getSchemaReader();
 
     String[] uniqueNameParts = Util.explode(uniqueName);
 
@@ -1296,7 +1312,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    */
   protected Object createExpFromBean(ExpBean expBean) throws OlapException {
     if (expBean.getType() == ExpBean.TYPE_TOPLEVEL_MEMBERS) {
-      SchemaReader scr = getMonConnection().getSchemaReader();
+      SchemaReader scr = getSchemaReader();
       Exp[] args = createExpsFromBeans(expBean.getArgs());
       HierarchyExpr he = (HierarchyExpr) args[0];
       mondrian.olap.Hierarchy h = he.getHierarchy();

@@ -141,6 +141,17 @@ public class MondrianUtil {
       return new MemberExpr(topMembers[0]); // single member
     else if (topMembers.length == 0)
       return null; // possible if access control active
+    
+    List list = new ArrayList(topMembers.length);
+    for (int i = 0; i < topMembers.length; i++) {
+        mondrian.olap.Member m = topMembers[i];
+        if (isVisible(scr, m)) {
+            list.add(m);
+        }
+    }
+    topMembers = (mondrian.olap.Member[]) 
+                    list.toArray(new mondrian.olap.Member[list.size()]);
+
     return new UnresolvedFunCall("{}", Syntax.Braces, toExprArray(topMembers));
   }
 
@@ -385,6 +396,25 @@ public class MondrianUtil {
     s.replace(' ', '_');
     // s.replaceAll("[ \\.\"'!§$%&/()=?ßüäöÖÄÜ#-:;,]", "");
     return s + "_param";
+  }
+
+  /** 
+   * Determine if the Member is GUI visible. 
+   * 
+   * @param scr the SchemaReader
+   * @param member the Mondrian Member
+   * @return "true" if Member is GUI visible
+   */
+  public static boolean isVisible(SchemaReader scr, 
+                                  mondrian.olap.Member member) {
+    if (! scr.isVisible(member)) {
+      // Is Schema and Role visible
+      return false;
+    } else {
+      // Is GUI visible
+      Object visible = member.getPropertyValue(mondrian.olap.Property.VISIBLE.name);
+      return !Boolean.FALSE.equals(visible);
+    }
   }
   
 } // End MondrianUtil.java

@@ -14,7 +14,6 @@
 <!-- Tabelle:  -->
 <xsl:param name="maxColHdrLen" select="20"/>
 
-
 <xsl:template match="mdxtable">
   <xsl:if test="@message">
     <div class="table-message"><xsl:value-of select="@message"/></div>
@@ -73,14 +72,16 @@
 
 
 <xsl:template match="row-heading">
-  <th nowrap="nowrap" class="row-heading-{@style}" colspan="{@colspan}" rowspan="{@rowspan}">
+  <th class="row-heading-{@style}" colspan="{@colspan}" rowspan="{@rowspan}">
+    <xsl:call-template name="nowrap"/>
     <xsl:apply-templates/>
   </th>
 </xsl:template>
 
 
 <xsl:template match="heading-heading">
-  <th nowrap="nowrap" class="heading-heading" colspan="{@colspan}" rowspan="{@rowspan}">
+  <th class="heading-heading" colspan="{@colspan}" rowspan="{@rowspan}">
+    <xsl:call-template name="nowrap"/>
     <xsl:apply-templates/>
   </th>
 </xsl:template>
@@ -98,7 +99,7 @@
 
 <!-- navigation: expand / collapse / leaf node -->
 <xsl:template match="drill-expand | drill-collapse">
-  <input type="image" title="{@title}" name="{@id}" src="{$context}/{$imgpath}/{@img}.gif" />
+  <input type="image" title="{@title}" name="{@id}" src="{$context}/{$imgpath}/{@img}.gif" border="0" width="9" height="9"/>
 </xsl:template>
 
 <xsl:template match="drill-other">
@@ -107,11 +108,11 @@
 
 <!-- navigation: sort -->
 <xsl:template match="sort">
-  <input name="{@id}" title="{@title}" type="image" src="{$context}/{$imgpath}/{@mode}.gif" />
+  <input name="{@id}" title="{@title}" type="image" src="{$context}/{$imgpath}/{@mode}.gif" border="0" width="9" height="9"/>
 </xsl:template>
 
 <xsl:template match="drill-through">
-  <input name="{@id}" title="{@title}" type="image" src="{$context}/{$imgpath}/drill-through.gif" />
+  <input name="{@id}" title="{@title}" type="image" src="{$context}/{$imgpath}/drill-through.gif" border="0" width="9" height="9"/>
 </xsl:template>
 
 
@@ -126,19 +127,17 @@
   </td>
 </xsl:template>
 
-<xsl:template match="cellspan">
-  <td colspan="{@colspan}" style="color:red" >
-    <xsl:call-template name="render-label">
-      <xsl:with-param name="label">
-        <xsl:value-of select="@value"/>
-      </xsl:with-param>
-    </xsl:call-template>
-  </td>
-</xsl:template>
 
 <xsl:template name="render-label">
   <xsl:param name="label"/>
   <xsl:choose>
+
+    <!-- popup menu -->
+    <xsl:when test="popup-menu">
+      <xsl:apply-templates select="popup-menu"/>
+      <xsl:apply-templates select="property"/>
+    </xsl:when>
+
     <!-- clickable member -->
     <xsl:when test="@href">
       <a>
@@ -149,9 +148,15 @@
         <xsl:apply-templates select="property"/>
       </a>
     </xsl:when>
+
     <!-- member property -->
     <xsl:when test="property[@name='link']">
-      <a target="_blank">
+      <!--
+        target="_blank" was removed because it makes no sense: you have no chance to close
+        the new window if the url points to the current context because of the wcf:token
+        mechanism
+      -->
+      <a>
         <xsl:call-template name="make-href">
           <xsl:with-param name="href" select="property[@name='link']/@value"/>
         </xsl:call-template>
@@ -159,6 +164,7 @@
         <xsl:apply-templates select="property"/>
       </a>
     </xsl:when>
+
     <!-- default -->
     <xsl:otherwise>
       <xsl:value-of select="$label"/>
@@ -212,12 +218,39 @@
 
 <xsl:template match="property[@name='cyberfilter']">
   <span style="margin-left: 0.5ex">
-    <img align="middle" src="{$context}/{$imgpath}/filter-{@value}.gif" width="51" height="12"/>
+    <img align="middle" src="{$context}/{$imgpath}/filter-{@value}.gif" width="53" height="14"/>
   </span>
 </xsl:template>
 
 <!-- ignore other properties (e.g. "link") -->
 <xsl:template match="property"/>
+
+<!-- begin popup menu  -->
+<xsl:template match="popup-menu">
+  <a href="#" onMouseover="cssdropdown.dropit(this, event, '{@id}')">
+    <xsl:value-of select="@label" />
+  </a>
+  <div id="{@id}" class="dropmenudiv">
+    <strong style="padding-left: {@level}em">
+      <xsl:value-of select="@label" />
+    </strong>
+    <xsl:apply-templates />
+  </div>
+</xsl:template>
+
+<xsl:template match="popup-group">
+  <strong style="padding-left: {@level}em">
+    <xsl:value-of select="@label" />
+  </strong>
+  <xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="popup-item">
+  <a href="{@href}" style="padding-left: {@level}em">
+    <xsl:value-of select="@label" />
+  </a>
+</xsl:template>
+<!-- end popup menu  -->
 
 
 <xsl:template match="*|@*|node()">

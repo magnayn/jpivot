@@ -12,7 +12,6 @@
 
 <xsl:template match="/mdxtable">
   <xsl:apply-templates select="slicer/member"/>
-  <xsl:apply-templates select="slicer/empty"/>
 </xsl:template>
 
 <xsl:template match="member[@href]">
@@ -42,10 +41,6 @@
   <xsl:text>, </xsl:text>
   <xsl:value-of select="@name"/>
   <xsl:text>=</xsl:text>
-  <xsl:value-of select="@value"/>
-</xsl:template>
-
-<xsl:template match="empty">
   <xsl:value-of select="@value"/>
 </xsl:template>
 

@@ -48,7 +48,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
   MondrianQueryAdapter(MondrianModel model, mondrian.olap.Query monQuery) {
     super(model);
     this.monQuery = monQuery;
-    scr = model.getMonConnection().getSchemaReader();
+    scr = monQuery.getSchemaReader(true);
 
     genMDXHierarchize = true; // Result hierarchize cannot be used
 
@@ -66,6 +66,9 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
       quaxes[i].setHiers(hiers);
       quaxes[i].addChangeListener(this);
     }
+  }
+  public SchemaReader getSchemaReader() {
+    return scr;
   }
 
   /**
@@ -155,7 +158,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
       }
       sortMan.addSortToQuery();
     }
- 
+
     long t1 = System.currentTimeMillis();
     String mdx = monQuery.toString();
     long t2 = System.currentTimeMillis();
@@ -217,10 +220,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
 
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    if ( quax == null )
-      return false; // not found on any axis
- 
-    return quax.canExpand(member);
+    return (quax == null) ? false : quax.canExpand(member);
   }
 
   /**
@@ -242,9 +242,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
 
     Dimension dim = m.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    if ( quax == null )
-      return false; // not found on any axis
-    return quax.canExpand(pathMembers);
+    return (quax == null) ? false : quax.canExpand(pathMembers);
   }
 
   /**
@@ -259,10 +257,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
       return false;
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    if ( quax == null )
-      return false; // not found on any axis
- 
-    return quax.canCollapse(member);
+    return (quax == null) ? false : quax.canCollapse(member);
   }
 
   /**
@@ -278,10 +273,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
       return false;
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    if ( quax == null )
-      return false; // not found on any axis
- 
-    return quax.canCollapse(pathMembers);
+    return (quax == null) ? false : quax.canCollapse(pathMembers);
   }
 
   /**
@@ -343,10 +335,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
       return false;
     Dimension dim = member.getLevel().getHierarchy().getDimension();
     Quax quax = findQuax(dim);
-    if ( quax == null )
-      return false; // not found on any axis
- 
-    return quax.canDrillDown(member);
+    return (quax == null) ? false : quax.canDrillDown(member);
   }
 
   // *********

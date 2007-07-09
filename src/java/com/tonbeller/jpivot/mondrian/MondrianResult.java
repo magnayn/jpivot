@@ -21,16 +21,17 @@ import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.impl.FormatStringParser;
 import com.tonbeller.jpivot.olap.query.ResultBase;
 import mondrian.olap.Position;
+import mondrian.olap.Query;
 import mondrian.olap.Member;
 import mondrian.olap.ResultLimitExceededException;
 import mondrian.olap.ResourceLimitExceededException;
-import mondrian.olap.MemoryLimitExceededException;
 
 /**
  * Result implementation for Mondrian
  */
 public class MondrianResult extends ResultBase {
   static Logger logger = Logger.getLogger(MondrianResult.class);
+
 
   private mondrian.olap.Result monResult = null;
   private int[] posize;
@@ -65,14 +66,39 @@ public class MondrianResult extends ResultBase {
     for (int i = 0; i < monAxes.length; i++) {
       List monPositions = monAxes[i].getPositions();
       int size = 0;
+      int nosPositions = 0;
+      int nosMembers = 0;
       Iterator pit = monPositions.iterator();
+      // For the first Position, record how many Members there are.
+      if (pit.hasNext()) {
+        nosPositions++;
+        Position position = (Position) pit.next();
+        Iterator mit = position.iterator();
+        while (mit.hasNext()) {
+          nosMembers++;
+          mmodel.addMember((Member) mit.next());
+        }
+        size++;
+      }
       while (pit.hasNext()) {
+        nosPositions++;
         Position position = (Position) pit.next();
         Iterator mit = position.iterator();
         while (mit.hasNext()) {
           mmodel.addMember((Member) mit.next());
         }
         size++;
+      }
+
+      // If there is no data on a particular axis, the table might display but
+      // the axis with no data will not display. Further manipulation on the
+      // table may result in NullPointerException since JPivot expects that
+      // there at least be meta-data associated with every query on all
+      // axes - hence we throw a controlled exception.
+      if ((nosPositions == 0) || (nosMembers == 0)) {
+        Query query = monResult.getQuery();
+        String mdx = query.toMdx();
+        throw new NoValidMemberException(i, mdx, nosPositions, nosMembers);
       }
       // check for OutOfMemory
       mmodel.checkListener();

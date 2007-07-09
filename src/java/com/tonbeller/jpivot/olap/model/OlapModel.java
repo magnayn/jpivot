@@ -15,6 +15,7 @@ package com.tonbeller.jpivot.olap.model;
 import javax.servlet.ServletContext;
 
 import com.tonbeller.jpivot.core.Model;
+import com.tonbeller.jpivot.util.JPivotRuntimeException;
 
 /**
  * Provides access to extensions, result and metadata. It does not specify
@@ -29,7 +30,7 @@ public interface OlapModel extends Model {
    * thrown if too many result positions would be returned
    * @see OlapModel#getResult()
    */
-  public class ResultTooLargeException extends RuntimeException {
+  public class ResultTooLargeException extends JPivotRuntimeException {
     public ResultTooLargeException() {
       super();
     }
@@ -46,7 +47,7 @@ public interface OlapModel extends Model {
    * empty.
    * @see OlapModel#getResult()
    */
-  public class EmptyCubeException extends RuntimeException {
+  public class EmptyCubeException extends JPivotRuntimeException {
     public EmptyCubeException() {
       super();
     }

@@ -12,10 +12,11 @@
  */
 package com.tonbeller.jpivot.olap.navi;
 
+import com.tonbeller.jpivot.util.JPivotException;
 /**
  * @author av
  */
-public class InvalidExpressionException extends Exception {
+public class InvalidExpressionException extends JPivotException {
 
   public InvalidExpressionException() {
     super();

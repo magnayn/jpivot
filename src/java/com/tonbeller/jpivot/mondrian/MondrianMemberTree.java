@@ -65,8 +65,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     mondrian.olap.Query q = ((MondrianQueryAdapter) model.getQueryAdapter()).getMonQuery();
     // Use the schema reader from the query, because it contains calculated
     // members defined in both the cube and the query.
-    //SchemaReader scr = model.getMonConnection().getSchemaReader();
-    SchemaReader scr = q.getSchemaReader(true);
+    SchemaReader scr = model.getSchemaReader();
     mondrian.olap.Member[] monMembers = scr.getHierarchyRootMembers(monHier);
     ArrayList aMem = new ArrayList();
     final List visibleRootMembers = new ArrayList();
@@ -158,10 +157,12 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     if (monMember.getName().startsWith("."))
       return false;
 
-    // from schema: if visible-Property is not-null and equals false,
-    // then its hidden
-    Object visible = monMember.getPropertyValue(mondrian.olap.Property.VISIBLE.name);
-    return !Boolean.FALSE.equals(visible);
+    MondrianModel model = (MondrianModel) getModel();
+    // Use the schema reader from the query, because it contains calculated
+    // members defined in both the cube and the query.
+    SchemaReader scr = model.getSchemaReader();
+
+    return MondrianUtil.isVisible(scr, monMember);
   }
 
   /**
@@ -175,7 +176,8 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
       return true;
     // here for a leaf-level, but also for a level in a parent-child hierarchy:
     MondrianModel model = (MondrianModel) getModel();
-    SchemaReader scr = model.getMonConnection().getSchemaReader();
+
+    SchemaReader scr = model.getSchemaReader();
     return scr.isDrillable(monMember);
   }
 
@@ -192,7 +194,6 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
   }
 
   private Member[] internalGetChildren(Member member) {
-
     mondrian.olap.Member monMember = ((MondrianMember) member).getMonMember();
     //  unreliable: always null in a parent-child hierarch
     // if (monMember.getLevel().getChildLevel() == null)
@@ -200,12 +201,17 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
 
     MondrianModel model = (MondrianModel) getModel();
 
-    SchemaReader scr = model.getMonConnection().getSchemaReader();
+    SchemaReader scr = model.getSchemaReader();
     mondrian.olap.Member[] monChildren = scr.getMemberChildren(monMember);
-    Member[] children = new Member[monChildren.length];
-    for (int i = 0; i < children.length; i++) {
-      children[i] = model.addMember(monChildren[i]);
+
+    List list = new ArrayList(monChildren.length);
+    for (int i = 0; i < monChildren.length; i++) {
+        mondrian.olap.Member m = monChildren[i];
+        if (MondrianUtil.isVisible(scr, m)) {
+            list.add(model.addMember(m));
+        }
     }
+    Member[] children = (Member[]) list.toArray(new Member[list.size()]);
     return children;
   }
 
@@ -217,7 +223,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
 
     MondrianModel model = (MondrianModel) getModel();
 
-    SchemaReader scr = model.getMonConnection().getSchemaReader();
+    SchemaReader scr = model.getSchemaReader();
     mondrian.olap.Member monParent = scr.getMemberParent(monMember);
     if (monParent == null)
       return null; // already top level
