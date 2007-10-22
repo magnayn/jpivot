@@ -117,14 +117,18 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
               Position pos = (Position) iter.next();
               Member[] posMembers = pos.getMembers();
               MondrianMember mem = (MondrianMember) posMembers[iDim];
-              if (!(mem.getMonMember().getParentMember() == null))
-                continue; // ignore, not root
-              if (!visibleRootMembers.contains(mem))
-                visibleRootMembers.add(mem);
-
-              // Check if the result axis contains invisible members
-              if (!aMem.contains(mem)) {
-                  aMem.add(mem);
+              // only add hierarchy items from the query results
+              // if they are actually in in the currently expanding hierarchy!!
+              if (mem.getMonMember().getHierarchy().equals(monHier)) {             
+                if (!(mem.getMonMember().getParentMember() == null))
+                  continue; // ignore, not root
+                if (!visibleRootMembers.contains(mem))
+                  visibleRootMembers.add(mem);
+  
+                // Check if the result axis contains invisible members
+                if (!aMem.contains(mem)) {
+                    aMem.add(mem);
+                }
               }
             }
         }
