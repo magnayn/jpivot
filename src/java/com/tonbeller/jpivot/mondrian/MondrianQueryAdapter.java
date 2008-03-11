@@ -58,6 +58,7 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
     for (int i = 0; i < monQuery.getAxes().length; i++) {
       mondrian.olap.Hierarchy[] monHiers = monQuery.getMdxHierarchiesOnAxis(
         AxisOrdinal.forLogicalOrdinal(i));
+      monHiers = MondrianUtil.removeNull(monHiers);
       quaxes[i] = new MondrianQuax(i, monQuery.getAxes()[i], model);
       Hierarchy[] hiers = new Hierarchy[monHiers.length];
       for (int j = 0; j < hiers.length; j++) {

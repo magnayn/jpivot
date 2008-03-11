@@ -417,4 +417,12 @@ public class MondrianUtil {
     }
   }
   
+  public static mondrian.olap.Hierarchy[] removeNull(mondrian.olap.Hierarchy[] hierarchies) {
+    List list = new ArrayList();
+    for (int i = 0; i < hierarchies.length; i++) {
+      if (hierarchies[i] != null)
+        list.add(hierarchies[i]);
+    }
+    return (mondrian.olap.Hierarchy[])list.toArray(new mondrian.olap.Hierarchy[list.size()]);
+  }
 } // End MondrianUtil.java

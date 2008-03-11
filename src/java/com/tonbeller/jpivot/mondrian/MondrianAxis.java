@@ -41,7 +41,7 @@ public class MondrianAxis implements Axis {
     this.model = model;
 
     aPositions = new ArrayList();
-
+    boolean foundQueryHierarchies = true;
     if (iOrdinal >= 0) {
       // it is not the slicer
       // get hierarchies from mondrian query, rather than from result, which can be empty
@@ -51,7 +51,12 @@ public class MondrianAxis implements Axis {
         AxisOrdinal.forLogicalOrdinal(iOrdinal));
       hierarchies = new MondrianHierarchy[monHiers.length];
       for (int j = 0; j < hierarchies.length; j++) {
-        if (monHiers[j] != null) {
+        // if the axis expr is a function like 
+        // {StrToMember('[Time].[1997]')} then Mondrian
+        // returns null because the hierarchy is not known
+        if (monHiers[j] == null) {
+          foundQueryHierarchies = false;
+        } else {
           hierarchies[j] = model.lookupHierarchy(monHiers[j].getUniqueName());
         }
       }
@@ -64,7 +69,7 @@ public class MondrianAxis implements Axis {
       Position monPosition = (Position) pit.next();
       MondrianPosition position = new MondrianPosition(monPosition, iOrdinal, model);
       aPositions.add(position);
-      if (iOrdinal == -1) {
+      if (iOrdinal == -1 || !foundQueryHierarchies) {
         // for the slicer,  extract the hierarchies from the members
         
         if (i == 0) { 
