@@ -61,7 +61,9 @@ public class MondrianQueryAdapter extends QueryAdapter implements QuaxChangeList
       quaxes[i] = new MondrianQuax(i, monQuery.getAxes()[i], model);
       Hierarchy[] hiers = new Hierarchy[monHiers.length];
       for (int j = 0; j < hiers.length; j++) {
-        hiers[j] = model.lookupHierarchy(monHiers[j].getUniqueName());
+        if (monHiers[j] != null) {
+          hiers[j] = model.lookupHierarchy(monHiers[j].getUniqueName());
+        }
       }
       quaxes[i].setHiers(hiers);
       quaxes[i].addChangeListener(this);

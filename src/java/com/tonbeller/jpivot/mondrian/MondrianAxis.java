@@ -51,7 +51,9 @@ public class MondrianAxis implements Axis {
         AxisOrdinal.forLogicalOrdinal(iOrdinal));
       hierarchies = new MondrianHierarchy[monHiers.length];
       for (int j = 0; j < hierarchies.length; j++) {
-        hierarchies[j] = model.lookupHierarchy(monHiers[j].getUniqueName());
+        if (monHiers[j] != null) {
+          hierarchies[j] = model.lookupHierarchy(monHiers[j].getUniqueName());
+        }
       }
     }
 
