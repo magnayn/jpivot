@@ -399,5 +399,16 @@ public class PropertySpanBuilder implements PropertyConfig, ModelChangeListener,
     extension.setVisibleProperties(mps);
   }
 
+  public List[] getAvailablePropertiesColumns() {
+	if(metaSet == null) {
+		return null;
+	}
+	MemberPropertyMetaFilter inlineFilter = metaSet.createAllFilter();
+	List metaList = metaSet.metaList(inlineFilter);
+
+	List[] availablePropertyColumns = new List[1];
+	availablePropertyColumns[0] = metaList;
+	return availablePropertyColumns;
+  }
 
 }

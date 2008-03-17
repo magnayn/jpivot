@@ -42,6 +42,20 @@
   </descr>
 </attr>">
 
+<!ENTITY table.attr
+"<attr rtexpr='true' required='true' name='table' type='TableComponent'>
+  <descr lang='en'>
+    Name of the Session Attribute that contains the Table Component for this tag.
+  </descr>
+  <descr lang='de'>
+    Name des Session Attributes, das die OLAP Daten (Query und Ergebnis) für dieses Tag enthält.
+    Bei Reports, die vom SironDWH Builder erzeugt werden, wird die Query
+    beim Start des Reports aus dem Repository geladen und unter dem Namen
+    <tt>query01</tt> in der Session abgelegt. Alternativ kann die Query
+    auch über das Tag <tt>mondrian</tt> erzeugt werden.
+  </descr>
+</attr>">
+
 <!ENTITY xmluri.attr
 "<attr type='true' rtexpr='false' required='true' name='xmlUri'>
   <descr lang='en'>
@@ -595,6 +609,24 @@ where ([Time].[1997])
   formattedValue="#{some.bean.otherProperty}"
   caption="Some Caption" />
  ]]></example>
+  </tag>
+  <tag body="JSP" class="com.tonbeller.jpivot.navigator.hierarchy.SelectPropertiesTag" name="selectproperties">
+    <descr lang="en">
+      Creates the Select Properties component, which allows to specify which properties
+      shall be visible and in which orderd. &renderable.en;
+    </descr>
+    <descr lang="de">
+      Erzeugt eine Select Properties Komponente. Sie erlaubt einem, auszuw�hlen, welche
+      Properties sichtbar sein sollen, und in welcher Reihenfolge. &renderable.de;
+    </descr>
+    &id.attr;
+    &table.attr;
+    &visible.attr;
+    &role.attr;
+    <example><![CDATA[
+<jp:selectproperties id="selectprop01" table="#{table01}" visible="false"/>
+<wcf:render ref="selectprop01" xslUri="/WEB-INF/jpivot/navi/navigator.xsl" xslCache="true"/>
+    ]]></example>
   </tag>
 
 </taglib>
