@@ -55,7 +55,8 @@ public class FunCall implements Exp {
    * format to MDX
    */
   public String toMdx() {
-    if (this.isCallTo("Parameter") || this.isCallTo("ParamRef")) {
+    if ((this.isCallTo("Parameter") || this.isCallTo("ParamRef"))
+         && (pQuery.getParaMap().size() > 0)) {
       // parameters are evaluated to MDX
       return evaluateParameter();
     }
