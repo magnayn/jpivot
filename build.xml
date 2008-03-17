@@ -4,18 +4,18 @@
 
 <!--
      ======================================================================
-	 This script depends on a repository of jars and a checkout/build of WCF
-	 to run the build and tests.
+   This script depends on a repository of jars and a checkout/build of WCF
+   to run the build and tests.
 
-	 There is a separate module in JPivot CVS for WCF. It needs to be checked out
-	 and built via the "dist" target in order for this script to be successful.
-	 Set the "wcf.dist" property to the dist directory within the WCF structure.
+   There is a separate module in JPivot CVS for WCF. It needs to be checked out
+   and built via the "dist" target in order for this script to be successful.
+   Set the "wcf.dist" property to the dist directory within the WCF structure.
 
-	 There is a separate module in JPivot CVS, jpivot_repository, that contains
-	 the right jars and structure.
+   There is a separate module in JPivot CVS, jpivot_repository, that contains
+   the right jars and structure.
 
-	 There are a set of targets named portlet-* in this script to build and deploy
-	 the JBoss JPivot portlet. See src/jboss-portlet for more details.
+   There are a set of targets named portlet-* in this script to build and deploy
+   the JBoss JPivot portlet. See src/jboss-portlet for more details.
 
 
      For tests to run: requires in $ANT_HOME/lib
@@ -28,7 +28,7 @@
 <!-- ===================== Property Definitions =========================== -->
 
   <property file="build.properties"/>
-  <property file="${user.home}/build.properties"/>
+  <!-- property file="${user.home}/build.properties"/ -->
   <!-- do not run the xml/a tests -->
   <property name="tests.xmla.skip" value="true"/>
 
@@ -44,7 +44,7 @@
   <property name="xalan.home"           value="${repository.home}/xalan-j_2_7_0"/>
 
   <!-- the following are included in lib/ directory (no need to override) -->
-  <property name="mondrian.version"     value="HEAD"/>
+  <property name="mondrian.version"     value="3.0.0"/>
   <property name="mondrian.home"        value="${repository.home}/mondrian-${mondrian.version}"/>
   <property name="jstl.home"            value="${repository.home}/jakarta-taglibs-standard-1.0.6"/>
 
@@ -69,12 +69,12 @@
 
   <property name="wcf.dist"             value="${basedir}/../wcf/dist"/>
 
-  <property name="jboss.deploy"		value="${jboss.home}/server/default/deploy"/>
-  <property name="jboss-portal.deploy"	value="${jboss.deploy}/jboss-portal.sar"/>
+  <property name="jboss.deploy"   value="${jboss.home}/server/default/deploy"/>
+  <property name="jboss-portal.deploy"  value="${jboss.deploy}/jboss-portal.sar"/>
 
 <!-- ==================== File and Directory Names ======================== -->
 
-  <property name="jpivot.version"       value="1.7.0"/>
+  <property name="jpivot.version"       value="1.8.0"/>
 
 <!--  ==================== Compilation Control Options ==================== -->
 
@@ -216,7 +216,7 @@
         <include name="javacup.jar"/>
         <include name="mondrian.dtd"/>
         <include name="mondrian.jar"/>
-        <include name="retroweaver-rt-1.2.4.jar"/>
+        <!--include name="retroweaver-rt-1.2.4.jar"/-->
       </fileset>
 
       <fileset dir="${junit.home}">
@@ -283,7 +283,11 @@
     <antcall target="taglibs"/>
 
     <!-- for debugging -->
-    <copy  todir="${build.home}/src" file="${mondrian.home}/mondrian-src.jar"/>
+    <copy  todir="${build.home}/src">
+      <fileset dir="${mondrian.home}">
+        <include name="*-src.zip"/>
+      </fileset>
+    </copy>
   </target>
 
 
@@ -308,7 +312,7 @@
       <fileset dir="${src.home}/jboss-portlet/webapp"/>
       <fileset dir="${build.home}/web">
         <include name="**/*.tld"/>
-	  </fileset>
+      </fileset>
       <filterset>
         <filter token="VERSION" value="${jpivot.version}"/>
       </filterset>
@@ -494,9 +498,9 @@
         <include name=".classpath"/>
         <include name="*.example"/>
       </zipfileset>
-	  <zipfileset dir="${src.home}/jboss-portlet" prefix="jpivot-portlet-${jpivot.version}">
-	    <include name="*.txt"/>
-	  </zipfileset>
+      <zipfileset dir="${src.home}/jboss-portlet" prefix="jpivot-portlet-${jpivot.version}">
+        <include name="*.txt"/>
+      </zipfileset>
     </zip>
   </target>
 
@@ -572,69 +576,69 @@
   <target name="runtests" description="JUnit Tests" depends="testcompile,testmondrian,testxmla,reports"/>
 
   <target name="testcompile" description="Compile for JUnit Tests">
-		<mkdir dir="${build.home}/docs/junit"/>
-		<mkdir dir="${build.home}/junit/logs"/>
-		<mkdir dir="${build.home}/junit/classes"/>
-		<!-- compile test classes -->
-		<javac destdir="${build.home}/junit/classes">
-			<src path="${src.home}/test"/>
-			<classpath refid="junit.classpath"/>
-		</javac>
-		<copy  todir="${build.home}/junit/classes">
-			<fileset dir="${src.home}/test">
-				<exclude name="**/*.java"/>
-				<exclude name="**/package.html"/>
-				<exclude name="**/doc-files/**"/>
-			</fileset>
-		</copy>
-	</target>
+    <mkdir dir="${build.home}/docs/junit"/>
+    <mkdir dir="${build.home}/junit/logs"/>
+    <mkdir dir="${build.home}/junit/classes"/>
+    <!-- compile test classes -->
+    <javac destdir="${build.home}/junit/classes">
+      <src path="${src.home}/test"/>
+      <classpath refid="junit.classpath"/>
+    </javac>
+    <copy  todir="${build.home}/junit/classes">
+      <fileset dir="${src.home}/test">
+        <exclude name="**/*.java"/>
+        <exclude name="**/package.html"/>
+        <exclude name="**/doc-files/**"/>
+      </fileset>
+    </copy>
+  </target>
 
-	<target name="testmondrian" description="Mondrian JUnit Tests">
-		<!-- run unit tests (Mondrian)-->
-		<junit printsummary="yes" fork="yes" failureProperty="junit.failed">
-			<jvmarg value="-Djdbc.driver=${jdbc.driver}"/>
-			<jvmarg value="-Djdbc.url=${jdbc.url}"/>
-			<jvmarg value="-Djdbc.user=${jdbc.user}"/>
-			<jvmarg value="-Djdbc.password=${jdbc.password}"/>
-			<jvmarg value="-Dtest.dir=${basedir}/tests"/>
-			<jvmarg value="-Dcatalog.uri=file:///${build.home}/web/WEB-INF/queries/FoodMart.xml"/>
-			<!-- must be set in TOMCAT too -->
-			<jvmarg value="-Dcom.tonbeller.environment=test"/>
-			<classpath refid="junit.classpath"/>
-			<formatter type="xml"/>
-			<batchtest todir="${build.home}/junit/logs">
-				<fileset dir="${src.home}/test">
-					<include name="**/*Test.java" />
-					<exclude name="com/tonbeller/jpivot/xmla/*"/>
-				</fileset>
-			</batchtest>
-		</junit>
-	</target>
+  <target name="testmondrian" description="Mondrian JUnit Tests">
+    <!-- run unit tests (Mondrian)-->
+    <junit printsummary="yes" fork="yes" failureProperty="junit.failed">
+      <jvmarg value="-Djdbc.driver=${jdbc.driver}"/>
+      <jvmarg value="-Djdbc.url=${jdbc.url}"/>
+      <jvmarg value="-Djdbc.user=${jdbc.user}"/>
+      <jvmarg value="-Djdbc.password=${jdbc.password}"/>
+      <jvmarg value="-Dtest.dir=${basedir}/tests"/>
+      <jvmarg value="-Dcatalog.uri=file:///${build.home}/web/WEB-INF/queries/FoodMart.xml"/>
+      <!-- must be set in TOMCAT too -->
+      <jvmarg value="-Dcom.tonbeller.environment=test"/>
+      <classpath refid="junit.classpath"/>
+      <formatter type="xml"/>
+      <batchtest todir="${build.home}/junit/logs">
+        <fileset dir="${src.home}/test">
+          <include name="**/*Test.java" />
+          <exclude name="com/tonbeller/jpivot/xmla/*"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
 
-	<target name="testxmla" description="XMLA JUnit Tests" unless="tests.xmla.skip">
-		<!-- run unit tests (XMLA)-->
-		<junit printsummary="yes" fork="yes" failureProperty="junit.failed">
-		<jvmarg value="-Dxmla.uri=${xmla.uri}"/>
-		<jvmarg value="-Dxmla.catalog=${xmla.catalog}"/>
-		<classpath refid="junit.classpath"/>
-		<formatter type="xml"/>
-			<batchtest todir="${build.home}/junit/logs">
-				<fileset dir="${src.home}/test">
-					<include name="com/tonbeller/jpivot/xmla/*Test.java"/>
-				</fileset>
-			</batchtest>
-		</junit>
-	</target>
+  <target name="testxmla" description="XMLA JUnit Tests" unless="tests.xmla.skip">
+    <!-- run unit tests (XMLA)-->
+    <junit printsummary="yes" fork="yes" failureProperty="junit.failed">
+    <jvmarg value="-Dxmla.uri=${xmla.uri}"/>
+    <jvmarg value="-Dxmla.catalog=${xmla.catalog}"/>
+    <classpath refid="junit.classpath"/>
+    <formatter type="xml"/>
+      <batchtest todir="${build.home}/junit/logs">
+        <fileset dir="${src.home}/test">
+          <include name="com/tonbeller/jpivot/xmla/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
 
-	<target name="reports" description="JUnit Test Reports">
-		<!-- create reports -->
-		<junitreport todir="${build.home}/docs/junit">
-			<fileset dir="${build.home}/junit/logs">
-				<include name="TEST-*.xml"/>
-			</fileset>
-			<report format="frames" todir="${build.home}/docs/junit"/>
-		</junitreport>
-	</target>
+  <target name="reports" description="JUnit Test Reports">
+    <!-- create reports -->
+    <junitreport todir="${build.home}/docs/junit">
+      <fileset dir="${build.home}/junit/logs">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report format="frames" todir="${build.home}/docs/junit"/>
+    </junitreport>
+  </target>
 
   <target name="checktests" description="Abort build if JUnit Test failed" if="junit.failed">
     <fail message="JUnit Test(s) failed"/>
