@@ -50,7 +50,6 @@
 	<classpathentry kind="lib" path="C:/Java/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-math-1.0.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/commons-vfs.jar"/>
-	<classpathentry kind="lib" path="build/web/WEB-INF/lib/retroweaver-rt-1.2.4.jar"/>
 	<classpathentry kind="lib" path="build/web/WEB-INF/lib/groovy-all-1.0-jsr-03.jar"/>
 	<classpathentry kind="output" path="build/web/WEB-INF/classes"/>
 </classpath>

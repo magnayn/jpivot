@@ -547,7 +547,7 @@
 
   <target name="changelog" description="creates CVS Changelog">
     <mkdir dir="${build.home}/docs"/>
-    <cvschangelog dir="${src.home}" destfile="${build.home}/docs/changelog.xml" daysinpast="300" />
+    <cvschangelog dir="${src.home}" destfile="${build.home}/docs/changelog.xml" daysinpast="730" />
     <style in="${build.home}/docs/changelog.xml"
            out="${build.home}/docs/changelog.html"
            style="${ant.home}/etc/changelog.xsl">
