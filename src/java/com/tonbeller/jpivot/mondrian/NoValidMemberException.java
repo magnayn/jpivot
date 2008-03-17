@@ -15,6 +15,8 @@ package com.tonbeller.jpivot.mondrian;
 import com.tonbeller.jpivot.util.JPivotRuntimeException;
 
 /** 
+ * This exception is currently never thrown.
+ * 
  * This is thrown by the MondrianResult when the query returns no data,
  * not even any meta-data. This can occur if the user has a Mondrian
  * Role that disallows all data from a given Dimension. If this 
@@ -31,9 +33,9 @@ import com.tonbeller.jpivot.util.JPivotRuntimeException;
  * 
  * @author Richard M. Emberson
  * @since Jun 08 2007
- * @version $Id: NoValidMemberException.java,v 1.1 2007/07/09 16:17:06 remberson Exp $
+ * @version $Id: NoValidMemberException.java,v 1.2 2008/03/17 14:03:09 avix Exp $
  */
-public class NoValidMemberException extends JPivotRuntimeException {
+abstract class NoValidMemberException extends JPivotRuntimeException {
     
     /** 
      * The axis without data. 

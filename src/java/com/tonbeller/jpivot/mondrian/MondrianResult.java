@@ -95,11 +95,15 @@ public class MondrianResult extends ResultBase {
       // table may result in NullPointerException since JPivot expects that
       // there at least be meta-data associated with every query on all
       // axes - hence we throw a controlled exception.
-      if ((nosPositions == 0) || (nosMembers == 0)) {
-        Query query = monResult.getQuery();
-        String mdx = query.toMdx();
-        throw new NoValidMemberException(i, mdx, nosPositions, nosMembers);
-      }
+
+      // removed by av: see EmptyResultTest - thats a perfect MDX query
+      // that should run w/o errors.
+      //      if ((nosPositions == 0) || (nosMembers == 0)) {
+      //        Query query = monResult.getQuery();
+      //        String mdx = query.toMdx();
+      //        throw new NoValidMemberException(i, mdx, nosPositions, nosMembers);
+      //      }
+      
       // check for OutOfMemory
       mmodel.checkListener();
 
