@@ -165,6 +165,13 @@ via XML and XSLT.
 
 
  <page title="News" id="news">
+   <h2>New in version 1.8</h2>
+   <ul>
+     <li>Synchronized to Mondrian 3.0.0 code base</li>
+     <li>Fixed several bugs (see changelog for details)</li>
+     <li>User can choose which properties shall be displayed (contributed by kunarief)</li>
+   </ul>
+   
    <h2>New in version 1.7</h2>
    <ul>
      <li>Synchronized with Mondrian 2.3.2.8944, fixes a couple of compatibility Problems (Mondrian API changed)</li>
@@ -449,7 +456,6 @@ This is useful, when the result ist sorted in <em>break hierarchy</em> mode.
   <link href="api/index.html" title="Java Doc"/>
   <link href="tags/jpivot-tags-en.html" title="JPivot Tags"/>
   <link href="tags/wcf-tags-en.html" title="WCF Tags"/>
-  <link href="mondrian-schema/index.html" title="Mondrian Schema Plugin"/>
 
 </section>
 
