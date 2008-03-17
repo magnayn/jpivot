@@ -135,8 +135,17 @@ public class FunCall implements Exp {
         sb.append(function);
         break;
 
+      case TypeMethod:
+        sb.append(args[0].toMdx());
+        sb.append(".");
+        sb.append(function);
+        sb.append("(");
+        sb.append(args[1].toMdx());
+        sb.append(")");
+        break;
+
       default :
-        System.out.println("unexpected FunCall syntatic type");
+        throw new IllegalArgumentException("unexpected FunCall syntatic type");
 
     }
     return sb.toString();
