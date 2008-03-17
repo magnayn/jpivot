@@ -251,6 +251,10 @@ public class ParsedQuery implements Exp {
     for (Iterator iter = formulas.iterator(); iter.hasNext();) {
       Formula formula = (Formula) iter.next();
       walkTreeForParams(formula.getExp(), iAxis);
+      // dont forget the member properties
+      for(int i = 0; i < formula.memberProperties.length; i++) {
+        walkTreeForParams(formula.memberProperties[i].getExp(), iAxis);
+      }
     }
 
     // walk axes

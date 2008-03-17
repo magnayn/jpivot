@@ -26,6 +26,13 @@ public class MemberProperty implements Exp {
   }
 
   /**
+   * @return The expression that makes up the value of the member property
+   */
+  public Exp getExp() {
+    return exp;
+  }
+
+  /**
    * format to MDX
    */
   public String toMdx() {
