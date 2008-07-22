@@ -75,7 +75,9 @@ import com.tonbeller.wcf.controller.Dispatcher;
 import com.tonbeller.wcf.controller.DispatcherSupport;
 import com.tonbeller.wcf.controller.RequestContext;
 import com.tonbeller.wcf.controller.RequestListener;
+import com.tonbeller.wcf.table.EditableTableComponent;
 import com.tonbeller.wcf.table.ITableComponent;
+import com.tonbeller.wcf.table.TableColumn;
 import com.tonbeller.wcf.table.TableModel;
 import com.tonbeller.wcf.utils.DomUtils;
 import com.tonbeller.wcf.utils.XmlUtils;
@@ -1308,6 +1310,21 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 				TableModel tm = drillThrough(cell);
 				tc.setModel(tm);
 				tc.setVisible(true);
+				
+				TableColumn[] tableColumns = null;
+				if (tc instanceof EditableTableComponent) {
+					tableColumns = ((EditableTableComponent) tc).getTableComp()
+							.getTableColumns();
+				} else if (tc instanceof com.tonbeller.wcf.table.TableComponent) {
+					tableColumns = ((com.tonbeller.wcf.table.TableComponent) tc)
+							.getTableColumns();
+				}
+				if (tableColumns != null) {
+					for (int i = 0; i < tableColumns.length; i++) {
+						TableColumn tableColumn = tableColumns[i];
+						tableColumn.setHidden(false);
+					}
+				}
 			}
 		}
 	}
