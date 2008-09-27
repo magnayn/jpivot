@@ -63,6 +63,7 @@ public class MondrianDrillThrough extends ExtensionSupport implements DrillThrou
     dtm.setJdbcUser(jdbcUser);
     dtm.setJdbcPassword(jdbcPassword);
     dtm.setDataSourceName(dataSourceName);
+    dtm.setExternalDataSource(((MondrianModel)getModel()).getExternalDataSource());
     return dtm;
   }
 

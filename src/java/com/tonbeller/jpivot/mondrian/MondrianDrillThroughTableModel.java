@@ -63,7 +63,7 @@ public class MondrianDrillThroughTableModel extends AbstractTableModel {
 
     public MondrianDrillThroughTableModel() {
     }
-
+    
     public int getRowCount() {
         if ( !ready ) {
             executeQuery();
@@ -218,7 +218,7 @@ public class MondrianDrillThroughTableModel extends AbstractTableModel {
      * @throws SQLException
      */
     private Connection getConnection() throws SQLException {
-        if (dataSourceName == null) {
+        if (dataSource == null && dataSourceName == null) {
 
             if (jdbcUrl == null) {
                 throw new RuntimeException(
@@ -338,4 +338,13 @@ public class MondrianDrillThroughTableModel extends AbstractTableModel {
         dataSourceName = string;
     }
 
+    /**
+     * Allow support for external data sources
+     * 
+     * @param externalDataSource the external datasource to use
+     */
+    public void setExternalDataSource(DataSource externalDataSource) {
+    	this.dataSource = externalDataSource;
+    }
+    
 }
