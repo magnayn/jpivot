@@ -843,7 +843,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
             // column axis
 
             List columnPositions = result.getAxes()[0].getPositions();//ladX.getPositions();
-            int colCount = columnPositions.size();
+            colCount = columnPositions.size();
 
             // row axis
 
@@ -1240,7 +1240,7 @@ public class ChartComponent extends ComponentSupport implements ModelChangeListe
 			String url = prefix;
 			// convert col, row into ordinal
 			// series is col, category is row
-			// (reverese terminology to jfreechart, that way series on measures which is more logical)
+			// (reverse terminology to jfreechart, that way series on measures which is more logical)
 			int cellpos = (category * colCount) + series;
 			if ( canDrillThrough((Cell) cells.get(cellpos)) && (!((Cell) cells.get(cellpos)).isNull()) ) {
 				String id = DomUtils.randomId();
