@@ -175,7 +175,10 @@ public class XMLA_Member implements Member, MDXMember, Exp {
     if (level == null)
       throw new IllegalArgumentException("Member " + uName + " Level=null");
 
-    if (level.getChildLevel() == null || isCalculated) {
+    // WPG: Mondrian's XMLA doesn't specify the child levels, so
+    //      this assumption breaks Mondrian XMLA
+    // see http://sourceforge.net/tracker/index.php?func=detail&aid=1792393&group_id=35302&atid=414613
+    if (/*level.getChildLevel() == null ||*/ isCalculated) {
       childrenCardinality = 0;
       childrenOk = true;
     }

@@ -44,7 +44,7 @@
   <property name="xalan.home"           value="${repository.home}/xalan-j_2_7_0"/>
 
   <!-- the following are included in lib/ directory (no need to override) -->
-  <property name="mondrian.version"     value="3.0.0"/>
+  <property name="mondrian.version"     value="HEAD"/>
   <property name="mondrian.home"        value="${repository.home}/mondrian-${mondrian.version}"/>
   <property name="jstl.home"            value="${repository.home}/jakarta-taglibs-standard-1.0.6"/>
 

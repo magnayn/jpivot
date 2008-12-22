@@ -515,7 +515,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
     CatalogLocator catalogLocator = new ServletContextCatalogLocator(servletContext);
 
     // use external DataSource if present
-    monConnection = mondrian.olap.DriverManager.getConnection(properties, catalogLocator, externalDataSource, false);
+    monConnection = mondrian.olap.DriverManager.getConnection(properties, catalogLocator, externalDataSource);
 
     if (monConnection == null) {
       String err = "Could not create Mondrian connection:" + properties;
@@ -639,9 +639,9 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       hHierarchies.put(uniqueName, hierarchy);
       // make sure, that all levels are initialized
       SchemaReader scr = getSchemaReader();
-      mondrian.olap.Level[] monLevels = scr.getHierarchyLevels(monHierarchy);
-      for (int i = 0; i < monLevels.length; i++) {
-        this.addLevel(monLevels[i], hierarchy);
+      List monLevels = scr.getHierarchyLevels(monHierarchy);
+      for (int i = 0; i < monLevels.size(); i++) {
+        this.addLevel((mondrian.olap.Level)monLevels.get(i), hierarchy);
       }
     }
   }
@@ -735,7 +735,8 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       return m;
     final SchemaReader scr = getSchemaReader();
 
-    String[] uniqueNameParts = Util.explode(uniqueName);
+    // WG: Mondrian 3.0.1 Fix
+    List uniqueNameParts = Util.parseIdentifier(uniqueName);
 
     /*
      * Pattern pat = Pattern.compile("\\[([^\\]]+)\\]"); Matcher mat =
@@ -1635,8 +1636,10 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
                 while (memIterator.hasNext()) {
                     String memberName = 
                         ((mondrian.olap.Member)memIterator.next()).toString();
-                    String[] uniqueNameParts = Util.explode(memberName);
-                    String dimension = uniqueNameParts[0]; 
+                    
+                    // WG: Mondrian 3.0.1 Fix
+                    List uniqueNameParts = Util.parseIdentifier(memberName);
+                    String dimension = uniqueNameParts.get(0).toString(); 
 
                     Iterator logicalIt = aLogicalModel.iterator();
                     while (logicalIt.hasNext()) {
@@ -1743,9 +1746,10 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
      */
     public boolean isAtSameLevel(final String memberName, 
                                  final String logicalName) {
-        final String[] memberUniqueNameParts = Util.explode(memberName);
-        final String[] logicalUniqueNameParts = Util.explode(logicalName);
-        return (memberUniqueNameParts.length == logicalUniqueNameParts.length);
+        // WG: Fix for Mondrian 3.0.1
+        final List memberUniqueNameParts = Util.parseIdentifier(memberName);
+        final List logicalUniqueNameParts = Util.parseIdentifier(logicalName);
+        return (memberUniqueNameParts.size() == logicalUniqueNameParts.size());
 
     }
 
@@ -1878,9 +1882,9 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
             // Get the hierarchy name
             String firstMemberName = 
                 ((mondrian.olap.Member) list.get(0)).toString();
-            String[] uniqueNameParts = Util.explode(firstMemberName);
+            List uniqueNameParts = Util.parseIdentifier(firstMemberName);
             //String dimName = firstDim.substring(0, firstDim.indexOf("."));
-            String dimName = uniqueNameParts[0];
+            String dimName = uniqueNameParts.get(0).toString();
             boolean result = true;
             Iterator it = list.iterator();
             while (it.hasNext()) {
@@ -1919,7 +1923,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       buf.append(", max=");
       buf.append(max);
       buf.append(" for mdx: ");
-      buf.append(queryAdapter.getMonQuery().toMdx());
+      buf.append(queryAdapter.getMonQuery().toString());
       this.oomMsg = buf.toString();
     }
     final void check() throws MemoryLimitExceededException {

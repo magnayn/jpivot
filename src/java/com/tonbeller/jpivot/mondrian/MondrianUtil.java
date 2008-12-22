@@ -119,9 +119,7 @@ public class MondrianUtil {
 
     if (monHier.hasAll()) {
       // an "All" member is present -get it
-      String sAll = ((HierarchyBase) monHier).getAllMemberName();
-      mondrian.olap.Member mona = (Member) scr.lookupCompound(monHier.getDimension(),
-          new String[] { sAll}, false, Category.Member);
+       mondrian.olap.Member mona = ((mondrian.rolap.RolapHierarchy)monHier).getAllMember();
        if (mona != null) {
         if (!expandAllMember)
           return new MemberExpr(mona);
@@ -136,23 +134,24 @@ public class MondrianUtil {
       }
     }
     // does this call work with parent-child
-    mondrian.olap.Member[] topMembers = scr.getHierarchyRootMembers(monHier);
-    if (topMembers.length == 1)
-      return new MemberExpr(topMembers[0]); // single member
-    else if (topMembers.length == 0)
+    List topMembers = scr.getHierarchyRootMembers(monHier);
+    if (topMembers.size() == 1)
+      return new MemberExpr((mondrian.olap.Member)topMembers.get(0)); // single member
+    else if (topMembers.size() == 0)
       return null; // possible if access control active
     
-    List list = new ArrayList(topMembers.length);
-    for (int i = 0; i < topMembers.length; i++) {
-        mondrian.olap.Member m = topMembers[i];
+    List list = new ArrayList(topMembers.size());
+    for (int i = 0; i < topMembers.size(); i++) {
+        mondrian.olap.Member m = (mondrian.olap.Member)topMembers.get(i);
         if (isVisible(scr, m)) {
             list.add(m);
         }
     }
-    topMembers = (mondrian.olap.Member[]) 
+    
+    mondrian.olap.Member[] topMemberArr = (mondrian.olap.Member[]) 
                     list.toArray(new mondrian.olap.Member[list.size()]);
 
-    return new UnresolvedFunCall("{}", Syntax.Braces, toExprArray(topMembers));
+    return new UnresolvedFunCall("{}", Syntax.Braces, toExprArray(topMemberArr));
   }
 
   static MemberExpr[] toExprArray(Member[] members) {
@@ -176,12 +175,13 @@ public class MondrianUtil {
     mondrian.olap.Level lev = member.getLevel();
     if (depth <= lev.getDepth())
       return new mondrian.olap.Member[0];
-    mondrian.olap.Member[] currentMembers = new mondrian.olap.Member[] { member};
+    List currentMembers = new ArrayList();
+    currentMembers.add(member);
     while (depth > lev.getDepth()) {
       lev = lev.getChildLevel();
       currentMembers = scr.getMemberChildren(currentMembers);
     }
-    return currentMembers;
+    return (mondrian.olap.Member[])currentMembers.toArray(new mondrian.olap.Member[0]);
   }
 
   /**
@@ -349,10 +349,10 @@ public class MondrianUtil {
     boolean canHandle = true;
     if (isCallTo(f, "Children")) {
       mondrian.olap.Member m = ((MemberExpr) f.getArg(0)).getMember();
-      mondrian.olap.Member[] members = scr.getMemberChildren(m);
-      for (int i = 0; i < members.length; i++) {
-        if (!memberList.contains(members[i]))
-          memberList.add(members[i]);
+      List members = scr.getMemberChildren(m);
+      for (int i = 0; i < members.size(); i++) {
+        if (!memberList.contains(members.get(i)))
+          memberList.add(members.get(i));
       }
     } else if (isCallTo(f, "Descendants")) {
       mondrian.olap.Member m = ((MemberExpr) f.getArg(0)).getMember();
@@ -364,10 +364,10 @@ public class MondrianUtil {
       }
     } else if (isCallTo(f, "Members")) {
       mondrian.olap.Level level = ((LevelExpr) f.getArg(0)).getLevel();
-      mondrian.olap.Member[] members = scr.getLevelMembers(level, false);
-      for (int i = 0; i < members.length; i++) {
-        if (!memberList.contains(members[i]))
-          memberList.add(members[i]);
+      List members = scr.getLevelMembers(level, false);
+      for (int i = 0; i < members.size(); i++) {
+        if (!memberList.contains(members.get(i)))
+          memberList.add(members.get(i));
       }
     } else if (isCallTo(f, "Union")) {
       resolveFunCallMembers((FunCall) f.getArg(0), memberList, scr);
@@ -394,7 +394,7 @@ public class MondrianUtil {
     Dimension d = m.getDimension();
     String s = d.getName();
     s.replace(' ', '_');
-    // s.replaceAll("[ \\.\"'!§$%&/()=?ßüäöÖÄÜ#-:;,]", "");
+    // s.replaceAll("[ \\.\"'!ï¿½$%&/()=?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½#-:;,]", "");
     return s + "_param";
   }
 

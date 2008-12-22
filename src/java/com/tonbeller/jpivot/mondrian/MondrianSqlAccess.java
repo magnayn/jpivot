@@ -40,10 +40,11 @@ public class MondrianSqlAccess extends ExtensionSupport implements SqlAccess {
     RolapMember rm = (RolapMember) mm.getMonMember();
     paramName = checkParamName(paramName, rm);
     // All or calculated?
-    if (rm.getSqlKey() == null)
+    if (rm.getKey() == null) {
       return null;
+    }
     SessionParam p = new SessionParam();
-    p.setSqlValue(rm.getSqlKey());
+    p.setSqlValue(rm.getKey());
     p.setDisplayName(member.getLevel().getLabel());
     p.setDisplayValue(member.getLabel());
 

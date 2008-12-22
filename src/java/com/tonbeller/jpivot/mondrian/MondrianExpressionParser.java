@@ -115,7 +115,7 @@ public class MondrianExpressionParser extends ExtensionSupport implements Expres
     // assume member,dimension,hierarchy,level
     OlapElement element;
     try {
-      element = Util.lookup(query, Util.explode(trimmed));
+      element = Util.lookup(query, Util.parseIdentifier(trimmed));
     } catch (Exception e) {
       logger.info(e);
       throw new InvalidSyntaxException(trimmed);

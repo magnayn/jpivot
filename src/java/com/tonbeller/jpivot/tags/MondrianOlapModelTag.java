@@ -48,19 +48,20 @@ public class MondrianOlapModelTag extends OlapModelTag {
 
   protected OlapModel getOlapModel(RequestContext context) throws JspException, OlapException, SAXException, IOException {
     MondrianModelFactory.Config cfg = new MondrianModelFactory.Config();
-    URL schemaUrl;
-    if (catalogUri.startsWith("/"))
-      schemaUrl = pageContext.getServletContext().getResource(catalogUri);
-    else
-      schemaUrl = new URL(catalogUri);
-    if (schemaUrl == null)
-      throw new JspException("could not find Catalog \"" + catalogUri + "\"");
-
-
+    // previously we were validating this url with a new URL() call,
+    // now that mondrian supports VFS, new URL() is not a valid verification
+    // technique.
+    String schemaUrl;
+    if (catalogUri.startsWith("/")) { 
+      schemaUrl = pageContext.getServletContext().getResource(catalogUri).toExternalForm();
+    } else {
+      schemaUrl = catalogUri;
+    }
+    
     cfg.setMdxQuery(getBodyContent().getString());
     // Add the schema URL.  Enclose the value in quotes to permit
     // schema URLs that include things like ;jsessionid values.
-    cfg.setSchemaUrl("\"" + schemaUrl.toExternalForm() + "\"");
+    cfg.setSchemaUrl("\"" + schemaUrl + "\"");
     cfg.setJdbcUrl(jdbcUrl);
     cfg.setJdbcDriver(jdbcDriver);
     cfg.setJdbcUser(jdbcUser);

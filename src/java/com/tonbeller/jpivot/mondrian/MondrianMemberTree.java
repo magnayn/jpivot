@@ -66,14 +66,14 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     // Use the schema reader from the query, because it contains calculated
     // members defined in both the cube and the query.
     SchemaReader scr = model.getSchemaReader();
-    mondrian.olap.Member[] monMembers = scr.getHierarchyRootMembers(monHier);
+    List monMembers = scr.getHierarchyRootMembers(monHier);
     ArrayList aMem = new ArrayList();
     final List visibleRootMembers = new ArrayList();
-    int k = monMembers.length;
+    int k = monMembers.size();
     for (int i = 0; i < k; i++) {
-      mondrian.olap.Member monMember = monMembers[i];
+      mondrian.olap.Member monMember = (mondrian.olap.Member) monMembers.get(i);
       if (isVisible(monMember)) {
-        aMem.add(model.addMember(monMembers[i]));
+        aMem.add(model.addMember(monMember));
       }
     }
 
@@ -206,11 +206,11 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     MondrianModel model = (MondrianModel) getModel();
 
     SchemaReader scr = model.getSchemaReader();
-    mondrian.olap.Member[] monChildren = scr.getMemberChildren(monMember);
+    List monChildren = scr.getMemberChildren(monMember);
 
-    List list = new ArrayList(monChildren.length);
-    for (int i = 0; i < monChildren.length; i++) {
-        mondrian.olap.Member m = monChildren[i];
+    List list = new ArrayList(monChildren.size());
+    for (int i = 0; i < monChildren.size(); i++) {
+        mondrian.olap.Member m = (mondrian.olap.Member)monChildren.get(i);
         if (MondrianUtil.isVisible(scr, m)) {
             list.add(model.addMember(m));
         }

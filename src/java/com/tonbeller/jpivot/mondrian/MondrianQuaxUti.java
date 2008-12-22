@@ -346,11 +346,12 @@ public class MondrianQuaxUti implements QuaxUti {
       return null;
     } else if (isCallTo(f, "Members")) {
       mondrian.olap.Level levExp = getLevelArg(f, 0);
-      mondrian.olap.Member[] members = scr.getLevelMembers(levExp, false);
+      List members = scr.getLevelMembers(levExp, false);
       List remainder = new ArrayList();
-      for (int i = 0; i < members.length; i++) {
-        if (!members[i].isChildOrEqualTo(m))
-          remainder.add(members[i]);
+      for (int i = 0; i < members.size(); i++) {
+        mondrian.olap.Member currMember = (mondrian.olap.Member)members.get(i);
+        if (!currMember.isChildOrEqualTo(m))
+          remainder.add(currMember);
       }
       return createMemberSet(remainder);
     } else if (isCallTo(f, "{}")) {
@@ -1069,8 +1070,8 @@ public class MondrianQuaxUti implements QuaxUti {
    * @see com.tonbeller.jpivot.olap.query.QuaxUti#getChildren(java.lang.Object)
    */
   public Object[] getChildren(Object oMember) {
-    mondrian.olap.Member[] members = scr.getMemberChildren(toMember(oMember));
-    return members;
+    List members = scr.getMemberChildren(toMember(oMember));
+    return members.toArray(new mondrian.olap.Member[0]);
   }
 
   /**
@@ -1078,8 +1079,8 @@ public class MondrianQuaxUti implements QuaxUti {
    */
   public Object[] getLevelMembers(Level level) {
     mondrian.olap.Level monLevel = ((MondrianLevel) level).getMonLevel();
-    mondrian.olap.Member[] members = scr.getLevelMembers(monLevel, false);
-    return members;
+    List members = scr.getLevelMembers(monLevel, false);
+    return members.toArray(new mondrian.olap.Member[0]);
   }
 
 } //MondrianQuaxUti

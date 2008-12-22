@@ -12,6 +12,7 @@ package com.tonbeller.jpivot.print;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -19,9 +20,6 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.io.File;
-
-import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -35,8 +33,9 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.fop.apps.Driver;
 import org.apache.fop.apps.FOPException;
-import org.apache.fop.configuration.Configuration;
 import org.apache.fop.apps.Options;
+import org.apache.fop.configuration.Configuration;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -46,18 +45,22 @@ import com.tonbeller.wcf.component.RendererParameters;
 import com.tonbeller.wcf.controller.RequestContext;
 import com.tonbeller.wcf.controller.RequestContextFactoryFinder;
 import com.tonbeller.wcf.utils.XmlUtils;
+
 /**
+ * Expected HTTP GET Parameters:
+ *  - cube - the jpivot cube id, used to lookup table, chart, and print references
+ *  - type - the output type, 0 for xls, 1 for pdf
+ *  - filenamePre - (optional) - defaults to xls_export, specifies the filename
+ *  				 the browser will use to name the output.
  *
  * @author  arosselet
  * @version
  */
-
 public class PrintServlet extends HttpServlet {
   private static Logger logger = Logger.getLogger(PrintServlet.class);
   private static final int XML = 0;
   private static final int PDF = 1;
   String basePath;
-  String filename;
 
   /** Initializes the servlet.
    */
@@ -97,19 +100,24 @@ public class PrintServlet extends HttpServlet {
     if (request.getParameter("cube") != null && request.getParameter("type") != null) {
       try {
         String xslUri = null;
+        String filename = null;
         int type = Integer.parseInt(request.getParameter("type"));
+        String filenamePre = "xls_export";
+        if (request.getParameter("filenamePre") != null) {
+        	filenamePre = request.getParameter("filenamePre");
+        }
         switch (type) {
         case XML:
           xslUri = "/WEB-INF/jpivot/table/xls_mdxtable.xsl";
           RendererParameters.setParameter(context.getRequest(), "mode", "excel", "request");
           response.setContentType("application/vnd.ms-excel");
-          filename = "xls_export.xls";
+          filename = filenamePre + ".xls";
           break;
         case PDF:
           xslUri = "/WEB-INF/jpivot/table/fo_mdxtable.xsl";
           RendererParameters.setParameter(context.getRequest(), "mode", "print", "request");
           response.setContentType("application/pdf");
-          filename = "xls_export.pdf";
+          filename = filenamePre + ".pdf";
           break;
         }
         if (xslUri != null) {
@@ -158,9 +166,20 @@ public class PrintServlet extends HttpServlet {
               int port = request.getServerPort();
               String location = request.getContextPath();
               String scheme = request.getScheme();
-
-              String chartServlet = scheme + "://" + host + ":" + port + location + "/GetChart";
-              parameters.put("chartimage", chartServlet + "?filename=" + chart.getFilename());
+              if (type == PDF) {
+            	  String chartFilename = chart.getFilename();
+            	  if (chartFilename.indexOf("..") >= 0) {
+            		  throw new ServletException("File '" + chartFilename + "' does not exist within temp directory.");
+            	  }
+            	  File file = new File(System.getProperty("java.io.tmpdir"), chartFilename);
+                  if (!file.exists()) {
+                      throw new ServletException("File '" + file.getAbsolutePath() + "' does not exist.");
+                  }
+            	  parameters.put("chartimage", "file:" + file.getCanonicalPath());
+              } else { 
+            	  String chartServlet = scheme + "://" + host + ":" + port + location + "/GetChart";
+            	  parameters.put("chartimage", chartServlet + "?filename=" + chart.getFilename());
+              }
               parameters.put("chartheight", new Integer(chart.getChartHeight()));
               parameters.put("chartwidth", new Integer(chart.getChartWidth()));
             }
