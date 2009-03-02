@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import mondrian.olap.AxisOrdinal;
 import mondrian.olap.Exp;
 import mondrian.olap.QueryAxis;
 import mondrian.olap.Syntax;
+import mondrian.olap.AxisOrdinal.StandardAxisOrdinal;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.mdx.MemberExpr;
 
@@ -99,7 +99,7 @@ public class MondrianChangeSlicer extends ExtensionSupport implements ChangeSlic
       }
 
       UnresolvedFunCall f = new UnresolvedFunCall("()", Syntax.Parentheses, monExpr);
-      monQuery.setSlicerAxis(new QueryAxis(false, f, AxisOrdinal.SLICER, QueryAxis.SubtotalVisibility.Undefined));
+      monQuery.setSlicerAxis(new QueryAxis(false, f, StandardAxisOrdinal.SLICER, QueryAxis.SubtotalVisibility.Undefined));
       if (logInfo) {
         StringBuffer sb = new StringBuffer("slicer=(");
         for (int i = 0; i < monExpr.length; i++) {

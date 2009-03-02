@@ -14,11 +14,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import mondrian.olap.Position;
+import mondrian.olap.AxisOrdinal.StandardAxisOrdinal;
+
 import com.tonbeller.jpivot.olap.model.Axis;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Visitor;
-import mondrian.olap.AxisOrdinal;
-import mondrian.olap.Position;
 
 /**
  * MondrianAxis is an adapter class for the Result Mondrian Axis.
@@ -48,7 +49,7 @@ public class MondrianAxis implements Axis {
 
       MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
       mondrian.olap.Hierarchy[] monHiers = adapter.getMonQuery().getMdxHierarchiesOnAxis(
-        AxisOrdinal.forLogicalOrdinal(iOrdinal));
+   		  StandardAxisOrdinal.forLogicalOrdinal(iOrdinal));
       hierarchies = new MondrianHierarchy[monHiers.length];
       for (int j = 0; j < hierarchies.length; j++) {
         // if the axis expr is a function like 
