@@ -149,7 +149,7 @@ public class AxisStyleUI extends TableComponentExtensionSupport {
   /**
    * returns the bookmark state
    */
-  public Object getBookmarkState(int levelOfDetail) {
+  public Object retrieveBookmarkState(int levelOfDetail) {
     BookmarkState x = new BookmarkState();
     x.setLevelStyle(isLevelStyle());
     x.setHideSpans(isHideSpans());

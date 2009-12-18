@@ -93,7 +93,7 @@ public class CoSalUniTest extends TestCase {
 
     // save bookmark and reload
     // make sure, that "." in member name does not cause problem
-    Object state = model.getBookmarkState(Bookmarkable.EXTENSIONAL);
+    Object state = model.retrieveBookmarkState(Bookmarkable.EXTENSIONAL);
     result = model.getResult();
     if (renderFile != null)
       ResultBase.renderHtml(result, model.getCurrentMdx(), renderFile + renderNum++ + ".html");

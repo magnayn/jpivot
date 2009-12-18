@@ -210,7 +210,7 @@ public class MementoTest extends TestCase {
     cs.setSlicer(new Member[]{m});
     Result result = model.getResult();
     // create and test memento
-    MondrianMemento memento = (MondrianMemento) model.getBookmarkState(levelOfDetail);
+    MondrianMemento memento = (MondrianMemento) model.retrieveBookmarkState(levelOfDetail);
     return memento;
   }
   
@@ -226,7 +226,7 @@ public class MementoTest extends TestCase {
     // second step
     result = model.getResult();
     // create and test memento
-    MondrianMemento memento = (MondrianMemento) model.getBookmarkState(levelOfDetail);
+    MondrianMemento memento = (MondrianMemento) model.retrieveBookmarkState(levelOfDetail);
     assertTrue(memento.isSorting());
     assertEquals(1, memento.getSortPosMembers().length);
     return memento;
@@ -353,7 +353,7 @@ public class MementoTest extends TestCase {
     assertPosition(result, positions.size() - 2, new String[] { "F", "S", "WA", "Non-Consumable" });
     assertPosition(result, positions.size() - 5, new String[] { "F", "S", "WA", "All Products" });
 
-    return (MondrianMemento) model.getBookmarkState(levelOfDetail);
+    return (MondrianMemento) model.retrieveBookmarkState(levelOfDetail);
 
   }
 
@@ -497,7 +497,7 @@ public class MementoTest extends TestCase {
     assertPosition(result, 7, new String[] { "USA", "Beverages" });
 
     // create Memento and write it to xml string
-    return (MondrianMemento) model.getBookmarkState(levelOfDetail);
+    return (MondrianMemento) model.retrieveBookmarkState(levelOfDetail);
   }
 
   public void setMementoDrill(String xml) throws Exception {

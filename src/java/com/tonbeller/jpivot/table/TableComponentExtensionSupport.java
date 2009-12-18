@@ -33,7 +33,7 @@ public abstract class TableComponentExtensionSupport extends PartBuilderSupport 
   /**
    * returns the enabled property
    */
-  public Object getBookmarkState(int levelOfDetail) {
+  public Object retrieveBookmarkState(int levelOfDetail) {
     return new Boolean(enabled);
   }
 

@@ -72,7 +72,7 @@ public class ModelSupport implements Model {
   /**
    * returns null
    */
-  public Object getBookmarkState(int levelOfDetail) {
+  public Object retrieveBookmarkState(int levelOfDetail) {
     return null;
   }
 

@@ -340,7 +340,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
   
       // set a bookmark, so that we can roll back to that state
       if (!tryagain) {
-        bookMark = getBookmarkState(EXTENSIONAL);
+        bookMark = retrieveBookmarkState(EXTENSIONAL);
       }
     } finally {
       mm.removeListener(this.listener);
@@ -984,7 +984,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
    *
    * @return MondrianMemento current state
    */
-  public Object getBookmarkState(int levelOfDetail) {
+  public Object retrieveBookmarkState(int levelOfDetail) {
     if (this.result == null)
       return null;
     try {

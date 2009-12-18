@@ -138,17 +138,17 @@ public class TableComponent extends ComponentSupport implements ModelChangeListe
     super.destroy(session);
   }
 
-  public Object getBookmarkState(int levelOfDetail) {
-    logger.info("getBookmarkState");
-    Map map = (Map) super.getBookmarkState(levelOfDetail);
-    map.put("slicerBuilder", slicerBuilder.getBookmarkState(levelOfDetail));
-    map.put("cornerBuilder", cornerBuilder.getBookmarkState(levelOfDetail));
-    map.put("cellBuilder", cellBuilder.getBookmarkState(levelOfDetail));
-    map.put("rowAxisBuilder", rowAxisBuilder.getBookmarkState(levelOfDetail));
-    map.put("columnAxisBuilder", columnAxisBuilder.getBookmarkState(levelOfDetail));
+  public Object retrieveBookmarkState(int levelOfDetail) {
+    logger.info("retrieveBookmarkState");
+    Map map = (Map) super.retrieveBookmarkState(levelOfDetail);
+    map.put("slicerBuilder", slicerBuilder.retrieveBookmarkState(levelOfDetail));
+    map.put("cornerBuilder", cornerBuilder.retrieveBookmarkState(levelOfDetail));
+    map.put("cellBuilder", cellBuilder.retrieveBookmarkState(levelOfDetail));
+    map.put("rowAxisBuilder", rowAxisBuilder.retrieveBookmarkState(levelOfDetail));
+    map.put("columnAxisBuilder", columnAxisBuilder.retrieveBookmarkState(levelOfDetail));
     for (Iterator it = extensionList.iterator(); it.hasNext();) {
       TableComponentExtension tce = (TableComponentExtension) it.next();
-      map.put(tce.getId(), tce.getBookmarkState(levelOfDetail));
+      map.put(tce.getId(), tce.retrieveBookmarkState(levelOfDetail));
     }
     return map;
   }

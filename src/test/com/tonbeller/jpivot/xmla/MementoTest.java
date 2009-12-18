@@ -169,7 +169,7 @@ public class MementoTest extends TestCase {
     assertPosition(result, positions.size() - 5, new String[] { "F", "S", "WA", "All Products" });
 
     // create Memento and write it to xml string
-    XMLA_Memento memento = (XMLA_Memento) model.getBookmarkState(Bookmarkable.EXTENSIONAL);
+    XMLA_Memento memento = (XMLA_Memento) model.retrieveBookmarkState(Bookmarkable.EXTENSIONAL);
     ByteArrayOutputStream outs = new ByteArrayOutputStream();
     XMLEncoder e = new XMLEncoder(outs);
     e.writeObject(memento);
@@ -367,7 +367,7 @@ public class MementoTest extends TestCase {
     assertPosition(result, 7, new String[] { "USA", "Beverages" });
 
     // create Memento and write it to xml string
-    XMLA_Memento memento = (XMLA_Memento) model.getBookmarkState(Bookmarkable.EXTENSIONAL);
+    XMLA_Memento memento = (XMLA_Memento) model.retrieveBookmarkState(Bookmarkable.EXTENSIONAL);
     ByteArrayOutputStream outs = new ByteArrayOutputStream();
     XMLEncoder e = new XMLEncoder(outs);
     e.writeObject(memento);

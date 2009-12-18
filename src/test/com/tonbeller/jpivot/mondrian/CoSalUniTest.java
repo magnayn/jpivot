@@ -88,7 +88,7 @@ public class CoSalUniTest extends TestCase {
     assertPosition(result, 24, new String[] { "20319", "Supermarket", "Store Cost"});
 
     // save bookmark and reload
-    Object state = model.getBookmarkState(Bookmarkable.EXTENSIONAL);
+    Object state = model.retrieveBookmarkState(Bookmarkable.EXTENSIONAL);
     result = model.getResult();
     if (renderFile != null)
       ResultBase.renderHtml(result, model.getCurrentMdx(),  renderFile + renderNum++ + ".html");

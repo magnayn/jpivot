@@ -264,8 +264,8 @@ public abstract class AxisBuilderSupport extends PartBuilderSupport implements A
   /**
    * stores settings for Member Properties. The axis style is stored in the AxisStyleUI table extension 
    */
-  public Object getBookmarkState(int levelOfDetail) {
-    return getPropertyConfig().getBookmarkState(levelOfDetail);
+  public Object retrieveBookmarkState(int levelOfDetail) {
+    return getPropertyConfig().retrieveBookmarkState(levelOfDetail);
   }
 
   /**

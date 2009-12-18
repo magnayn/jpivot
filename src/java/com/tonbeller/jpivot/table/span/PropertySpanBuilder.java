@@ -364,7 +364,7 @@ public class PropertySpanBuilder implements PropertyConfig, ModelChangeListener,
     }
   }
 
-  public Object getBookmarkState(int levelOfDetail) {
+  public Object retrieveBookmarkState(int levelOfDetail) {
     BookmarkState x = new BookmarkState();
     x.setShowProperties(isShowProperties());
     if (visiblePropertyMetas != null) {

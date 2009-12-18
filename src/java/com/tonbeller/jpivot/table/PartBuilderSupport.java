@@ -53,7 +53,7 @@ public abstract class PartBuilderSupport implements PartBuilder {
   /**
    * returns null
    */
-  public Object getBookmarkState(int levelOfDetail) {
+  public Object retrieveBookmarkState(int levelOfDetail) {
     return null;
   }
 

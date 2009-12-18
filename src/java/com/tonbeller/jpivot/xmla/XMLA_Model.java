@@ -437,7 +437,7 @@ public class XMLA_Model extends MdxOlapModel implements OlapModel, QueryAdapter.
    * create a Memento bean object holding current state.
    * @return Memento current state
    */
-  public Object getBookmarkState(int levelOfDetail) {
+  public Object retrieveBookmarkState(int levelOfDetail) {
     try {
       XMLA_Memento memento = new XMLA_Memento();
       memento.setVersion(XMLA_Memento.CURRENT_VERSION);

@@ -86,8 +86,8 @@ public class OlapModelDecorator extends ExtensionSupport implements OlapModel {
     delegate.removeModelChangeListener(l);
   }
 
-  public Object getBookmarkState(int levelOfDetail) {
-    return delegate.getBookmarkState(levelOfDetail);
+  public Object retrieveBookmarkState(int levelOfDetail) {
+    return delegate.retrieveBookmarkState(levelOfDetail);
   }
 
   public void setBookmarkState(Object state) {
