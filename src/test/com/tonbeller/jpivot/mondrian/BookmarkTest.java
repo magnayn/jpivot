@@ -104,7 +104,7 @@ public class BookmarkTest extends TestCase {
     assertPosition(result, 1, 5, new String[] { "Q1", "Hermanos"});
 
     // create Bookmark
-    Object bm = model.getBookmarkState(Bookmarkable.EXTENSIONAL);
+    Object bm = model.retrieveBookmarkState(Bookmarkable.EXTENSIONAL);
 
     model.setBookmarkState(bm);
     result = model.getResult();
