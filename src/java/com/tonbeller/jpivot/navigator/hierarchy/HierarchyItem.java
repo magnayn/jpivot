@@ -19,6 +19,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import sun.text.CompactShortArray.Iterator;
+
 import com.tonbeller.jpivot.olap.model.Dimension;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Member;
@@ -87,11 +89,11 @@ public class HierarchyItem implements Item, RequestListener, Comparable {
     slicerSelection = new ArrayList();
     if (slicerExtension != null) {
       Member[] members = slicerExtension.getSlicer();
-      loop : for (int i = 0; i < members.length; i++) {
-        if (members[i].getLevel().getHierarchy().equals(hierarchy)) {
-          slicerSelection.add(members[i]);
-          break loop;
-        }
+      // Add all retrieved members to the slicer selection because it can be a 
+      // compound slicer
+      for (int i = 0; i < members.length; i++) {
+	      if (members[i].getLevel().getHierarchy().equals(hierarchy)) 
+	        slicerSelection.add(members[i]);
       }
     }
   }
@@ -209,13 +211,20 @@ public class HierarchyItem implements Item, RequestListener, Comparable {
   }
 
   private void  updateHierarchy(Collection selection) {
-    if (selection == null || selection.isEmpty())
+    if (selection == null || selection.isEmpty()) 
       hierarchy = dimension.getHierarchies()[0];
     else {
-      Member m = (Member) selection.iterator().next();
-      hierarchy = m.getLevel().getHierarchy();
-      if (!hierarchy.getDimension().equals(dimension))
-        logger.error("invalid dimension in " + hierarchy.getLabel());
+    	
+      // Because we added support for compound slicers extend
+      // the previous che to every member of the selection
+      // Member m = (Member) selection.iterator().next();
+    	java.util.Iterator iter = selection.iterator();
+    	while (iter.hasNext()) {
+    	  Member m = (Member) iter.next();
+	      hierarchy = m.getLevel().getHierarchy();
+	      if (!hierarchy.getDimension().equals(dimension))
+	        logger.error("invalid dimension in " + hierarchy.getLabel());
+      }
     }
     
   }

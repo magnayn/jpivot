@@ -16,10 +16,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import mondrian.olap.AxisOrdinal;
 import mondrian.olap.Exp;
 import mondrian.olap.QueryAxis;
 import mondrian.olap.Syntax;
-import mondrian.olap.AxisOrdinal.StandardAxisOrdinal;
+import mondrian.olap.AxisOrdinal;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.mdx.MemberExpr;
 
@@ -81,38 +82,66 @@ public class MondrianChangeSlicer extends ExtensionSupport implements ChangeSlic
    * @see com.tonbeller.jpivot.olap.navi.ChangeSlicer#setSlicer(Member[])
    */
   public void setSlicer(Member[] members) {
-    MondrianModel model = (MondrianModel) getModel();
-    MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
-    mondrian.olap.Query monQuery = adapter.getMonQuery();
+	    MondrianModel model = (MondrianModel) getModel();
+	    MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
+	    mondrian.olap.Query monQuery = adapter.getMonQuery();
+	    
+	    boolean logInfo = logger.isInfoEnabled();
 
-    boolean logInfo = logger.isInfoEnabled();
-
-    if (members.length == 0) {
-      // empty slicer
-      monQuery.setSlicerAxis(null);
-      if (logInfo)
-        logger.info("slicer set to null");
-    } else {
-      Exp[] monExpr = new Exp[members.length];
-      for (int i = 0; i < monExpr.length; i++) {
-        monExpr[i] = createExpressionFor(monQuery, (MondrianMember) members[i]);
-      }
-
-      UnresolvedFunCall f = new UnresolvedFunCall("()", Syntax.Parentheses, monExpr);
-      monQuery.setSlicerAxis(new QueryAxis(false, f, StandardAxisOrdinal.SLICER, QueryAxis.SubtotalVisibility.Undefined));
-      if (logInfo) {
-        StringBuffer sb = new StringBuffer("slicer=(");
-        for (int i = 0; i < monExpr.length; i++) {
-          if (i > 0)
-            sb.append(",");
-          sb.append(monExpr[i].toString());
-        }
-        sb.append(")");
-        logger.info(sb.toString());
-      }
-    }
-    model.fireModelChanged();
-  }
+	    if (members.length == 0) {
+	      // empty slicer
+	      monQuery.setSlicerAxis(null);
+	      if (logInfo)
+	        logger.info("slicer set to null");
+	    } else {
+	      ArrayList collectedMemberExpressions = new ArrayList();
+	      ArrayList conditions = new ArrayList();
+	      String prevHierarchyName = ""; 
+	      String hierarchyName = ""; 
+	      String mbrUniqueName = "";
+	      UnresolvedFunCall f = null;
+	      boolean firstCondition = true;
+	      for (int i = 0; i < members.length; i++) {
+	    	  mbrUniqueName = ((MondrianMember) members[i]).getUniqueName();
+	    	  hierarchyName = mbrUniqueName.substring(1, mbrUniqueName.indexOf("]"));
+	    	  if (!hierarchyName.equals(prevHierarchyName)) {
+	    		  if(collectedMemberExpressions.size()>0) {
+	    			  if (firstCondition) {
+	    				  f = new UnresolvedFunCall("{}", Syntax.Braces, (Exp[])collectedMemberExpressions.toArray(new Exp[collectedMemberExpressions.size()]));
+	    			  } else {
+	    				  conditions.add(new UnresolvedFunCall("{}", Syntax.Braces, (Exp[])collectedMemberExpressions.toArray(new Exp[collectedMemberExpressions.size()])));
+	    				  f = new UnresolvedFunCall("CrossJoin", Syntax.Function, (Exp[])conditions.toArray(new Exp[conditions.size()]));
+	    				  conditions.clear();
+	    			  }
+	   				  conditions.add(f);
+	   				  firstCondition = false;
+	    			  if (logInfo) logger.info("Added a new filter condition for Hierarchy: " + prevHierarchyName + ", Conditions number: " + collectedMemberExpressions.size());
+	        		  collectedMemberExpressions.clear();
+	        		  if (logInfo) logger.info("Clear conditions list. Size = " + collectedMemberExpressions.size());
+	    		  }
+	    		  prevHierarchyName = hierarchyName;
+	    		  if (logInfo) logger.info("Collecting filters on member: " + hierarchyName);
+	    	  }
+	        collectedMemberExpressions.add(createExpressionFor(monQuery, (MondrianMember) members[i]));
+	      }
+	      
+	      // Add lastly collected member to filters conditions list
+		  if(collectedMemberExpressions.size()>0) {
+			  conditions.add(new UnresolvedFunCall("{}", Syntax.Braces, (Exp[])collectedMemberExpressions.toArray(new Exp[collectedMemberExpressions.size()])));
+			  if (logInfo) logger.info("Added a new filter condition for Hierarchy: " + hierarchyName);
+		  }
+	      
+	      if (conditions.size() == 1) 
+	    	  monQuery.setSlicerAxis(new QueryAxis(false, (Exp)conditions.get(0), AxisOrdinal.StandardAxisOrdinal.SLICER, QueryAxis.SubtotalVisibility.Undefined));
+	      else {
+	    	  // SeraSoft - More dimensions selected. Build a CrossJoin function
+	    	  UnresolvedFunCall intersectConditions = new UnresolvedFunCall("Crossjoin", Syntax.Function, (Exp[])conditions.toArray(new Exp[conditions.size()]));
+	    	  monQuery.setSlicerAxis(new QueryAxis(false, intersectConditions, AxisOrdinal.StandardAxisOrdinal.SLICER, QueryAxis.SubtotalVisibility.Undefined));
+	    	  
+	      }
+	    }
+	    model.fireModelChanged();
+	  }
 
   protected Exp createExpressionFor(mondrian.olap.Query monQuery, MondrianMember member) {
     return new MemberExpr(member.getMonMember());

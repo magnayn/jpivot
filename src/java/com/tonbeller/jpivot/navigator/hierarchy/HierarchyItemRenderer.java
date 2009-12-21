@@ -12,8 +12,12 @@
  */
 package com.tonbeller.jpivot.navigator.hierarchy;
 
+import java.util.List;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import sun.text.CompactShortArray.Iterator;
 
 import com.tonbeller.jpivot.olap.model.Member;
 import com.tonbeller.wcf.catedit.Category;
@@ -35,10 +39,19 @@ public class HierarchyItemRenderer extends DefaultItemElementRenderer {
       elem.setAttribute("id", hi.getId());
 
     if (!hi.getSlicerSelection().isEmpty()) {
-      Member m = (Member)hi.getSlicerSelection().get(0);
-      Element e = DomUtils.appendElement(elem, "slicer-value");
-      e.setAttribute("label", m.getLabel());
-      e.setAttribute("level", m.getLevel().getLabel());
+      // Manage the addition of slicer elements in loop before of the compound 
+      // slicers.
+      	
+      List slicerSelection = hi.getSlicerSelection();
+      if (slicerSelection != null) {
+    	  java.util.Iterator iter = slicerSelection.iterator();
+    	  while (iter.hasNext()) {
+    		  Member m = (Member)iter.next();
+		      Element e = DomUtils.appendElement(elem, "slicer-value");
+		      e.setAttribute("label", m.getLabel());
+		      e.setAttribute("level", m.getLevel().getLabel());
+	      }
+      }
     }
     
     return elem;

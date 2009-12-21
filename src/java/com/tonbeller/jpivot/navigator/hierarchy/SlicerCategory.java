@@ -63,7 +63,9 @@ class SlicerCategory extends AbstractCategory {
     if (navi.getSlicerExtension() == null)
       selection.setMode(SelectionModel.NO_SELECTION);
     else
-      selection.setMode(SelectionModel.SINGLE_SELECTION);
+    	// SeraSoft - Enable support for compound slicer 
+    	//  selection.setMode(SelectionModel.SINGLE_SELECTION);
+    	selection.setMode(SelectionModel.MULTIPLE_SELECTION);
 
     selection.setOrderedSelection(item.getSlicerSelection());
     navi.itemClicked(context, item, selection, false);
@@ -103,10 +105,12 @@ class SlicerCategory extends AbstractCategory {
   }
 
   String validateSelection(HierarchyItem item, Collection selection) {
-    if (selection.size() > 1) {
-      Resources res = getNavigator().getRes();
-      return res.getString("selection.mustSelectOneOrLess");
-    }
+  	// Enable support for compound slicer
+	// Disable validation of only one item as of in the previous version
+    //    if (selection.size() > 1) {
+    //      Resources res = getNavigator().getRes();
+    //      return res.getString("selection.mustSelectOneOrLess");
+    //    }
     return null;
   }
 
