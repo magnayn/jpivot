@@ -40,7 +40,7 @@
   <property name="repository.home"      value="${basedir}/../jpivot_repository"/>
 
   <!-- override these in your build.properties -->
-  <property name="catalina.home"        value="${repository.home}/jakarta-tomcat-4.1.34"/>
+  <property name="catalina.home"        value="${repository.home}/jakarta-tomcat-4.1.31"/>
   <property name="xalan.home"           value="${repository.home}/xalan-j_2_7_0"/>
 
   <!-- the following are included in lib/ directory (no need to override) -->
