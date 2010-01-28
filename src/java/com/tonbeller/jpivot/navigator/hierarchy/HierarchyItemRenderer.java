@@ -17,8 +17,7 @@ import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import sun.text.CompactShortArray.Iterator;
-
+import java.util.Iterator;
 import com.tonbeller.jpivot.olap.model.Member;
 import com.tonbeller.wcf.catedit.Category;
 import com.tonbeller.wcf.catedit.DefaultItemElementRenderer;
@@ -44,7 +43,7 @@ public class HierarchyItemRenderer extends DefaultItemElementRenderer {
       	
       List slicerSelection = hi.getSlicerSelection();
       if (slicerSelection != null) {
-    	  java.util.Iterator iter = slicerSelection.iterator();
+    	  Iterator iter = slicerSelection.iterator();
     	  while (iter.hasNext()) {
     		  Member m = (Member)iter.next();
 		      Element e = DomUtils.appendElement(elem, "slicer-value");

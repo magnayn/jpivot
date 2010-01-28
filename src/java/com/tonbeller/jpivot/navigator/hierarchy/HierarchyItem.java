@@ -19,8 +19,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import sun.text.CompactShortArray.Iterator;
-
 import com.tonbeller.jpivot.olap.model.Dimension;
 import com.tonbeller.jpivot.olap.model.Hierarchy;
 import com.tonbeller.jpivot.olap.model.Member;
