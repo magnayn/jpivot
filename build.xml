@@ -35,6 +35,7 @@
   <property name="build.home"           value="${basedir}/build"/>
   <property name="dist.home"            value="${basedir}/dist"/>
   <property name="src.home"             value="${basedir}/src"/>
+  <property name="resources.home"       value="${basedir}/resources"/>
   <property name="viewcvs"              value="http://jpivot.cvs.sourceforge.net/jpivot"/>
 
   <property name="repository.home"      value="${basedir}/../jpivot_repository"/>
@@ -44,8 +45,9 @@
   <property name="xalan.home"           value="${repository.home}/xalan-j_2_7_0"/>
 
   <!-- the following are included in lib/ directory (no need to override) -->
-  <property name="mondrian.version"     value="HEAD"/>
+  <property name="mondrian.version"     value="3.1.5.13307"/>
   <property name="mondrian.home"        value="${repository.home}/mondrian-${mondrian.version}"/>
+  <property name="eigenbase.home"       value="${repository.home}/eigenbase"/>
   <property name="jstl.home"            value="${repository.home}/jakarta-taglibs-standard-1.0.6"/>
 
   <property name="digester.home"        value="${repository.home}/commons-digester-1.5"/>
@@ -55,6 +57,7 @@
   <property name="pool.home"            value="${repository.home}/commons-pool-1.2"/>
   <property name="dbcp.home"            value="${repository.home}/commons-dbcp-1.2.1"/>
   <property name="math.home"            value="${repository.home}/commons-math-1.0"/>
+  <property name="vfs.home"             value="${repository.home}/commons-vfs-1.0"/>
 
   <property name="regexp.home"          value="${repository.home}/jakarta-regexp-1.2"/>
   <property name="junit.home"           value="${repository.home}/junit-3.8.1"/>
@@ -66,6 +69,7 @@
   <property name="jwsdp.home"           value="${repository.home}/jwsdp-1.1"/>
   <property name="dom4j.home"           value="${repository.home}/dom4j-1.4"/>
   <property name="groovy.home"          value="${repository.home}/groovy"/>
+  <property name="derby.home"           value="${repository.home}/derby"/>
 
   <property name="wcf.dist"             value="${basedir}/../wcf/dist"/>
 
@@ -165,7 +169,15 @@
 
     <!-- Create build directories as needed -->
     <mkdir dir="${build.home}/web/WEB-INF/classes"/>
-    <mkdir dir="${build.home}/web/WEB-INF/lib"/>
+    <mkdir dir="${build.home}/web/WEB-INF/classes/foodmart"/>
+    
+  	<copy todir="${build.home}/web/WEB-INF/classes/foodmart">
+        <fileset dir="${resources.home}/derby-db/foodmart">
+        	<include name="**/**"/>
+        </fileset>
+	</copy>
+  	
+  	<mkdir dir="${build.home}/web/WEB-INF/lib"/>
 
     <!-- copy binaries -->
     <copy todir="${build.home}/web">
@@ -195,6 +207,10 @@
         <include name="*.jar"/>
       </fileset>
 
+      <fileset dir="${vfs.home}">
+        <include name="*.jar"/>
+      </fileset>
+
       <fileset dir="${digester.home}">
         <include name="*.jar"/>
       </fileset>
@@ -206,12 +222,20 @@
       <fileset dir="${pool.home}">
         <include name="*.jar"/>
       </fileset>
+      
+      <fileset dir="${derby.home}">
+        <include name="*.jar"/>
+      </fileset>
+
 
       <fileset dir="${mondrian.home}">
         <include name="eigenbase-properties.jar"/>
         <include name="eigenbase-resgen.jar"/>
         <include name="eigenbase-xom.jar"/>
         <include name="commons-vfs.jar"/>
+        <include name="FoodMart.xml"/>
+        <include name="aggregates.dtd"/>
+        <include name="datasourcesconfig.dtd"/>
         <include name="FoodMart.xml"/>
         <include name="javacup.jar"/>
         <include name="mondrian.dtd"/>
@@ -392,14 +416,15 @@
   <target name="archives" description="create distribution">
     <!-- create jpivot.jar -->
     <jar jarfile="${build.home}/jpivot.jar">
-      <fileset dir="${build.home}/web/WEB-INF/classes"/>
+        <exclude name="**/WEB-INF/classes/foodmart/**"/>
+      <!-- fileset dir="${build.home}/web/WEB-INF/classes"/ -->
     </jar>
 
     <!-- Create application WAR file -->
     <mkdir dir="${dist.home}"/>
     <jar jarfile="${build.home}/jpivot.war">
       <fileset dir="${build.home}/web">
-        <exclude name="**/WEB-INF/classes/**"/>
+        <include name="**/*"/>
       </fileset>
     </jar>
     <zip destfile="${build.home}/jpivot.war" update="true">
