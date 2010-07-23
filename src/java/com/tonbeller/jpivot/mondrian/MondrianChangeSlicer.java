@@ -82,18 +82,18 @@ public class MondrianChangeSlicer extends ExtensionSupport implements ChangeSlic
    * @see com.tonbeller.jpivot.olap.navi.ChangeSlicer#setSlicer(Member[])
    */
   public void setSlicer(Member[] members) {
-	    MondrianModel model = (MondrianModel) getModel();
-	    MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
-	    mondrian.olap.Query monQuery = adapter.getMonQuery();
-	    
-	    boolean logInfo = logger.isInfoEnabled();
+    MondrianModel model = (MondrianModel) getModel();
+    MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
+    mondrian.olap.Query monQuery = adapter.getMonQuery();
 
-	    if (members.length == 0) {
-	      // empty slicer
-	      monQuery.setSlicerAxis(null);
-	      if (logInfo)
-	        logger.info("slicer set to null");
-	    } else {
+    boolean logInfo = logger.isInfoEnabled();
+
+    if (members.length == 0) {
+      // empty slicer
+      monQuery.setSlicerAxis(null);
+      if (logInfo)
+        logger.info("slicer set to null");
+    } else {
 	      ArrayList collectedMemberExpressions = new ArrayList();
 	      ArrayList conditions = new ArrayList();
 	      String prevHierarchyName = ""; 

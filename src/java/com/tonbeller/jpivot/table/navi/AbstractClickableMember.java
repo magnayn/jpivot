@@ -77,7 +77,7 @@ public abstract class AbstractClickableMember implements  ClickableMember {
     parser = null;
     OlapModel model = table.getOlapModel();
     
-    // wenn kein uniqueName angegeben ist, müssen wir auch nichts parsen
+    // wenn kein uniqueName angegeben ist, mÃ¼ssen wir auch nichts parsen
     if (empty(uniqueName))
       return;
     

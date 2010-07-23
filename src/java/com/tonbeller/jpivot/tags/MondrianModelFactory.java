@@ -93,6 +93,9 @@ public class MondrianModelFactory {
         sb.append(";dataSourceChangeListener=").append(cfg.getDataSourceChangeListener());
     }
     // sb.append(";Role=California manager");
+    if (cfg.getUseChecksum()!=null){
+        sb.append(";UseContentChecksum=").append(cfg.getUseChecksum());
+    }
     return sb.toString();
   }
 
@@ -139,7 +142,8 @@ public class MondrianModelFactory {
     mm.setDynresolver(cfg.getDynResolver());
     mm.setDynLocale(cfg.getDynLocale());    
     mm.setDataSourceChangeListener( cfg.getDataSourceChangeListener());
-
+    if ("true".equalsIgnoreCase(cfg.getUseChecksum()))
+      mm.setUseChecksum(true);    
     if ("false".equalsIgnoreCase(cfg.getConnectionPooling()))
       mm.setConnectionPooling(false);
     mm.setExternalDataSource(cfg.getExternalDataSource());
@@ -159,7 +163,7 @@ public class MondrianModelFactory {
     String dynResolver;
     // Locale requested
     String dynLocale;
-
+    String useChecksum;
     String connectionPooling;
     // external DataSource to be used by Mondrian
     DataSource externalDataSource = null;
@@ -471,5 +475,14 @@ public class MondrianModelFactory {
     public void setDataSourceChangeListener(String dataSourceChangeListener) {
         this.dataSourceChangeListener = dataSourceChangeListener;
     }
+
+        public String getUseChecksum() {
+            return useChecksum;
+        }
+
+        public void setUseChecksum(String useChecksum) {
+            if (Boolean.parseBoolean(useChecksum))
+                this.useChecksum = useChecksum;
+        }
   }
 }

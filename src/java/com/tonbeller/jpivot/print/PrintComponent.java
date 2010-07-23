@@ -85,7 +85,7 @@ public class PrintComponent extends ComponentSupport {
 		super(id, null);
         propertySupport = new PropertyChangeSupport(this);
         //this.locale = context.getLocale();
-		// extend the controller
+	// extend the controller
 	getDispatcher().addRequestListener(null, null, dispatcher);
     }
     

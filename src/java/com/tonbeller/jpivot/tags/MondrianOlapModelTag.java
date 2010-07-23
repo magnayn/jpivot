@@ -40,6 +40,7 @@ public class MondrianOlapModelTag extends OlapModelTag {
   String config;
   String role;
   String dynResolver;
+  String useChecksum;
   String dynLocale;
   String connectionPooling;
   String dataSourceChangeListener;
@@ -72,7 +73,7 @@ public class MondrianOlapModelTag extends OlapModelTag {
     cfg.setDynLocale(dynLocale);
     cfg.setConnectionPooling(connectionPooling);
     cfg.setDataSourceChangeListener(dataSourceChangeListener);
-
+    cfg.setUseChecksum(getUseChecksum());
     allowOverride(context, cfg);
 
     URL url;
@@ -290,6 +291,14 @@ public String getDataSourceChangeListener() {
 public void setDataSourceChangeListener(String dataSourceChangeListener) {
     this.dataSourceChangeListener = dataSourceChangeListener;
 }
+
+    public String getUseChecksum() {
+        return useChecksum;
+    }
+
+    public void setUseChecksum(String useChecksum) {
+        this.useChecksum = useChecksum;
+    }
 
     
 }

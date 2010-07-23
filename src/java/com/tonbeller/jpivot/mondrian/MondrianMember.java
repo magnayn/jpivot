@@ -40,7 +40,7 @@ public class MondrianMember implements Member, MDXMember {
   protected MondrianMember(
     mondrian.olap.Member monMember,
     MondrianLevel level,
-    MondrianModel model) {
+    MondrianModel model) {   
     this.monMember = monMember;
     this.level = level;
     this.model = model;

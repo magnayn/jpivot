@@ -66,7 +66,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     // Use the schema reader from the query, because it contains calculated
     // members defined in both the cube and the query.
     SchemaReader scr = model.getSchemaReader();
-    List monMembers = scr.getHierarchyRootMembers(monHier);
+    List<mondrian.olap.Member> monMembers = scr.getHierarchyRootMembers(monHier);
     ArrayList aMem = new ArrayList();
     final List visibleRootMembers = new ArrayList();
     int k = monMembers.size();
@@ -76,6 +76,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
         aMem.add(model.addMember(monMember));
       }
     }
+
 
     // find the calculated members for this hierarchy
     //  show them together with root level members
@@ -90,9 +91,17 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
         if (monMem.getHierarchy().equals(monHier)) {
           if (!isVisible(monMem))
             continue;
-          Member m = model.addMember(monMem);
-          if (!aMem.contains(m))
-            aMem.add(m);
+          // ADVR MOD 2008.12.15
+          // Changed to only add root calculated members (parent==null) to the root.
+          // Other members will be added at the correct place within the
+          // respective hierarchy
+          
+          // find the parent for this member
+          if (monMem.getParentMember()== null){
+              Member m = model.addMember(monMem);
+              if (!aMem.contains(m))
+                aMem.add(m);
+          }
         }
       }
     }
@@ -205,8 +214,8 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
 
     MondrianModel model = (MondrianModel) getModel();
 
-    SchemaReader scr = model.getSchemaReader();
-    List monChildren = scr.getMemberChildren(monMember);
+    SchemaReader scr = model.getSchemaReader();    
+    List<mondrian.olap.Member> monChildren = scr.getMemberChildren(monMember);
 
     List list = new ArrayList(monChildren.size());
     for (int i = 0; i < monChildren.size(); i++) {
@@ -215,7 +224,99 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
             list.add(model.addMember(m));
         }
     }
+
+    // ADVR MOD 2008.12.15
+    // check for calculated members that belong to this level
+
+    mondrian.olap.Query q = ((MondrianQueryAdapter) model.getQueryAdapter()).getMonQuery();
+
+    // find the calculated members for this hierarchy
+    //  show them together with level members
+    mondrian.olap.Formula[] formulas = q.getFormulas();
+    for (int i = 0; i < formulas.length; i++) {
+      mondrian.olap.Formula f = formulas[i];
+      mondrian.olap.Member monMem = f.getMdxMember();
+      if (monMem != null) {
+        // is the member for this hierarchy,
+        // and is it visible?
+        // if yes add it
+        if (!isVisible(monMem))
+            continue;
+        if (monMem.getDimension().equals(monMember.getDimension()) &&
+            monMem.getHierarchy().equals(monMember.getHierarchy())) {
+
+          // If this calculated member is a child of this current member,
+          //  add it to the child list
+          if ( monMem.getParentMember().equals(monMember)){
+              Member m = model.addMember(monMem);
+              if (!list.contains(m))
+                list.add(m);
+          }
+        }
+      }
+    }
+    // ADVR 2010.07.20
+    // order the children by order of appearance in Query result
+    //  if there is no result available, do not sort
+    Result res = model.currentResult();
+    final List visibleChildMembers = new ArrayList();
+    if (res != null) {
+        // locate the appropriate result axis
+        // find the Quax for this hier
+        MondrianQueryAdapter adapter = (MondrianQueryAdapter) model.getQueryAdapter();
+        mondrian.olap.Hierarchy monHier = monMember.getHierarchy();
+        Hierarchy hier = member.getLevel().getHierarchy();
+
+        Quax quax = adapter.findQuax(hier.getDimension());
+        if (quax != null) {
+            int iDim = quax.dimIdx(hier.getDimension());
+            int iAx = quax.getOrdinal();
+            if (adapter.isSwapAxes())
+              iAx = (iAx + 1) % 2;
+            Axis axis = res.getAxes()[iAx];
+            List positions = axis.getPositions();
+
+            for (Iterator iter = positions.iterator(); iter.hasNext();) {
+              Position pos = (Position) iter.next();
+              Member[] posMembers = pos.getMembers();
+              MondrianMember mem = (MondrianMember) posMembers[iDim];
+              // only add hierarchy items from the query results
+              // if they are actually in in the currently expanding hierarchy!!
+              if (mem.getMonMember().getParentMember()==null)
+                  continue; // skip root members - can't be children
+              if (mem.getMonMember().getHierarchy().equals(monHier)) {
+                if (mem.getMonMember().getParentMember().equals(monMember)){                     
+                    visibleChildMembers.add(mem);
+
+                    // Check if the result axis contains invisible members
+                    if (!list.contains(mem)) {
+                        list.add(mem);
+                    }
+                 }
+              }
+            }
+        }
+    }
     Member[] children = (Member[]) list.toArray(new Member[list.size()]);
+
+    if (res!=null){  //turned off
+        Arrays.sort(children, new Comparator() {
+          public int compare(Object arg0, Object arg1) {
+            Member m1 = (Member) arg0;
+            Member m2 = (Member) arg1;
+            int index1 = visibleChildMembers.indexOf(m1);
+            int index2 = visibleChildMembers.indexOf(m2);
+              System.out.println("Comparing "+m1.getLabel()+ " and " +m2.getLabel());
+              System.out.println("results index1="+index1+", index2="+index2);
+            if (index2 == -1)
+              return -1; // m2 is higher, unvisible to the end
+            if (index1 == -1)
+              return 1; // m1 is higher, unvisible to the end
+            return index1 - index2;
+          }
+        });
+    }
+    
     return children;
   }
 

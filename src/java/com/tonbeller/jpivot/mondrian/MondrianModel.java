@@ -160,6 +160,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
   // selected locale to be used by dynResolver (if given)
   private String dynLocale = null;;
+  boolean useChecksum = false;
 
   private boolean connectionPooling = true; // Mondrian connection Pooling
 
@@ -507,6 +508,11 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       properties.put(RolapConnectionProperties.PoolNeeded.name(), "false");
       updatedProperties = true;
     }
+    
+    if (useChecksum){
+      properties.put(RolapConnectionProperties.UseContentChecksum.name(),"true");
+      updatedProperties = true;
+    }
 
     if (updatedProperties) {
       setConnectProperties(properties);
@@ -735,9 +741,7 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       return m;
     final SchemaReader scr = getSchemaReader();
 
-    // WG: Mondrian 3.0.1 Fix
-    List uniqueNameParts = Util.parseIdentifier(uniqueName);
-
+    List<mondrian.olap.Id.Segment> uniqueNameParts = Util.parseIdentifier(uniqueName);
     /*
      * Pattern pat = Pattern.compile("\\[([^\\]]+)\\]"); Matcher mat =
      * pat.matcher(uniqueName); int i = 0; ArrayList aName = new ArrayList();
@@ -1636,10 +1640,8 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
                 while (memIterator.hasNext()) {
                     String memberName = 
                         ((mondrian.olap.Member)memIterator.next()).toString();
-                    
-                    // WG: Mondrian 3.0.1 Fix
-                    List uniqueNameParts = Util.parseIdentifier(memberName);
-                    String dimension = uniqueNameParts.get(0).toString(); 
+                    List <mondrian.olap.Id.Segment> uniqueNameParts = Util.parseIdentifier(memberName);                    
+                    String dimension = uniqueNameParts.get(0).toString(); //name
 
                     Iterator logicalIt = aLogicalModel.iterator();
                     while (logicalIt.hasNext()) {
@@ -1746,9 +1748,8 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
      */
     public boolean isAtSameLevel(final String memberName, 
                                  final String logicalName) {
-        // WG: Fix for Mondrian 3.0.1
-        final List memberUniqueNameParts = Util.parseIdentifier(memberName);
-        final List logicalUniqueNameParts = Util.parseIdentifier(logicalName);
+        final List <mondrian.olap.Id.Segment> memberUniqueNameParts = Util.parseIdentifier(memberName);
+        final List <mondrian.olap.Id.Segment> logicalUniqueNameParts = Util.parseIdentifier(logicalName);
         return (memberUniqueNameParts.size() == logicalUniqueNameParts.size());
 
     }
@@ -1881,10 +1882,9 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
 
             // Get the hierarchy name
             String firstMemberName = 
-                ((mondrian.olap.Member) list.get(0)).toString();
-            List uniqueNameParts = Util.parseIdentifier(firstMemberName);
-            //String dimName = firstDim.substring(0, firstDim.indexOf("."));
-            String dimName = uniqueNameParts.get(0).toString();
+                ((mondrian.olap.Member) list.get(0)).toString();            
+            List <mondrian.olap.Id.Segment> uniqueNameParts = Util.parseIdentifier(firstMemberName);
+            String dimName = uniqueNameParts.get(0).toString();//name;            
             boolean result = true;
             Iterator it = list.iterator();
             while (it.hasNext()) {
@@ -1932,6 +1932,13 @@ public class MondrianModel extends MdxOlapModel implements OlapModel,
       }
     }
   }
+      public boolean isUseChecksum() {
+        return useChecksum;
+    }
+
+    public void setUseChecksum(boolean useChecksum) {
+        this.useChecksum = useChecksum;
+    }
 
 
 } // End MondrianModel
