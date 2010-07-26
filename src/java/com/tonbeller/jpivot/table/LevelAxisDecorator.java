@@ -88,6 +88,12 @@ public class LevelAxisDecorator implements Axis {
       Member[] members = p.getMembers();
       for (int i = 0; i < members.length; i++) {
         int count = members[i].getRootDistance() + 1;
+        //ADVR 2010.07.26
+        // if we have calculated members in the root, increase count for that item.
+        // otherwise count=0 if All not present, which means that if no non-calculated
+        // members are present, axis members will not be added in correctly and will
+        // not render
+        if (count==1 && !members[i].isAll()) count++;
         levelCount[i] = Math.max(levelCount[i], count);
         if (members[i].isAll())
           skipAllMember[i] = false;
