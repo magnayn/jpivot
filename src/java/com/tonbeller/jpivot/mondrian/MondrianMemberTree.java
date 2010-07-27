@@ -146,7 +146,7 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     Member[] members = (Member[]) aMem.toArray(new Member[0]);
 
     // If there is no query result, do not sort
-    if (visibleRootMembers.size() != 0) {
+    if (!visibleRootMembers.isEmpty()) {
         Arrays.sort(members, new Comparator() {
           public int compare(Object arg0, Object arg1) {
             Member m1 = (Member) arg0;
@@ -185,8 +185,15 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
     mondrian.olap.Member monMember = ((MondrianMember) member).getMonMember();
     if (monMember.isCalculatedInQuery())
       return false;
-    if (monMember.getLevel().getChildLevel() != null)
-      return true;
+
+    if (monMember.getLevel().getChildLevel() != null){
+       if (!monMember.isCalculated()) return true;
+       // ADVR 2010.07.27
+       // for calculated we need to actually check if there are any children.
+       return this.getChildren(member).length!=0;
+
+    }
+
     // here for a leaf-level, but also for a level in a parent-child hierarchy:
     MondrianModel model = (MondrianModel) getModel();
 
@@ -306,8 +313,6 @@ public class MondrianMemberTree extends ExtensionSupport implements MemberTree {
             Member m2 = (Member) arg1;
             int index1 = visibleChildMembers.indexOf(m1);
             int index2 = visibleChildMembers.indexOf(m2);
-              System.out.println("Comparing "+m1.getLabel()+ " and " +m2.getLabel());
-              System.out.println("results index1="+index1+", index2="+index2);
             if (index2 == -1)
               return -1; // m2 is higher, unvisible to the end
             if (index1 == -1)
