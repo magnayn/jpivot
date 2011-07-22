@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>jpivot</groupId>
+        <artifactId>pom</artifactId>
+        <version>1.8.1-SNAPSHOT</version>
+    </parent>
+
+    <groupId>jpivot</groupId>
+    <artifactId>jpivot-war</artifactId>
+    <packaging>war</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>build-config-files</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo>Compile TLD</echo>
+                                <style basedir="${basedir}/src/main/webapp"
+                                       destdir="${project.build.directory}/${build.finalName}"
+                                       style="${basedir}/src/main/tags/tags2tld.xsl"
+                                       extension=".tld">
+                                    <include name="**/*-tags.xml"/>
+                                </style>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <overlays>
+                        <overlay>
+                            <groupId>wcf</groupId>
+                            <artifactId>wcf-war</artifactId>
+                            <excludes>
+                                <exclude>WEB-INF/lib/*</exclude>
+                            </excludes>
+                        </overlay>
+                    </overlays>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>jpivot</groupId>
+            <artifactId>jpivot</artifactId>
+            <version>${pom.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>wcf</groupId>
+            <artifactId>wcf-war</artifactId>
+            <version>${wcf.version}</version>
+            <type>war</type>
+        </dependency>
+    </dependencies>
+
+</project>
