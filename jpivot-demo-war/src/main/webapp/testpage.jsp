@@ -31,11 +31,11 @@
 <head>
   <title>JPivot Test Page</title>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-  <link rel="stylesheet" type="text/css" href="../../../../jpivot-war/src/main/webapp/jpivot/table/mdxtable.css">
-  <link rel="stylesheet" type="text/css" href="../../../../jpivot-war/src/main/webapp/jpivot/navi/mdxnavi.css">
-  <link rel="stylesheet" type="text/css" href="../../../../../wcf/wcf-war/src/main/webapp/wcf/form/xform.css">
-  <link rel="stylesheet" type="text/css" href="../../../../../wcf/wcf-war/src/main/webapp/wcf/table/xtable.css">
-  <link rel="stylesheet" type="text/css" href="../../../../../wcf/wcf-war/src/main/webapp/wcf/tree/xtree.css">
+  <link rel="stylesheet" type="text/css" href="jpivot/table/mdxtable.css">
+  <link rel="stylesheet" type="text/css" href="jpivot/navi/mdxnavi.css">
+  <link rel="stylesheet" type="text/css" href="wcf/form/xform.css">
+  <link rel="stylesheet" type="text/css" href="wcf/table/xtable.css">
+  <link rel="stylesheet" type="text/css" href="wcf/tree/xtree.css">
 </head>
 <body bgcolor=white>
 <form action="testpage.jsp" method="post">
@@ -43,7 +43,7 @@
 <%-- include query and title, so this jsp may be used with different queries --%>
 <wcf:include id="include01" httpParam="query" prefix="/WEB-INF/queries/" suffix=".jsp"/>
 <c:if test="${query01 == null}">
-  <jsp:forward page="../../../../jpivot-war/src/main/webapp"/>
+  <jsp:forward page="."/>
 </c:if>
 
 <%-- define table, navigator and forms --%>
@@ -134,7 +134,7 @@ Slicer:
 <wcf:render ref="chart01" xslUri="/WEB-INF/jpivot/chart/chart.xsl" xslCache="true"/>
 
 <p>
-<a href="../../../../jpivot-war/src/main/webapp">back to index</a>
+<a href=".">back to index</a>
 
 </form>
 

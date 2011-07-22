@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>jpivot</groupId>
-	<artifactId>jpivot</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>jpivot</groupId>
+    <artifactId>jpivot</artifactId>
 
     <parent>
         <groupId>jpivot</groupId>
@@ -15,6 +15,16 @@
             <groupId>pentaho</groupId>
             <artifactId>mondrian</artifactId>
             <version>3.3.0.14192</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>jsp-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>wcf</groupId>
@@ -22,14 +32,20 @@
             <version>${wcf.version}</version>
         </dependency>
         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jsp-api</artifactId>
+            <version>2.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>jfree</groupId>
             <artifactId>jfreechart</artifactId>
             <version>1.0.12</version>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.apache.xmlgraphics</groupId>-->
-            <!--<artifactId>fop</artifactId>-->
-            <!--<version>0.95</version>-->
+        <!--<groupId>org.apache.xmlgraphics</groupId>-->
+        <!--<artifactId>fop</artifactId>-->
+        <!--<version>0.95</version>-->
         <!--</dependency>-->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
