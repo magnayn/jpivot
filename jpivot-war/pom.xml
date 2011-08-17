@@ -61,7 +61,7 @@
         <dependency>
             <groupId>jpivot</groupId>
             <artifactId>jpivot</artifactId>
-            <version>${pom.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>wcf</groupId>

@@ -69,4 +69,17 @@
         </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>mondrian</id>
+            <url>http://repository.pentaho.org/artifactory/pentaho/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
 </project>
